@@ -2,6 +2,7 @@
 
 int g_delayCallCount = 0;
 unsigned long g_delayValues[16] = {0};
+unsigned long g_millis = 0;
 
 extern "C" void delay(unsigned long ms) {
     if (g_delayCallCount < 16) {
@@ -10,6 +11,7 @@ extern "C" void delay(unsigned long ms) {
     g_delayCallCount++;
 }
 
+extern "C" unsigned long millis(void) { return g_millis; }
 extern "C" int analogRead(uint8_t) { return 0; }
 extern "C" int digitalRead(uint8_t) { return 0; }
 extern "C" void digitalWrite(uint8_t, uint8_t) {}

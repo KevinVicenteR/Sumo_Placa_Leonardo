@@ -1,46 +1,22 @@
 #include <Arduino.h>
 #include "Motor.H"
+#include "Pines.H"
+#include "Parametros.H"
+
+namespace {
+void controlarPuente(uint8_t pinIn1, uint8_t pinIn2, uint8_t pinPwm, int velocidad) {
+	velocidad = constrain(velocidad, -VelocidadMaxima, VelocidadMaxima);
+	digitalWrite(pinIn1, velocidad >= 0 ? HIGH : LOW);
+	digitalWrite(pinIn2, velocidad >= 0 ? LOW : HIGH);
+	analogWrite(pinPwm, abs(velocidad));
+}
+}
 
 void Motor::mover(int velIzq, int velDer) {
-	// Control motor izquierdo (A)
-	if (velIzq >= 0) {
-		digitalWrite(MA1A, HIGH);
-		digitalWrite(MA2A, LOW);
-		analogWrite(PWMA, velIzq);
-	} else {
-		digitalWrite(MA1A, LOW);
-		digitalWrite(MA2A, HIGH);
-		analogWrite(PWMA, abs(velIzq));
-	}
-
-	// Control motor derecho (B)
-	if (velDer >= 0) {
-		digitalWrite(MA1B, HIGH);
-		digitalWrite(MA2B, LOW);
-		analogWrite(PWMB, velDer);
-	} else {
-		digitalWrite(MA1B, LOW);
-		digitalWrite(MA2B, HIGH);
-		analogWrite(PWMB, abs(velDer));
-	}
-}
-
-void Motor::avanzar(int velocidad) {
-	mover(velocidad, velocidad);
-}
-
-void Motor::retroceder(int velocidad) {
-	mover(-velocidad, -velocidad);
+	controlarPuente(MA1A, MA2A, PWMA, velIzq); // Motor izquierdo (A)
+	controlarPuente(MA1B, MA2B, PWMB, velDer); // Motor derecho (B)
 }
 
 void Motor::detener() {
 	mover(0, 0);
-}
-
-void Motor::girar(int velocidad) {
-	mover(velocidad, -velocidad);
-}
-
-void Motor::curva(int velocidad) {
-	mover(velocidad / 2, velocidad);
 }

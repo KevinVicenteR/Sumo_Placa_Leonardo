@@ -1,83 +1,137 @@
 #include <unity.h>
 #include "ControlMovimiento.H"
-#include "Pines.H"
+#include "Parametros.H"
 #include "Arduino.h"
 
 class MotorMock : public IMotor {
 public:
     int calls = 0;
-    int izq[8] = {0};
-    int der[8] = {0};
+    int izq = 0;
+    int der = 0;
 
-    void avanzar(int) override {}
-    void retroceder(int) override {}
-    void detener() override {}
-    void girar(int) override {}
-    void curva(int) override {}
+    void detener() override { mover(0, 0); }
 
     void mover(int velIzq, int velDer) override {
-        if (calls < 8) {
-            izq[calls] = velIzq;
-            der[calls] = velDer;
-        }
+        izq = velIzq;
+        der = velDer;
         calls++;
     }
 };
 
-static void resetDelays() {
-    g_delayCallCount = 0;
-    for (int i = 0; i < 16; i++) {
-        g_delayValues[i] = 0;
-    }
+static void assertMovimiento(MotorMock& m, int izq, int der) {
+    TEST_ASSERT_EQUAL_INT(izq, m.izq);
+    TEST_ASSERT_EQUAL_INT(der, m.der);
 }
 
-void test_ataque_frontal_velocidades_correctas(void) {
+static void assertAccionSimple(TipoAccion accion, int izq, int der) {
     ControlMovimiento c;
     MotorMock m;
-    resetDelays();
+    g_delayCallCount = 0;
 
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    c.ejecutar({accion}, m, 0);
 
     TEST_ASSERT_EQUAL_INT(1, m.calls);
-    TEST_ASSERT_EQUAL_INT(VelocidadMaxima, m.izq[0]);
-    TEST_ASSERT_EQUAL_INT(VelocidadMaxima, m.der[0]);
+    assertMovimiento(m, izq, der);
     TEST_ASSERT_EQUAL_INT(0, g_delayCallCount);
 }
 
-void test_evadir_borde_izq_hace_retroceso_y_giro_con_delays(void) {
-    ControlMovimiento c;
-    MotorMock m;
-    resetDelays();
-
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m);
-
-    TEST_ASSERT_EQUAL_INT(2, m.calls);
-    TEST_ASSERT_EQUAL_INT(-VelocidadRetroceso, m.izq[0]);
-    TEST_ASSERT_EQUAL_INT(-VelocidadRetroceso, m.der[0]);
-    TEST_ASSERT_EQUAL_INT(VelocidadMaxima, m.izq[1]);
-    TEST_ASSERT_EQUAL_INT(-VelocidadMaxima, m.der[1]);
-
-    TEST_ASSERT_EQUAL_INT(2, g_delayCallCount);
-    TEST_ASSERT_EQUAL_UINT32(150, g_delayValues[0]);
-    TEST_ASSERT_EQUAL_UINT32(350, g_delayValues[1]);
+void test_acciones_simples_velocidades_correctas(void) {
+    assertAccionSimple(TipoAccion::AtaqueFrontal, VelocidadMaxima, VelocidadMaxima);
+    assertAccionSimple(TipoAccion::CorregirIzq, VelocidadCurva, VelocidadMaxima);
+    assertAccionSimple(TipoAccion::CorregirDer, VelocidadMaxima, VelocidadCurva);
+    assertAccionSimple(TipoAccion::DefensaIzq, -VelocidadPivoteLateral, VelocidadMaxima);
+    assertAccionSimple(TipoAccion::DefensaDer, VelocidadMaxima, -VelocidadPivoteLateral);
+    assertAccionSimple(TipoAccion::Busqueda, VelocidadAvance, VelocidadBusquedaDer);
 }
 
-void test_busqueda_por_defecto(void) {
+void test_evadir_borde_izq_retrocede_y_gira_derecha_sin_bloquear(void) {
     ControlMovimiento c;
     MotorMock m;
-    resetDelays();
+    g_delayCallCount = 0;
 
-    c.ejecutar({TipoAccion::Busqueda}, m);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1000);
+    assertMovimiento(m, -VelocidadRetroceso, -VelocidadRetroceso);
 
-    TEST_ASSERT_EQUAL_INT(1, m.calls);
-    TEST_ASSERT_EQUAL_INT(VelocidadAvance, m.izq[0]);
-    TEST_ASSERT_EQUAL_INT(VelocidadBusquedaDer, m.der[0]);
+    // La línea ya no se ve, pero la maniobra continúa
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoRetroceso - 1);
+    assertMovimiento(m, -VelocidadRetroceso, -VelocidadRetroceso);
+
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoRetroceso);
+    assertMovimiento(m, VelocidadMaxima, -VelocidadMaxima);
+
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoRetroceso + TiempoGiroEvasion - 1);
+    assertMovimiento(m, VelocidadMaxima, -VelocidadMaxima);
+
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoRetroceso + TiempoGiroEvasion);
+    assertMovimiento(m, VelocidadAvance, VelocidadBusquedaDer);
+
+    TEST_ASSERT_EQUAL_INT(0, g_delayCallCount);
+}
+
+void test_evadir_borde_der_gira_izquierda(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 0);
+    assertMovimiento(m, -VelocidadRetroceso, -VelocidadRetroceso);
+
+    c.ejecutar({TipoAccion::Busqueda}, m, TiempoRetroceso);
+    assertMovimiento(m, -VelocidadMaxima, VelocidadMaxima);
+}
+
+void test_evadir_borde_ambos_retrocede_mas_tiempo(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 0);
+    c.ejecutar({TipoAccion::Busqueda}, m, TiempoRetrocesoAmbos - 1);
+    assertMovimiento(m, -VelocidadRetroceso, -VelocidadRetroceso);
+
+    c.ejecutar({TipoAccion::Busqueda}, m, TiempoRetrocesoAmbos);
+    assertMovimiento(m, VelocidadMaxima, -VelocidadMaxima);
+}
+
+void test_borde_durante_giro_reinicia_retroceso(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 0);
+    c.ejecutar({TipoAccion::Busqueda}, m, TiempoRetroceso + 10);
+    assertMovimiento(m, VelocidadMaxima, -VelocidadMaxima);
+
+    c.ejecutar({TipoAccion::EvadirBordeDer}, m, TiempoRetroceso + 20);
+    assertMovimiento(m, -VelocidadRetroceso, -VelocidadRetroceso);
+}
+
+void test_enemigo_frontal_aborta_giro_de_evasion(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 0);
+    c.ejecutar({TipoAccion::Busqueda}, m, TiempoRetroceso + 10);
+    assertMovimiento(m, VelocidadMaxima, -VelocidadMaxima);
+
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, TiempoRetroceso + 20);
+    assertMovimiento(m, VelocidadMaxima, VelocidadMaxima);
+}
+
+void test_enemigo_frontal_no_aborta_retroceso(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 0);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 10);
+    assertMovimiento(m, -VelocidadRetroceso, -VelocidadRetroceso);
 }
 
 int main(int, char**) {
     UNITY_BEGIN();
-    RUN_TEST(test_ataque_frontal_velocidades_correctas);
-    RUN_TEST(test_evadir_borde_izq_hace_retroceso_y_giro_con_delays);
-    RUN_TEST(test_busqueda_por_defecto);
+    RUN_TEST(test_acciones_simples_velocidades_correctas);
+    RUN_TEST(test_evadir_borde_izq_retrocede_y_gira_derecha_sin_bloquear);
+    RUN_TEST(test_evadir_borde_der_gira_izquierda);
+    RUN_TEST(test_evadir_borde_ambos_retrocede_mas_tiempo);
+    RUN_TEST(test_borde_durante_giro_reinicia_retroceso);
+    RUN_TEST(test_enemigo_frontal_aborta_giro_de_evasion);
+    RUN_TEST(test_enemigo_frontal_no_aborta_retroceso);
     return UNITY_END();
 }

@@ -2,11 +2,7 @@
 #include "Percepcion.H"
 #include "Pines.H"
 
-namespace {
-constexpr uint8_t CICLOS_RETENCION_ENEMIGO = 2;
-}
-
-bool Percepcion::lecturaDigitalMayoritaria(int pin) {
+bool Percepcion::lecturaDigitalMayoritaria(uint8_t pin) {
     uint8_t activos = 0;
     activos += (digitalRead(pin) == HIGH) ? 1 : 0;
     activos += (digitalRead(pin) == HIGH) ? 1 : 0;
@@ -14,28 +10,15 @@ bool Percepcion::lecturaDigitalMayoritaria(int pin) {
     return activos >= 2;
 }
 
-bool Percepcion::aplicarRetencion(bool detectado, uint8_t& ciclosRetencion) {
-    if (detectado) {
-        ciclosRetencion = CICLOS_RETENCION_ENEMIGO;
-        return true;
-    }
-
-    if (ciclosRetencion > 0) {
-        --ciclosRetencion;
-        return true;
-    }
-
-    return false;
-}
-
 LecturasSensores Percepcion::leer() const {
+    const unsigned long ahora = millis();
     LecturasSensores lecturas;
-    lecturas.lineaIzq = (analogRead(S_PISO_IZQ) < BLANCO);
-    lecturas.lineaDer = (analogRead(S_PISO_DER) < BLANCO);
-    lecturas.latIzq = aplicarRetencion(lecturaDigitalMayoritaria(S_LAT_IZQ), retLatIzq);
-    lecturas.c45Izq = aplicarRetencion(lecturaDigitalMayoritaria(S_FRONT_IZQ), retC45Izq);
-    lecturas.frontal = aplicarRetencion(lecturaDigitalMayoritaria(S_FRONT_CEN), retFrontal);
-    lecturas.c45Der = aplicarRetencion(lecturaDigitalMayoritaria(S_FRONT_DER), retC45Der);
-    lecturas.latDer = aplicarRetencion(lecturaDigitalMayoritaria(S_LAT_DER), retLatDer);
+    lecturas.lineaIzq = (analogRead(S_PISO_IZQ) < UmbralLinea);
+    lecturas.lineaDer = (analogRead(S_PISO_DER) < UmbralLinea);
+    lecturas.latIzq = retLatIzq.actualizar(lecturaDigitalMayoritaria(S_LAT_IZQ), ahora);
+    lecturas.c45Izq = retC45Izq.actualizar(lecturaDigitalMayoritaria(S_FRONT_IZQ), ahora);
+    lecturas.frontal = retFrontal.actualizar(lecturaDigitalMayoritaria(S_FRONT_CEN), ahora);
+    lecturas.c45Der = retC45Der.actualizar(lecturaDigitalMayoritaria(S_FRONT_DER), ahora);
+    lecturas.latDer = retLatDer.actualizar(lecturaDigitalMayoritaria(S_LAT_DER), ahora);
     return lecturas;
 }

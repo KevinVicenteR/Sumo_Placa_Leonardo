@@ -1,26 +1,26 @@
 #include <Arduino.h>
 #include "Motor.H"
-#include "Estados.H"
+#include "ControladorRobot.H"
 #include "ConfiguracionHardware.H"
 #include "Percepcion.H"
 #include "EstrategiaCombate.H"
 #include "ControlMovimiento.H"
+#include "Parametros.H"
 
 Motor motor;
 Percepcion percepcion;
 EstrategiaCombate estrategia;
 ControlMovimiento controlMovimiento;
-Estado estado(percepcion, estrategia, controlMovimiento);
+ControladorRobot robot(percepcion, estrategia, controlMovimiento, motor);
 ConfiguracionHardware hardware;
 
 void setup() {
   hardware.inicializarPines();
-  estado.setMotor(&motor);
+  motor.detener();
 
-  // Tiempo reglamentario de inicio
-  delay(5000);
+  delay(TiempoInicioReglamentario);
 }
 
 void loop() {
-  estado.actualizarEstado();
+  robot.actualizar();
 }

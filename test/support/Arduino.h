@@ -40,6 +40,7 @@ extern "C" {
 #endif
 
 void delay(unsigned long ms);
+unsigned long millis(void);
 int analogRead(uint8_t pin);
 int digitalRead(uint8_t pin);
 void digitalWrite(uint8_t pin, uint8_t value);
@@ -48,6 +49,7 @@ void pinMode(uint8_t pin, uint8_t mode);
 
 extern int g_delayCallCount;
 extern unsigned long g_delayValues[16];
+extern unsigned long g_millis;
 
 #ifdef __cplusplus
 }

@@ -7,7 +7,8 @@
 class IControlMovimiento {
 public:
     virtual ~IControlMovimiento() {}
-    virtual void ejecutar(const DecisionMovimiento& decision, IMotor& motor) const = 0;
+    // No bloqueante: se llama en cada ciclo con el tiempo actual en ms
+    virtual void ejecutar(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) = 0;
 };
 
 #endif

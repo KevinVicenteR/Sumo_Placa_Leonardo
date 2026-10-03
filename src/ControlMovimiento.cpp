@@ -1,27 +1,56 @@
-#include <Arduino.h>
 #include "ControlMovimiento.H"
-#include "Pines.H"
+#include "Parametros.H"
 
-void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& motor) const {
+void ControlMovimiento::iniciarEvasion(int sentido, unsigned long duracion, unsigned long ahora) {
+    // Mientras se siga viendo la línea, la maniobra se reinicia y el retroceso se prolonga
+    fase = Fase::Retrocediendo;
+    inicioFase = ahora;
+    duracionRetroceso = duracion;
+    sentidoGiro = sentido;
+}
+
+bool ControlMovimiento::continuarEvasion(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
+    if (fase == Fase::Retrocediendo) {
+        if (ahora - inicioFase < duracionRetroceso) {
+            motor.mover(-VelocidadRetroceso, -VelocidadRetroceso);
+            return true;
+        }
+        fase = Fase::Girando;
+        inicioFase = ahora;
+    }
+
+    if (fase == Fase::Girando) {
+        // Si el enemigo aparece de frente durante el giro, se aborta para atacar
+        if (decision.tipo != TipoAccion::AtaqueFrontal && ahora - inicioFase < TiempoGiroEvasion) {
+            motor.mover(sentidoGiro * VelocidadMaxima, -sentidoGiro * VelocidadMaxima);
+            return true;
+        }
+        fase = Fase::Libre;
+    }
+
+    return false;
+}
+
+void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     switch (decision.tipo) {
     case TipoAccion::EvadirBordeIzq:
-        motor.mover(-VelocidadRetroceso, -VelocidadRetroceso);
-        delay(150);
-        motor.mover(VelocidadMaxima, -VelocidadMaxima);
-        delay(350);
+        iniciarEvasion(1, TiempoRetroceso, ahora);
         break;
     case TipoAccion::EvadirBordeDer:
-        motor.mover(-VelocidadRetroceso, -VelocidadRetroceso);
-        delay(150);
-        motor.mover(-VelocidadMaxima, VelocidadMaxima);
-        delay(350);
+        iniciarEvasion(-1, TiempoRetroceso, ahora);
         break;
     case TipoAccion::EvadirBordeAmbos:
-        motor.mover(-VelocidadRetroceso, -VelocidadRetroceso);
-        delay(150);
-        motor.mover(VelocidadMaxima, -VelocidadMaxima);
-        delay(350);
+        iniciarEvasion(1, TiempoRetrocesoAmbos, ahora);
         break;
+    default:
+        break;
+    }
+
+    if (continuarEvasion(decision, motor, ahora)) {
+        return;
+    }
+
+    switch (decision.tipo) {
     case TipoAccion::AtaqueFrontal:
         motor.mover(VelocidadMaxima, VelocidadMaxima);
         break;

@@ -2,6 +2,7 @@
 #define ARDUINO_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #ifndef HIGH
 #define HIGH 0x1
@@ -50,6 +51,21 @@ extern int g_delayCallCount;
 extern unsigned long g_delayValues[16];
 
 #ifdef __cplusplus
+}
+
+// Reloj controlable para probar los movimientos sin esperas reales.
+inline unsigned long& testMillis() {
+    static unsigned long tiempo = 0;
+    return tiempo;
+}
+
+inline unsigned long millis() {
+    return testMillis();
+}
+
+inline long random(long minimo, long maximo) {
+    if (minimo >= maximo) return minimo;
+    return minimo + (rand() % (maximo - minimo));
 }
 #endif
 

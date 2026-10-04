@@ -53,15 +53,20 @@ EXPORTAR("sim_robot") void sim_robot(double x, double y, double th) {
     sim::rob = {x, y, th, 0, 0};
 }
 
-// modo: 0 sin enemigo, 1 quieto, 2 se mueve
+// modo: 0 sin enemigo, 1 quieto, 2 se mueve, 3 embiste
+static sim::Modo modoDe(int modo) {
+    return modo == 3 ? sim::Modo::Agresivo : modo == 2 ? sim::Modo::Errante
+         : modo == 1 ? sim::Modo::Estatico : sim::Modo::Ninguno;
+}
+
 EXPORTAR("sim_enemigo") void sim_enemigo(int modo, double x, double y, double th) {
-    sim::modo = modo == 2 ? sim::Modo::Errante : modo == 1 ? sim::Modo::Estatico : sim::Modo::Ninguno;
+    sim::modo = modoDe(modo);
     sim::ene = {modo != 0, x, y, th};
 }
 
 // Colocación aleatoria igual que el simulador de consola (para comparar ambos)
 EXPORTAR("sim_aleatorio") void sim_aleatorio(int modo) {
-    sim::modo = modo == 2 ? sim::Modo::Errante : modo == 1 ? sim::Modo::Estatico : sim::Modo::Ninguno;
+    sim::modo = modoDe(modo);
     sim::colocarAleatorio();
 }
 

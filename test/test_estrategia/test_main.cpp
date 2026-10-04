@@ -33,6 +33,21 @@ void test_frontal_sobre_45_y_laterales(void) {
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::AtaqueFrontal, (int)d.tipo);
 }
 
+void test_frontal_y_un_45_ajusta_hacia_ese_lado(void) {
+    EstrategiaCombate e;
+    DecisionMovimiento d = e.decidir(L(false, false, false, true, true, false, false));
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::AjusteIzq, (int)d.tipo);
+    TEST_ASSERT_TRUE(d.enemigoFrente);
+    d = e.decidir(L(false, false, false, false, true, true, false));
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::AjusteDer, (int)d.tipo);
+}
+
+void test_borde_informa_si_ve_al_enemigo_de_frente(void) {
+    EstrategiaCombate e;
+    TEST_ASSERT_TRUE(e.decidir(L(true, false, false, false, true, false, false)).enemigoFrente);
+    TEST_ASSERT_FALSE(e.decidir(L(true, false, false, true, false, false, false)).enemigoFrente);
+}
+
 void test_45_izq_sobre_45_der_y_laterales(void) {
     EstrategiaCombate e;
     DecisionMovimiento d = e.decidir(L(false, false, true, true, false, true, true));
@@ -67,6 +82,8 @@ int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_prioriza_borde_sobre_todo);
     RUN_TEST(test_frontal_sobre_45_y_laterales);
+    RUN_TEST(test_frontal_y_un_45_ajusta_hacia_ese_lado);
+    RUN_TEST(test_borde_informa_si_ve_al_enemigo_de_frente);
     RUN_TEST(test_45_izq_sobre_45_der_y_laterales);
     RUN_TEST(test_borde_der_y_ambos);
     RUN_TEST(test_45_der_sobre_laterales);

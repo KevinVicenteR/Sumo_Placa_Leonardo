@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Barrido de parámetros: prueba combinaciones y las ordena por caídas.
 
-Cada combinación se evalúa en los 3 escenarios y en todos los entornos dados,
+Cada combinación se evalúa en todos los escenarios (simular.MODOS) y en todos los entornos dados,
 para elegir parámetros que funcionen aunque el robot real no sea exactamente
 como el simulado.
 
   python3 simulacion/barrido.py TiempoRetroceso=80,120 VelocidadAtaque=130,160
   python3 simulacion/barrido.py VelocidadAtaque=130,160 --entorno="--bateria 1.3" --entorno="--pared 0.5"
   python3 simulacion/barrido.py VelocidadAtaque=130,160 --robusto      # entornos típicos
+  python3 simulacion/barrido.py VelocidadAtaque=130,160 --todos        # típicos y extremos
 """
 import argparse
 import itertools
@@ -57,14 +58,16 @@ def main():
     ap.add_argument("--entorno", action="append", default=[])
     ap.add_argument("--robusto", action="store_true")
     ap.add_argument("--extremo", action="store_true")
+    ap.add_argument("--todos", action="store_true", help="entornos robustos y extremos")
     ap.add_argument("--mostrar", type=int, default=12)
     a = ap.parse_args()
 
-    entornos = a.entorno or ([*ENTORNOS_EXTREMOS] if a.extremo else [*ENTORNOS_ROBUSTOS] if a.robusto else [""])
+    entornos = a.entorno or ([*ENTORNOS_ROBUSTOS, *ENTORNOS_EXTREMOS] if a.todos else [*ENTORNOS_EXTREMOS]
+                             if a.extremo else [*ENTORNOS_ROBUSTOS] if a.robusto else [""])
     opciones = {k: v.split(",") for k, v in (o.split("=", 1) for o in a.opciones)}
     combos = [dict(zip(opciones, vals)) for vals in itertools.product(*opciones.values())]
     simular.BUILD.mkdir(parents=True, exist_ok=True)
-    print(f"{len(combos)} combinaciones × {len(entornos)} entornos × 3 escenarios × {a.n} combates")
+    print(f"{len(combos)} combinaciones × {len(entornos)} entornos × {len(simular.MODOS)} escenarios × {a.n} combates")
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as ex:
         resultados = list(ex.map(lambda p: evaluar(p, a.n, entornos, a.dur), combos))
 
@@ -86,10 +89,11 @@ def main():
         print(f"{txt:<70}{caidas:>8}{victorias:>11}{margen:>9.1f} cm{100 * frente:>8.0f} %{ver:>7.2f}s")
     if len(entornos) > 1:
         params, _, pe = filas[0]
-        print("\nMejor combinación por entorno (caídas sin/est/err):")
+        print("\nMejor combinación por entorno (caídas " + "/".join(m[:3] for m in simular.MODOS) + "):")
         for ent, res in zip(entornos, pe):
             print(f"  {ent or 'nominal':<60} caídas " + "/".join(str(r["caidas"]) for r in res)
-                  + "   victorias " + "/".join(str(r["victorias"]) for r in res[1:]))
+                  + "   victorias " + "/".join(str(r["victorias"]) for r in res[1:])
+                  + "".join(f"\n      {r['modo']}: {r['causas']}" for r in res if r["causas"]))
 
 
 if __name__ == "__main__":

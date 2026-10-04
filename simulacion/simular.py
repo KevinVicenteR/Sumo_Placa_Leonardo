@@ -15,6 +15,7 @@ import io
 import re
 import shutil
 import statistics
+from collections import Counter
 import subprocess
 import sys
 from pathlib import Path
@@ -22,7 +23,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 BUILD = RAIZ / "simulacion" / "build"
 FUENTES = sorted((RAIZ / "src").glob("*.cpp")) + [RAIZ / "simulacion" / "sim.cpp"]
-MODOS = ["ninguno", "estatico", "errante"]
+MODOS = ["ninguno", "estatico", "errante", "agresivo"]
 
 
 def compilar(params: dict) -> Path:
@@ -72,6 +73,8 @@ def resumir(modo: str, filas: list) -> dict:
         "t_ver_mediana": statistics.median(vistos) if vistos else float("nan"),
         "frac_frontal": statistics.mean(float(f["frac_frontal"]) for f in filas),
         "semillas_caida": [int(f["semilla"]) for f in caidas][:8],
+        "causas": dict(Counter(f.get("causa", "-") + ("/empujado" if f.get("empujado") == "1" else "")
+                               for f in caidas)),
         "victorias": sum(1 for f in filas if f.get("gano") == "1"),
         "t_victoria": statistics.median([float(f["t_gano"]) for f in filas if f.get("gano") == "1"] or [float("nan")]),
     }
@@ -85,7 +88,7 @@ def imprimir(resumenes: list):
               f"{r['t_victoria']:>7.1f} s{r['margen_p10']:>9.1f} cm"
               f"{r['t_ver_mediana']:>10.2f} s{100 * r['frac_frontal']:>11.0f} %")
         if r["semillas_caida"]:
-            print(f"{'':<10}semillas con caída: {r['semillas_caida']}")
+            print(f"{'':<10}semillas con caída: {r['semillas_caida']}  causas: {r['causas']}")
 
 
 def main():

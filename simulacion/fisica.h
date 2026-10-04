@@ -55,21 +55,27 @@ struct Config {
     // Enemigo
     double radioEnemigo = 0.05;   // m
     double velEnemigo = 0.25;     // m/s en modo errante
+    double velAgresivo = 0.6;     // m/s del enemigo que embiste (modo agresivo)
+    double giroAgresivo = 6.0;    // rad/s máximos con los que se orienta hacia nosotros
     // Choque con el enemigo (0 en masaEnemigo = fantasma, el robot lo atraviesa)
     double masaEnemigo = 0.3;     // kg
     double agarreEnemigo = 0.8;   // su resistencia a ser empujado (μ de sus ruedas)
     double radioChoque = 0.055;   // m, radio de choque de nuestro robot
+    double rigidezChoque = 3000;  // N/m del contacto entre robots (unos mm de solape)
+    double amortiguaChoque = 25;  // N·s/m
     // Simulación
     double duracion = 30.0;       // s de combate (tras los 5 s reglamentarios)
     double ruidoPiso = 15.0;      // desviación estándar del ADC
     double sobrecostoLoopUs = 20; // µs de loop() además de las lecturas
 };
 
-enum class Modo { Ninguno, Estatico, Errante };
+enum class Modo { Ninguno, Estatico, Errante, Agresivo };
 
 struct Robot {
     double x, y, th;  // posición del eje de ruedas y orientación (rad, antihorario)
     double vl, vr;    // velocidad real de cada rueda
+    double vlat = 0;  // deslizamiento lateral (hacia la izquierda), solo si lo empujan de lado
+    double fExt = 0;  // fuerza del enemigo a lo largo del rumbo en este paso (N)
 };
 
 struct Enemigo {
@@ -247,12 +253,12 @@ inline void avanzarCuerpoDC(int cmdIzq, int cmdDer, double dt) {
     const double fd = fuerzaRueda(cmdDer, rob.vr);
     const double peso = cfg.masa * 9.81;
     const double inercia = cfg.masa * (cfg.largo * cfg.largo + cfg.ancho * cfg.ancho) / 12;
-    const double fuerza = conFriccion(fi + fd, v, cfg.rodadura * peso);
+    const double fuerza = conFriccion(fi + fd + rob.fExt, v, cfg.rodadura * peso);
     const double par = conFriccion((fd - fi) * b, w, cfg.friccionGiro * peso * cfg.brazoGiro);
     double vNueva = v + fuerza / cfg.masa * dt;
     double wNueva = w + par / inercia * dt;
     // La fricción frena hasta cero, no invierte el movimiento
-    if (v != 0 && vNueva * v < 0 && mat::fabs(fi + fd) < cfg.rodadura * peso) vNueva = 0;
+    if (v != 0 && vNueva * v < 0 && mat::fabs(fi + fd + rob.fExt) < cfg.rodadura * peso) vNueva = 0;
     if (w != 0 && wNueva * w < 0 && mat::fabs((fd - fi) * b) < cfg.friccionGiro * peso * cfg.brazoGiro) wNueva = 0;
     rob.vl = vNueva - wNueva * b;
     rob.vr = vNueva + wNueva * b;
@@ -272,11 +278,14 @@ inline void avanzarRobot(double dt) {
     } else {
         avanzarRueda(rob.vl, comandoIzq(), dt);
         avanzarRueda(rob.vr, comandoDer(), dt);
+        rob.vl += rob.fExt / cfg.masa * dt;
+        rob.vr += rob.fExt / cfg.masa * dt;
     }
     const double v = (rob.vl + rob.vr) / 2;
     const double w = (rob.vr - rob.vl) / cfg.trocha;
-    rob.x += v * mat::cos(rob.th) * dt;
-    rob.y += v * mat::sin(rob.th) * dt;
+    const double c = mat::cos(rob.th), s = mat::sin(rob.th);
+    rob.x += (v * c - rob.vlat * s) * dt;
+    rob.y += (v * s + rob.vlat * c) * dt;
     rob.th += w * dt;
 }
 
@@ -297,6 +306,24 @@ inline void avanzarEnemigo(double dt) {
         }
         vdx = cfg.velEnemigo * mat::cos(ene.th);
         vdy = cfg.velEnemigo * mat::sin(ene.th);
+    } else if (modo == Modo::Agresivo) {
+        // Se orienta hacia nosotros con giro limitado y embiste; cerca del borde,
+        // si no nos está empujando, frena y gira hacia el centro como un robot real
+        const double haciaRobot = mat::atan2(rob.y - ene.y, rob.x - ene.x);
+        double diff = mat::remainder(haciaRobot - ene.th, 2 * PI);
+        const double maxGiro = cfg.giroAgresivo * dt;
+        ene.th += diff > maxGiro ? maxGiro : diff < -maxGiro ? -maxGiro : diff;
+        double vel = cfg.velAgresivo;
+        const double r = mat::hypot(ene.x, ene.y);
+        const double dRobot = mat::hypot(rob.x - ene.x, rob.y - ene.y);
+        const double radial = (ene.x * mat::cos(ene.th) + ene.y * mat::sin(ene.th)) / (r > 1e-9 ? r : 1);
+        if (r > cfg.radio - 0.07 && radial > 0 && dRobot > cfg.radioChoque + cfg.radioEnemigo + 0.01) {
+            vel = 0;
+            const double haciaCentro = mat::atan2(-ene.y, -ene.x);
+            ene.th += mat::remainder(haciaCentro - ene.th, 2 * PI) * minimo(1.0, 8.0 * dt);
+        }
+        vdx = vel * mat::cos(ene.th);
+        vdy = vel * mat::sin(ene.th);
     }
     if (cfg.masaEnemigo <= 0) {
         ene.vx = vdx;
@@ -313,34 +340,37 @@ inline void avanzarEnemigo(double dt) {
     ene.y += ene.vy * dt;
 }
 
-// Choque inelástico entre los dos robots (como círculos): se separan y comparten
-// la velocidad a lo largo de la línea que une sus centros
-inline void resolverChoque() {
-    if (!ene.presente || cfg.masaEnemigo <= 0) return;
-    const double dx = ene.x - rob.x, dy = ene.y - rob.y;
-    const double d = mat::hypot(dx, dy);
-    const double minima = cfg.radioChoque + cfg.radioEnemigo;
-    if (d >= minima || d < 1e-9) return;
-    const double nx = dx / d, ny = dy / d;
-    const double mr = cfg.masa, me = cfg.masaEnemigo;
-    const double solape = minima - d;
-    rob.x -= nx * solape * me / (mr + me);
-    rob.y -= ny * solape * me / (mr + me);
-    ene.x += nx * solape * mr / (mr + me);
-    ene.y += ny * solape * mr / (mr + me);
-
-    const double v = (rob.vl + rob.vr) / 2;
-    const double c = mat::cos(rob.th) * nx + mat::sin(rob.th) * ny;  // rumbo · normal
-    const double vrn = v * c;
-    const double ven = ene.vx * nx + ene.vy * ny;
-    if (vrn <= ven) return;  // ya se separan
-    const double comun = (mr * vrn + me * ven) / (mr + me);
-    ene.vx += (comun - ven) * nx;
-    ene.vy += (comun - ven) * ny;
-    // El robot solo puede cambiar su velocidad hacia adelante (las ruedas no derrapan de lado)
-    const double dv = (comun - vrn) * c;
-    rob.vl += dv;
-    rob.vr += dv;
+// Contacto entre los dos robots (como círculos): una fuerza elástica con
+// amortiguación a lo largo de la línea que une sus centros. Sobre nuestro robot,
+// la parte a lo largo del rumbo se suma a la de las ruedas (lo frena o lo
+// arrastra) y la lateral solo lo desliza de lado si supera el agarre lateral
+// de las ruedas. El enemigo la compara con su propio agarre en avanzarEnemigo.
+inline void resolverChoque(double dt) {
+    rob.fExt = 0;
+    double fLat = 0;
+    if (ene.presente && cfg.masaEnemigo > 0) {
+        const double dx = ene.x - rob.x, dy = ene.y - rob.y;
+        const double d = mat::hypot(dx, dy);
+        const double minima = cfg.radioChoque + cfg.radioEnemigo;
+        if (d < minima && d > 1e-9) {
+            const double nx = dx / d, ny = dy / d;
+            const double c = mat::cos(rob.th), s = mat::sin(rob.th);
+            const double v = (rob.vl + rob.vr) / 2;
+            const double vrx = v * c - rob.vlat * s, vry = v * s + rob.vlat * c;
+            const double acercamiento = (vrx - ene.vx) * nx + (vry - ene.vy) * ny;
+            double f = cfg.rigidezChoque * (minima - d) + cfg.amortiguaChoque * acercamiento;
+            if (f < 0) f = 0;  // solo empuja, no tira
+            ene.vx += f * nx / cfg.masaEnemigo * dt;
+            ene.vy += f * ny / cfg.masaEnemigo * dt;
+            rob.fExt = -f * (nx * c + ny * s);
+            fLat = -f * (-nx * s + ny * c);
+        }
+    }
+    // Deslizamiento lateral con fricción de Coulomb de todas las ruedas
+    const double agarre = cfg.mu * cfg.masa * 9.81;
+    const double neta = conFriccion(fLat, rob.vlat, agarre);
+    const double nueva = rob.vlat + neta / cfg.masa * dt;
+    rob.vlat = (rob.vlat != 0 && nueva * rob.vlat < 0) ? 0 : nueva;
 }
 
 inline bool enemigoFuera() { return ene.presente && mat::hypot(ene.x, ene.y) > cfg.radio; }
@@ -384,9 +414,12 @@ inline void colocarAleatorio() {
 
     ene.presente = modo != Modo::Ninguno;
     if (ene.presente) {
-        const double r = mat::sqrt(azar.uniforme()) * (cfg.radio - 0.06);
-        const double a = azar.entre(-PI, PI);
-        ene = {true, r * mat::cos(a), r * mat::sin(a), azar.entre(-PI, PI)};
+        // Sin tocarse al empezar (con contacto el choque los dispararía)
+        do {
+            const double r = mat::sqrt(azar.uniforme()) * (cfg.radio - 0.06);
+            const double a = azar.entre(-PI, PI);
+            ene = {true, r * mat::cos(a), r * mat::sin(a), azar.entre(-PI, PI)};
+        } while (mat::hypot(ene.x - rob.x, ene.y - rob.y) < cfg.radioChoque + cfg.radioEnemigo + 0.02);
     }
 }
 
@@ -395,9 +428,9 @@ inline double paso() {
     costoLoopUs = 0;
     loop();
     const double dt = (costoLoopUs + cfg.sobrecostoLoopUs) / 1e6;
+    resolverChoque(dt);
     avanzarRobot(dt);
     avanzarEnemigo(dt);
-    resolverChoque();
     tiempoUs += dt * 1e6;
     return dt;
 }

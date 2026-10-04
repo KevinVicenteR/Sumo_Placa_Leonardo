@@ -3,16 +3,28 @@
 
 namespace {
 long magnitud(long v) { return v < 0 ? -v : v; }
+
+bool esBorde(TipoAccion tipo) {
+    return tipo == TipoAccion::EvadirBordeIzq || tipo == TipoAccion::EvadirBordeDer ||
+           tipo == TipoAccion::EvadirBordeAmbos;
+}
+
+// El sensor frontal ve al enemigo (las decisiones de ataque frontal lo implican)
+bool veDeFrente(const DecisionMovimiento& decision) {
+    return decision.enemigoFrente || decision.tipo == TipoAccion::AtaqueFrontal ||
+           decision.tipo == TipoAccion::AjusteIzq || decision.tipo == TipoAccion::AjusteDer;
+}
+
+bool esAtaque(TipoAccion tipo) {
+    return tipo == TipoAccion::AtaqueFrontal || tipo == TipoAccion::AjusteIzq ||
+           tipo == TipoAccion::AjusteDer || tipo == TipoAccion::CorregirIzq ||
+           tipo == TipoAccion::CorregirDer;
+}
 }
 
 void ControlMovimiento::mover(IMotor& motor, int izq, int der) {
     ordenIzq = izq;
     ordenDer = der;
-    sentidoEnSitio = (izq > 0 && der < 0) ? 1 : (izq < 0 && der > 0) ? -1 : 0;
-    if (sentidoEnSitio == 0 && (izq != 0 || der != 0)) {
-        huboAvance = true;
-        ultimoAvance = ahoraActual;
-    }
     motor.mover(izq, der);
 }
 
@@ -56,8 +68,12 @@ void ControlMovimiento::iniciarEvasion(int sentido, unsigned long duracionRet,
     // del sensor que tocó la línea: como el primero en tocarla es el que va por
     // delante en el giro, el frente queda mirando hacia dentro tras unos 80°.
     // (Avanzando no se aplica: el frente mira al borde y retroceder lo aleja.)
-    // Poco después de avanzar o retroceder, el robot aún se desliza por la inercia
-    evasionEnSitio = sentidoEnSitio != 0 && (!huboAvance || ahora - ultimoAvance >= TiempoAsentarGiro);
+    // Se decide por lo que el robot está haciendo realmente (velocidad estimada) y
+    // no por la última orden: justo tras un giro aún gira por la inercia aunque ya
+    // se le haya ordenado avanzar, y justo tras avanzar aún se desliza hacia delante
+    // aunque se le haya ordenado girar.
+    const long izq = estIzq / 256, der = estDer / 256;
+    evasionEnSitio = (izq > 0 && der < 0) || (izq < 0 && der > 0);
     if (evasionEnSitio) {
         duracionRet = 0;
         duracionGir = TiempoGiroEvasionEnSitio;
@@ -147,10 +163,12 @@ bool ControlMovimiento::continuarEvasion(const DecisionMovimiento& decision, IMo
 
 void ControlMovimiento::recordarLadoEnemigo(TipoAccion tipo) {
     switch (tipo) {
+    case TipoAccion::AjusteIzq:
     case TipoAccion::CorregirIzq:
     case TipoAccion::DefensaIzq:
         sentidoBusqueda = -1;
         break;
+    case TipoAccion::AjusteDer:
     case TipoAccion::CorregirDer:
     case TipoAccion::DefensaDer:
         sentidoBusqueda = 1;
@@ -165,15 +183,25 @@ void ControlMovimiento::buscar(IMotor& motor, unsigned long ahora) {
         buscando = true;
         // Solo se empieza avanzando si una evasión completa dejó al robot mirando
         // hacia el centro; si no, podría estar de frente al borde y se gira primero
-        inicioBusqueda = evasionCompleta ? ahora : ahora - TiempoAvanceBusqueda;
+        inicioBusqueda = evasionCompleta ? ahora : ahora - TiempoAvanceBusqueda - TiempoPausaBusqueda;
         evasionCompleta = false;
     }
-    // Ciclo: avance corto -> giro en el sitio
-    const unsigned long t = (ahora - inicioBusqueda) % (TiempoAvanceBusqueda + TiempoGiroBusqueda);
-    if (t < TiempoAvanceBusqueda) {
+    // Ciclo: avance corto -> pausa -> giro en el sitio -> pausa. Las pausas frenan
+    // el robot entre un movimiento y otro: al girar en el sitio las ruedas patinan
+    // en sentidos opuestos y no frenan el avance que traía, así que sin la primera
+    // el robot se desliza hacia delante durante todo el giro y puede acabar de
+    // lado sobre la línea, donde los sensores de piso no la ven. Sin la segunda
+    // empieza a avanzar aún girando por la inercia y sale en curva.
+    const unsigned long finAvance = TiempoAvanceBusqueda;
+    const unsigned long inicioGiro = finAvance + TiempoPausaBusqueda;
+    const unsigned long finGiro = inicioGiro + TiempoGiroBusqueda;
+    const unsigned long t = (ahora - inicioBusqueda) % (finGiro + TiempoPausaBusqueda);
+    if (t < finAvance) {
         mover(motor, VelocidadAvance, VelocidadAvance);
-    } else {
+    } else if (t >= inicioGiro && t < finGiro) {
         mover(motor, sentidoBusqueda * VelocidadGiroBusqueda, -sentidoBusqueda * VelocidadGiroBusqueda);
+    } else {
+        mover(motor, 0, 0);
     }
 }
 
@@ -202,7 +230,7 @@ bool ControlMovimiento::continuarGiroLateral(const DecisionMovimiento& decision,
     }
     const bool otroLado = (giroLateral < 0 && decision.tipo == TipoAccion::CorregirDer) ||
                           (giroLateral > 0 && decision.tipo == TipoAccion::CorregirIzq);
-    if (decision.tipo == TipoAccion::AtaqueFrontal || otroLado || ahora - inicioGiroLateral >= TiempoMaxGiroLateral) {
+    if (veDeFrente(decision) || otroLado || ahora - inicioGiroLateral >= TiempoMaxGiroLateral) {
         giroLateral = 0;
         return false;
     }
@@ -213,9 +241,7 @@ bool ControlMovimiento::continuarGiroLateral(const DecisionMovimiento& decision,
 // Si iba atacando y el enemigo desaparece (lo esquivó), frena en seco en vez de
 // seguir lanzado: a toda velocidad el robot no alcanzaría a parar al ver la línea
 bool ControlMovimiento::continuarParo(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
-    const bool atacando = decision.tipo == TipoAccion::AtaqueFrontal ||
-                          decision.tipo == TipoAccion::CorregirIzq ||
-                          decision.tipo == TipoAccion::CorregirDer;
+    const bool atacando = esAtaque(decision.tipo);
     if (decision.tipo == TipoAccion::Busqueda && veniaAtacando && calcularFreno(TiempoParoPerdida)) {
         enParo = true;
         inicioParo = ahora;
@@ -232,10 +258,44 @@ bool ControlMovimiento::continuarParo(const DecisionMovimiento& decision, IMotor
     return true;
 }
 
+// Enemigo pegado de frente mientras el robot está en la línea: si lo está
+// empujando o lo empujan a él, frenar o retroceder solo ayudaría al enemigo a
+// sacarlo. Sigue empujando a fondo hasta que lo pierda de vista.
+bool ControlMovimiento::resistirEnBorde(const DecisionMovimiento& decision, IMotor& motor) {
+    if (!ResistirEnBorde || !esBorde(decision.tipo) || !empujando || fase != Fase::Libre) {
+        return false;
+    }
+    buscando = false;
+    giroLateral = 0;
+    enParo = false;
+    veniaAtacando = true;
+    mover(motor, VelocidadEmpuje, VelocidadEmpuje);
+    return true;
+}
+
 void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
-    ahoraActual = ahora;
     estimarVelocidad(ahora);
     recordarLadoEnemigo(decision.tipo);
+
+    // Tiempo que lleva atacando sin interrupción: al principio se acerca a
+    // VelocidadAtaque y, ya encima del enemigo, empuja a VelocidadEmpuje. Cuenta
+    // cualquier ataque (frontal o a 45°), porque en pleno empuje el enemigo baila
+    // entre los sensores delanteros. Durante una evasión no cuenta aunque lo siga
+    // viendo: el robot no está avanzando hacia él.
+    const bool atacando = esAtaque(decision.tipo) || (esBorde(decision.tipo) && decision.enemigoFrente);
+    if (atacando && fase == Fase::Libre) {
+        if (!viendoFrente) {
+            viendoFrente = true;
+            inicioFrente = ahora;
+        }
+    } else {
+        viendoFrente = false;
+    }
+    empujando = viendoFrente && ahora - inicioFrente >= TiempoEmbestida;
+
+    if (resistirEnBorde(decision, motor)) {
+        return;
+    }
 
     switch (decision.tipo) {
     case TipoAccion::EvadirBordeIzq:
@@ -269,15 +329,22 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         return;
     }
 
+    const int ataque = empujando ? VelocidadEmpuje : VelocidadAtaque;
     switch (decision.tipo) {
     case TipoAccion::AtaqueFrontal:
-        mover(motor, VelocidadAtaque, VelocidadAtaque);
+        mover(motor, ataque, ataque);
+        break;
+    case TipoAccion::AjusteIzq:
+        mover(motor, ataque * PorcentajeAjuste / 100, ataque);
+        break;
+    case TipoAccion::AjusteDer:
+        mover(motor, ataque, ataque * PorcentajeAjuste / 100);
         break;
     case TipoAccion::CorregirIzq:
-        mover(motor, VelocidadCurva, VelocidadAtaque);
+        mover(motor, VelocidadCurva * ataque / VelocidadAtaque, ataque);
         break;
     case TipoAccion::CorregirDer:
-        mover(motor, VelocidadAtaque, VelocidadCurva);
+        mover(motor, ataque, VelocidadCurva * ataque / VelocidadAtaque);
         break;
     case TipoAccion::DefensaIzq:
         girarHaciaLado(motor, -1);

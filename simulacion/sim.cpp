@@ -33,17 +33,29 @@ struct Resultado {
     double distancia = 0;        // m recorridos
     bool gano = false;           // empujó al enemigo fuera del dohyo
     double tGano = -1;
+    char causa[16] = "-";        // qué hacía el robot al caer
+    bool empujado = false;       // cayó con el enemigo encima
 };
+
+// Clasifica la orden de motores: avance, retroceso, giro en el sitio, curva o freno
+const char* tipoOrden(int izq, int der) {
+    if (izq == 0 && der == 0) return "quieto";
+    if (izq > 0 && der > 0) return izq == der ? "avance" : "curva";
+    if (izq < 0 && der < 0) return izq == der ? "retroceso" : "freno";
+    if ((izq > 0 && der < 0) || (izq < 0 && der > 0)) return "giro";
+    return "pivote";
+}
 
 void imprimirCabecera() {
     std::printf("semilla,modo,cayo,t_caida,margen_min_cm,max_salida_cuerpo_cm,evasiones,"
-                "t_primer_frontal,frac_frontal,distancia_m,gano,t_gano\n");
+                "t_primer_frontal,frac_frontal,distancia_m,gano,t_gano,causa,empujado\n");
 }
 
 const char* nombreModo(Modo m) {
     switch (m) {
     case Modo::Estatico: return "estatico";
     case Modo::Errante: return "errante";
+    case Modo::Agresivo: return "agresivo";
     default: return "ninguno";
     }
 }
@@ -58,6 +70,7 @@ Resultado correr(int semilla, FILE* trayectoria) {
     bool lineaAntes = false;
     double tiempoFrontal = 0;
     double proximaMuestra = 0;
+    double ultimoContacto = -10;
 
     while (true) {
         const double t = (tiempoUs - inicioUs) / 1e6;
@@ -82,14 +95,20 @@ Resultado correr(int semilla, FILE* trayectoria) {
 
         if (trayectoria && t >= proximaMuestra) {
             proximaMuestra += 0.01;
-            std::fprintf(trayectoria, "%.3f,%.4f,%.4f,%.4f,%.4f,%.4f,%d,%d,%d\n", t, rob.x, rob.y,
-                         rob.th, ene.presente ? ene.x : 0.0, ene.presente ? ene.y : 0.0,
-                         comandoIzq(), comandoDer(), linea ? 1 : 0);
+            std::fprintf(trayectoria, "%.3f,%.4f,%.4f,%.4f,%.4f,%.4f,%d,%d,%d,%.3f,%.3f,%.2f\n", t, rob.x,
+                         rob.y, rob.th, ene.presente ? ene.x : 0.0, ene.presente ? ene.y : 0.0,
+                         comandoIzq(), comandoDer(), linea ? 1 : 0, (rob.vl + rob.vr) / 2, rob.vlat,
+                         rob.fExt);
         }
 
+        // Contacto reciente con el enemigo: la caída pudo ser por empujón
+        if (ene.presente && mat::hypot(ene.x - rob.x, ene.y - rob.y) < cfg.radioChoque + cfg.radioEnemigo + 0.005)
+            ultimoContacto = t;
         if (cayo()) {
             res.cayo = true;
             res.tCaida = t;
+            std::snprintf(res.causa, sizeof res.causa, "%s", tipoOrden(comandoIzq(), comandoDer()));
+            res.empujado = t - ultimoContacto < 0.3;
             break;
         }
         if (enemigoFuera()) {
@@ -104,7 +123,7 @@ Resultado correr(int semilla, FILE* trayectoria) {
 
 void uso() {
     std::fprintf(stderr,
-                 "uso: sim [--modo ninguno|estatico|errante] [--n N] [--semilla S]\n"
+                 "uso: sim [--modo ninguno|estatico|errante|agresivo] [--n N] [--semilla S]\n"
                  "         [--dur s] [--vmax m/s] [--mu μ] [--tau s] [--rango m]\n"
                  "         [--rpm rpm --diam m --masa kg --par kg·cm]  (modelo de motor DC)\n"
                  "         [--bateria Vbat/Vmotor] [--friccion-caja f] [--friccion-giro f]\n"
@@ -124,7 +143,8 @@ int main(int argc, char** argv) {
         if (!v) { uso(); return 1; }
         if (a == "--modo") {
             const std::string m = v;
-            modo = m == "estatico" ? Modo::Estatico : m == "errante" ? Modo::Errante : Modo::Ninguno;
+            modo = m == "estatico" ? Modo::Estatico : m == "errante" ? Modo::Errante
+                 : m == "agresivo" ? Modo::Agresivo : Modo::Ninguno;
         } else if (a == "--n") n = std::atoi(v);
         else if (a == "--semilla") semilla = std::atoi(v);
         else if (a == "--dur") cfg.duracion = std::atof(v);
@@ -147,6 +167,7 @@ int main(int argc, char** argv) {
         else if (a == "--rango") cfg.rangoEnemigo = std::atof(v);
         else if (a == "--masa-enemigo") cfg.masaEnemigo = std::atof(v);
         else if (a == "--agarre-enemigo") cfg.agarreEnemigo = std::atof(v);
+        else if (a == "--vel-agresivo") cfg.velAgresivo = std::atof(v);
         else if (a == "--tray") rutaTray = v;
         else { uso(); return 1; }
         i++;
@@ -161,10 +182,10 @@ int main(int argc, char** argv) {
             FILE* tray = (rutaTray && i == 0) ? std::fopen(rutaTray, "w") : nullptr;
             const Resultado r = correr(s, tray);
             if (tray) std::fclose(tray);
-            std::printf("%d,%s,%d,%.3f,%.2f,%.2f,%d,%.3f,%.3f,%.2f,%d,%.3f\n", s, nombreModo(modo),
+            std::printf("%d,%s,%d,%.3f,%.2f,%.2f,%d,%.3f,%.3f,%.2f,%d,%.3f,%s,%d\n", s, nombreModo(modo),
                         r.cayo ? 1 : 0, r.tCaida, r.margenMin * 100, r.maxSalidaCuerpo * 100,
                         r.evasiones, r.tPrimerFrontal, r.fracFrontal, r.distancia,
-                        r.gano ? 1 : 0, r.tGano);
+                        r.gano ? 1 : 0, r.tGano, r.causa, r.empujado ? 1 : 0);
             std::fflush(stdout);
             _exit(0);
         }

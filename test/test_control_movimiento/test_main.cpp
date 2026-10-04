@@ -75,10 +75,23 @@ void test_busqueda_inicial_gira_y_luego_avanza(void) {
     c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoGiroBusqueda - 1);
     assertGiroBusqueda(m, 1);
 
+    // Pausa para que se asiente el giro antes de avanzar
     c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoGiroBusqueda);
+    if (TiempoPausaBusqueda > 0) {
+        assertMovimiento(m, 0, 0);
+    }
+
+    const unsigned long avance = 1000 + TiempoGiroBusqueda + TiempoPausaBusqueda;
+    c.ejecutar({TipoAccion::Busqueda}, m, avance);
     assertAvanceBusqueda(m);
 
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoGiroBusqueda + TiempoAvanceBusqueda);
+    // Otra pausa para frenar el avance antes de girar
+    c.ejecutar({TipoAccion::Busqueda}, m, avance + TiempoAvanceBusqueda);
+    if (TiempoPausaBusqueda > 0) {
+        assertMovimiento(m, 0, 0);
+    }
+
+    c.ejecutar({TipoAccion::Busqueda}, m, avance + TiempoAvanceBusqueda + TiempoPausaBusqueda);
     assertGiroBusqueda(m, 1);
 }
 
@@ -129,8 +142,9 @@ void test_paro_se_cancela_si_vuelve_a_ver_al_enemigo(void) {
 }
 
 // Al ver la línea avanzando a toda velocidad: freno de cada rueda -> retroceso -> freno -> giro
-static const unsigned long InicioRetroceso = TiempoFrenadoRuedas;
-static const unsigned long InicioGiro = TiempoFrenadoRuedas + TiempoRetroceso + TiempoFrenado;
+// (el freno dura en proporción a la velocidad: a VelocidadAtaque, no a la máxima)
+static const unsigned long InicioRetroceso = TiempoFrenadoRuedas * VelocidadAtaque / VelocidadMaxima;
+static const unsigned long InicioGiro = InicioRetroceso + TiempoRetroceso + TiempoFrenado;
 
 void test_evadir_borde_izq_frena_retrocede_gira_derecha_y_avanza_sin_bloquear(void) {
     ControlMovimiento c;
@@ -252,7 +266,7 @@ void test_linea_al_girar_tras_asentarse_gira_sin_retroceder(void) {
     c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
     c.ejecutar({TipoAccion::Busqueda}, m, t + 1 + TiempoParoPerdida);
     assertGiroBusqueda(m, 1);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t + 1 + TiempoAsentarGiro);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t + 1 + TiempoParoPerdida + 2 * TauRuedas);
     assertGiroEvasion(m, 1);
 }
 
@@ -361,6 +375,52 @@ void test_enemigo_frontal_no_aborta_retroceso(void) {
     assertRetrocede(m);
 }
 
+
+void test_ajuste_centra_al_enemigo_sin_dejar_de_atacar(void) {
+    assertAccionSimple(TipoAccion::AjusteIzq, VelocidadAtaque * PorcentajeAjuste / 100, VelocidadAtaque);
+    assertAccionSimple(TipoAccion::AjusteDer, VelocidadAtaque, VelocidadAtaque * PorcentajeAjuste / 100);
+}
+
+void test_empuja_a_fondo_tras_atacar_sin_interrupcion(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    // El enemigo baila entre el frontal y los de 45°: sigue contando como ataque
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000);
+    c.ejecutar({TipoAccion::CorregirIzq}, m, 1000 + TiempoEmbestida / 2);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000 + TiempoEmbestida - 1);
+    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000 + TiempoEmbestida);
+    assertMovimiento(m, VelocidadEmpuje, VelocidadEmpuje);
+    c.ejecutar({TipoAccion::AjusteDer}, m, 1000 + TiempoEmbestida + 1);
+    assertMovimiento(m, VelocidadEmpuje, VelocidadEmpuje * PorcentajeAjuste / 100);
+}
+
+void test_el_empuje_empieza_de_cero_tras_perder_al_enemigo(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000);
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoEmbestida / 2);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000 + TiempoEmbestida);
+    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+}
+
+void test_linea_justo_tras_girar_gira_sin_retroceder_aunque_ya_avance(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    // Gira en el sitio y justo después se le ordena avanzar: por la inercia las
+    // ruedas aún giran en sentidos opuestos, así que no debe retroceder
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TauRuedas);
+    assertGiroBusqueda(m, 1);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000 + TauRuedas + 1);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1000 + TauRuedas + 2);
+    assertGiroEvasion(m, 1);
+}
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_acciones_simples_velocidades_correctas);
@@ -383,5 +443,9 @@ int main(int, char**) {
     RUN_TEST(test_giro_lateral_termina_por_tiempo);
     RUN_TEST(test_linea_interrumpe_el_giro_lateral);
     RUN_TEST(test_enemigo_frontal_no_aborta_retroceso);
+    RUN_TEST(test_ajuste_centra_al_enemigo_sin_dejar_de_atacar);
+    RUN_TEST(test_empuja_a_fondo_tras_atacar_sin_interrupcion);
+    RUN_TEST(test_el_empuje_empieza_de_cero_tras_perder_al_enemigo);
+    RUN_TEST(test_linea_justo_tras_girar_gira_sin_retroceder_aunque_ya_avance);
     return UNITY_END();
 }

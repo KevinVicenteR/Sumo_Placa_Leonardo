@@ -5,7 +5,7 @@ ruta, ultimos = sys.argv[1], float(sys.argv[2]) if len(sys.argv) > 2 else 2.0
 filas = list(csv.reader(open(ruta)))
 tfin = float(filas[-1][0])
 prev = None
-for t, x, y, th, ex, ey, l, r, lin in filas:
+for t, x, y, th, ex, ey, l, r, lin, *_ in filas:
     if float(t) < tfin - ultimos:
         continue
     clave = (l, r, lin)

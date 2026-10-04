@@ -38,9 +38,10 @@ void setup() {
   hardware.inicializarPines();
   motor.detener();
 
-  // El robot arranca sobre el negro: se aprovecha la espera reglamentaria para calibrar
-  percepcion.calibrarPiso();
   delay(TiempoInicioReglamentario);
+  // Se calibra al final de la espera: para entonces el robot ya está colocado
+  // sobre el negro, aunque se haya encendido en la mano
+  percepcion.calibrarPiso();
 }
 
 void loop() {

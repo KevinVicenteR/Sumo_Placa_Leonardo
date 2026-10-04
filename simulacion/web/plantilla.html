@@ -1,0 +1,500 @@
+<title>Dohyo Sumo Leonardo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: dohyo grande a la izquierda donde se arrastran robot y enemigo; panel de control a la derecha (debajo en móvil) */
+:root {
+  --bg: #eef0f2;
+  --surface: #ffffff;
+  --ink: #16191d;
+  --muted: #5d6670;
+  --rule: #d5d9de;
+  --robot: #1f6fb2;
+  --antes: #c2541b;
+  --enemigo: #8a9099;
+  --danger: #b42318;
+  --ok: #19744a;
+  --warn: #9a6700;
+  --chip-bg: #f3f4f6;
+  --f-display: "Zen Kaku Gothic New", "Hiragino Sans", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121418; --surface: #1b1e23; --ink: #e8eaed; --muted: #9aa3ad; --rule: #2e333a;
+    --robot: #5fa8e6; --antes: #ef8a4f; --enemigo: #9aa1aa; --danger: #f07a6e; --ok: #4cc38a; --warn: #e3b341; --chip-bg: #24282e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121418; --surface: #1b1e23; --ink: #e8eaed; --muted: #9aa3ad; --rule: #2e333a;
+  --robot: #5fa8e6; --antes: #ef8a4f; --enemigo: #9aa1aa; --danger: #f07a6e; --ok: #4cc38a; --warn: #e3b341; --chip-bg: #24282e;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.pagina { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 22px; }
+header { display: grid; gap: 6px; }
+.ceja { font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--f-display); font-weight: 900; font-size: clamp(26px, 4vw, 38px); line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--f-display); font-weight: 700; font-size: 16px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.lead { color: var(--muted); }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+.mesa { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 820px) { .mesa { grid-template-columns: 1fr; } }
+.tablero { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 12px; display: grid; gap: 10px; min-width: 0; }
+canvas { width: 100%; max-width: 100%; aspect-ratio: 1; display: block; touch-action: none; cursor: grab; border-radius: 8px; }
+canvas.arrastrando { cursor: grabbing; }
+.estado { display: flex; justify-content: space-between; align-items: center; gap: 8px 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.estado b { color: var(--ink); font-weight: 500; }
+.chip { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--chip-bg); color: var(--ink); }
+.chip.cayo { color: var(--danger); }
+.chip.dentro { color: var(--ok); }
+.chip.aviso { color: var(--warn); }
+
+.panel { display: grid; gap: 14px; min-width: 0; }
+.grupo { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 14px; display: grid; gap: 12px; min-width: 0; }
+.fila { display: grid; gap: 6px; }
+.fila > span { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.segmentado { display: flex; background: var(--chip-bg); border: 1px solid var(--rule); border-radius: 8px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+.segmentado button { flex: 1 1 auto; font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--muted); padding: 6px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.segmentado button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+.botones { display: flex; gap: 8px; flex-wrap: wrap; }
+.boton { font: inherit; font-weight: 600; font-size: 14px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+.boton.principal { background: var(--robot); border-color: var(--robot); color: #fff; }
+.boton:disabled { opacity: .5; cursor: default; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--robot); outline-offset: 2px; }
+input[type="range"] { width: 100%; accent-color: var(--robot); }
+.ayuda { font-size: 13px; color: var(--muted); }
+.resultado { font-size: 14px; display: grid; gap: 8px; }
+.semillas { display: flex; flex-wrap: wrap; gap: 6px; }
+.semillas button { font: inherit; font-family: var(--f-mono); font-size: 12px; border: 1px solid var(--rule); background: var(--chip-bg); color: var(--danger); padding: 3px 8px; border-radius: 6px; cursor: pointer; }
+details summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+details[open] summary { margin-bottom: 10px; }
+code { font-family: var(--f-mono); font-size: 13px; }
+</style>
+
+<div class="pagina">
+  <header>
+    <div class="ceja">Mini sumo · dohyo Ø 70 cm · borde blanco 1 cm · 750 rpm · LiPo 2S · ruedas JSUMO 3 cm · 300 g</div>
+    <h1>Dohyo Sumo Leonardo</h1>
+    <p class="lead">Arrastra el robot (azul) y el enemigo a donde quieras. Para girar el robot, arrastra el punto que tiene delante o usa el control de orientación. Lo que corre aquí es tu firmware real de <code>src/</code> compilado a WebAssembly, con la misma física que el simulador de consola.</p>
+  </header>
+
+  <div class="mesa">
+    <div class="tablero">
+      <canvas id="dohyo" aria-label="Dohyo: arrastra el robot y el enemigo para colocarlos"></canvas>
+      <div class="estado">
+        <span class="chip" id="chip">Coloca el robot</span>
+        <span>Tiempo: <b class="num" id="reloj">0,00 s</b></span>
+        <span>Motores: <b class="num" id="motores">— / —</b></span>
+        <span>Acción: <b id="accion">—</b></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="grupo">
+        <div class="fila">
+          <span>Firmware</span>
+          <div class="segmentado" id="firmware" role="group" aria-label="Firmware">
+            <button type="button" data-v="nuevo" aria-pressed="true">Nuevo</button>
+            <button type="button" data-v="anterior" aria-pressed="false">Anterior</button>
+          </div>
+        </div>
+        <div class="fila">
+          <span>Enemigo</span>
+          <div class="segmentado" id="enemigo" role="group" aria-label="Enemigo">
+            <button type="button" data-v="0" aria-pressed="false">Sin enemigo</button>
+            <button type="button" data-v="1" aria-pressed="true">Quieto</button>
+            <button type="button" data-v="2" aria-pressed="false">Se mueve</button>
+          </div>
+        </div>
+        <label class="fila" for="orientacion">
+          <span>Orientación del robot: <b class="num" id="grados">0°</b></span>
+          <input type="range" id="orientacion" min="-180" max="180" step="1" value="90">
+        </label>
+        <div class="fila">
+          <span>Velocidad de la repetición</span>
+          <div class="segmentado" id="velocidad" role="group" aria-label="Velocidad">
+            <button type="button" data-v="0.25" aria-pressed="false">¼×</button>
+            <button type="button" data-v="0.5" aria-pressed="false">½×</button>
+            <button type="button" data-v="1" aria-pressed="true">1×</button>
+          </div>
+        </div>
+        <div class="botones">
+          <button type="button" class="boton principal" id="iniciar">Iniciar combate</button>
+          <button type="button" class="boton" id="recolocar">Volver a colocar</button>
+          <button type="button" class="boton" id="azar">Posición al azar</button>
+        </div>
+        <p class="ayuda">El combate empieza tras los 5 s reglamentarios, con el negro ya calibrado, y dura 30 s.</p>
+      </div>
+
+      <div class="grupo">
+        <details>
+          <summary>Robot y entorno</summary>
+          <div style="display:grid;gap:12px">
+            <div class="fila"><span>Batería</span>
+              <div class="segmentado" data-param="bateria" role="group" aria-label="Batería">
+                <button type="button" data-v="1" aria-pressed="false">6 V</button>
+                <button type="button" data-v="1.23" aria-pressed="true">7,4 V</button>
+                <button type="button" data-v="1.4" aria-pressed="false">8,4 V (cargada)</button>
+              </div></div>
+            <div class="fila"><span>Motores</span>
+              <div class="segmentado" data-param="motores" role="group" aria-label="Motores">
+                <button type="button" data-v="0.08,0.3" aria-pressed="false">Suaves</button>
+                <button type="button" data-v="0.15,0.5" aria-pressed="true">Normales</button>
+                <button type="button" data-v="0.3,1.0" aria-pressed="false">Duros</button>
+              </div></div>
+            <div class="fila"><span>Ruedas</span>
+              <div class="segmentado" data-param="ruedas" role="group" aria-label="Diámetro de rueda">
+                <button type="button" data-v="0.025" aria-pressed="false">2,5 cm</button>
+                <button type="button" data-v="0.03" aria-pressed="true">3 cm</button>
+                <button type="button" data-v="0.035" aria-pressed="false">3,5 cm</button>
+              </div></div>
+            <div class="fila"><span>Sensor de piso</span>
+              <div class="segmentado" data-param="piso" role="group" aria-label="Sensor de piso">
+                <button type="button" data-v="900,100,1000" aria-pressed="true">Normal</button>
+                <button type="button" data-v="150,850,150" aria-pressed="false">Invertido</button>
+                <button type="button" data-v="700,420,900" aria-pressed="false">Poco contraste</button>
+              </div></div>
+            <div class="fila"><span>Alrededor del dohyo</span>
+              <div class="segmentado" data-param="pared" role="group" aria-label="Objetos alrededor">
+                <button type="button" data-v="0" aria-pressed="true">Nada</button>
+                <button type="button" data-v="0.5" aria-pressed="false">Pared a 15 cm</button>
+              </div></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="grupo">
+        <h2>Prueba masiva</h2>
+        <p class="ayuda">Prueba posiciones y orientaciones al azar (robot entero dentro del dohyo, cerca del borde incluido) con el firmware, el enemigo y el robot elegidos arriba.</p>
+        <div class="botones">
+          <button type="button" class="boton" id="masiva">Probar 200 posiciones</button>
+        </div>
+        <div class="resultado" id="resultado" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Firmware real (src/) y física, compilados a WebAssembly y traducidos a JavaScript.
+// Cada llamada crea un firmware recién encendido, con su memoria limpia.
+const FIRMWARE = {
+  nuevo: __SIM_NUEVO__,
+  anterior: __SIM_ANTERIOR__,
+};
+const R = 0.35, BORDE = 0.01, LARGO = 0.10, SX = 0.045, SY = 0.04, DURACION = 30;
+const env = { sin: Math.sin, cos: Math.cos, atan2: Math.atan2, log: Math.log };
+
+const estado = {
+  firmware: "nuevo", modoEnemigo: 1, vel: 1,
+  robot: { x: 0, y: -0.15, th: Math.PI / 2 },
+  enemigo: { x: 0, y: 0.15, th: -Math.PI / 2 },
+  params: { bateria: "1.23", motores: "0.15,0.5", ruedas: "0.03", piso: "900,100,1000", pared: "0" },
+  fase: "colocar",   // colocar | combate | fin
+  semilla: 1, sim: null, t: 0, rastro: [], cayoEn: null,
+  reproducir: false,  // true: repetir exactamente un sorteo (posición al azar o caída de la prueba masiva)
+};
+
+const $ = id => document.getElementById(id);
+const canvas = $("dohyo"), ctx = canvas.getContext("2d");
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (x, d = 2) => x.toFixed(d).replace(".", ",");
+
+// ---------------------------------------------------------------- simulación
+function configurar(e) {
+  const p = estado.params;
+  const [fc, fg] = p.motores.split(",").map(Number);
+  const [n, b, f] = p.piso.split(",").map(Number);
+  e.sim_fijar(1, Number(p.ruedas)); e.sim_fijar(3, Number(p.bateria));
+  e.sim_fijar(4, fc); e.sim_fijar(5, fg);
+  e.sim_fijar(6, n); e.sim_fijar(7, b); e.sim_fijar(8, f);
+  e.sim_fijar(9, Number(p.pared));
+}
+
+async function nuevaInstancia() {
+  const e = FIRMWARE[estado.firmware](env);
+  e.__wasm_call_ctors();
+  return e;
+}
+
+async function iniciar() {
+  const e = await nuevaInstancia();
+  e.sim_reiniciar(estado.semilla);
+  configurar(e);
+  const r = estado.robot, en = estado.enemigo;
+  if (estado.reproducir) {
+    // Mismo sorteo que lo generó, para que el ruido y el enemigo se repitan igual
+    e.sim_fijar(11, 0.34); e.sim_aleatorio(estado.modoEnemigo);
+  } else {
+    e.sim_robot(r.x, r.y, r.th);
+    e.sim_enemigo(estado.modoEnemigo, en.x, en.y, en.th);
+  }
+  e.sim_setup();
+  estado.sim = e; estado.t = 0; estado.rastro = [[r.x, r.y]]; estado.cayoEn = null; estado.fase = "combate";
+  actualizarBotones();
+}
+
+function avanzar(dt) {
+  const e = estado.sim;
+  estado.t = Math.min(DURACION, estado.t + dt);
+  const cayo = e.sim_avanzar(estado.t);
+  estado.rastro.push([e.sim_x(), e.sim_y()]);
+  if (estado.rastro.length > 400) estado.rastro.shift();
+  if (cayo) { estado.cayoEn = e.sim_tiempo(); estado.fase = "fin"; }
+  else if (estado.t >= DURACION) estado.fase = "fin";
+  if (estado.fase === "fin") actualizarBotones();
+}
+
+// ---------------------------------------------------------------- geometría
+function aMundo(o, rx, ry) {
+  const c = Math.cos(o.th), s = Math.sin(o.th);
+  return [o.x + c * rx - s * ry, o.y + s * rx + c * ry];
+}
+function cuerpoDentro(o) {
+  return [[-1, -1], [-1, 1], [1, -1], [1, 1]].every(([a, b]) => Math.hypot(...aMundo(o, a * LARGO / 2, b * LARGO / 2)) <= R);
+}
+function sensorSobreLinea(o) {
+  return [SY, -SY].some(sy => { const r = Math.hypot(...aMundo(o, SX, sy)); return r > R - BORDE - 0.003 && r <= R + 0.003; });
+}
+
+// ---------------------------------------------------------------- dibujo
+function escala() {
+  const w = canvas.clientWidth;
+  return { w, s: w / 0.84, c: w / 2 };
+}
+function dibujar() {
+  const dpr = window.devicePixelRatio || 1;
+  const { w, s, c } = escala();
+  if (canvas.width !== Math.round(w * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(w * dpr); }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const X = x => c + x * s, Y = y => c - y * s;
+
+  ctx.fillStyle = css("--surface"); ctx.fillRect(0, 0, w, w);
+  if (Number(estado.params.pared) > 0) {
+    ctx.setLineDash([4, 6]); ctx.strokeStyle = css("--muted"); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(c, c, Number(estado.params.pared) * s, 0, 2 * Math.PI); ctx.stroke(); ctx.setLineDash([]);
+  }
+  ctx.beginPath(); ctx.arc(c, c, R * s, 0, 2 * Math.PI); ctx.fillStyle = "#f7f7f5"; ctx.fill();
+  ctx.lineWidth = 1; ctx.strokeStyle = css("--rule"); ctx.stroke();
+  ctx.beginPath(); ctx.arc(c, c, (R - BORDE) * s, 0, 2 * Math.PI); ctx.fillStyle = "#101113"; ctx.fill();
+  ctx.fillStyle = "#6b4a2b";  // shikiri-sen
+  ctx.fillRect(X(-0.05), Y(0.05), 0.01 * s, 0.1 * s); ctx.fillRect(X(0.04), Y(0.05), 0.01 * s, 0.1 * s);
+
+  const color = css(estado.firmware === "nuevo" ? "--robot" : "--antes");
+  let robot = estado.robot, enemigo = estado.enemigo, lin = false;
+  if (estado.sim) {
+    const e = estado.sim;
+    robot = { x: e.sim_x(), y: e.sim_y(), th: e.sim_th() };
+    enemigo = { x: e.sim_ex(), y: e.sim_ey() };
+    lin = e.sim_linea() === 1;
+    ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = color;
+    const r = estado.rastro;
+    for (let k = 1; k < r.length; k++) {
+      ctx.globalAlpha = 0.08 + 0.6 * k / r.length;
+      ctx.beginPath(); ctx.moveTo(X(r[k - 1][0]), Y(r[k - 1][1])); ctx.lineTo(X(r[k][0]), Y(r[k][1])); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  if (estado.modoEnemigo !== 0) {
+    ctx.beginPath(); ctx.arc(X(enemigo.x), Y(enemigo.y), 0.05 * s, 0, 2 * Math.PI);
+    ctx.fillStyle = css("--enemigo"); ctx.fill(); ctx.strokeStyle = "#c9ced4"; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+
+  const caido = estado.cayoEn !== null;
+  ctx.save();
+  ctx.translate(X(robot.x), Y(robot.y)); ctx.rotate(-robot.th);
+  ctx.globalAlpha = caido ? 0.55 : 1;
+  ctx.fillStyle = color; ctx.fillRect(-0.05 * s, -0.05 * s, 0.1 * s, 0.1 * s);
+  ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.fillRect(0.036 * s, -0.05 * s, 0.014 * s, 0.1 * s);
+  for (const sy of [-SY, SY]) {
+    ctx.beginPath(); ctx.arc(SX * s, sy * s, 0.011 * s, 0, 2 * Math.PI);
+    ctx.fillStyle = lin ? "#ff3b30" : "#1d2026"; ctx.fill();
+  }
+  ctx.restore();
+
+  if (estado.fase === "colocar") {
+    // Asa para girar el robot
+    const [hx, hy] = aMundo(estado.robot, 0.09, 0);
+    ctx.strokeStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(X(estado.robot.x), Y(estado.robot.y)); ctx.lineTo(X(hx), Y(hy)); ctx.stroke();
+    ctx.beginPath(); ctx.arc(X(hx), Y(hy), 7, 0, 2 * Math.PI); ctx.fillStyle = css("--surface"); ctx.fill(); ctx.stroke();
+  }
+  if (caido) {
+    ctx.strokeStyle = css("--danger"); ctx.lineWidth = 3;
+    const x = X(robot.x), y = Y(robot.y), r = 0.07 * s;
+    ctx.beginPath(); ctx.moveTo(x - r, y - r); ctx.lineTo(x + r, y + r); ctx.moveTo(x + r, y - r); ctx.lineTo(x - r, y + r); ctx.stroke();
+  }
+  actualizarEstado();
+}
+
+function accion(l, r) {
+  if (l === 0 && r === 0) return "Frena";
+  if (l < 0 && r < 0) return "Retrocede";
+  if (l > 0 && r < 0) return "Gira a la derecha";
+  if (l < 0 && r > 0) return "Gira a la izquierda";
+  if (l === r) return "Avanza";
+  return l > r ? "Curva a la derecha" : "Curva a la izquierda";
+}
+
+function actualizarEstado() {
+  const chip = $("chip");
+  $("reloj").textContent = fmt(estado.t) + " s";
+  if (estado.fase === "colocar") {
+    const r = estado.robot;
+    if (!cuerpoDentro(r)) { chip.textContent = "El robot sobresale del dohyo"; chip.className = "chip aviso"; }
+    else if (sensorSobreLinea(r)) { chip.textContent = "Un sensor de piso está sobre la línea"; chip.className = "chip aviso"; }
+    else { chip.textContent = "Listo para empezar"; chip.className = "chip"; }
+    $("motores").textContent = "— / —"; $("accion").textContent = "—";
+    return;
+  }
+  const e = estado.sim;
+  if (estado.cayoEn !== null) { chip.textContent = "Cayó a los " + fmt(estado.cayoEn, 2) + " s"; chip.className = "chip cayo"; }
+  else if (estado.fase === "fin") { chip.textContent = "Aguantó los 30 s dentro"; chip.className = "chip dentro"; }
+  else { chip.textContent = "En combate"; chip.className = "chip dentro"; }
+  const l = e.sim_izq(), r = e.sim_der();
+  $("motores").textContent = l + " / " + r;
+  $("accion").textContent = estado.cayoEn !== null ? "Fuera del dohyo" : accion(l, r);
+}
+
+function actualizarBotones() {
+  $("iniciar").textContent = estado.fase === "combate" ? "En combate…" : estado.fase === "fin" ? "Repetir combate" : "Iniciar combate";
+  $("iniciar").disabled = estado.fase === "combate";
+  $("orientacion").disabled = estado.fase !== "colocar";
+}
+
+// ---------------------------------------------------------------- arrastre
+let arrastre = null;
+function aDohyo(ev) {
+  const rect = canvas.getBoundingClientRect(), { s, c } = escala();
+  return [(ev.clientX - rect.left - c) / s, -(ev.clientY - rect.top - c) / s];
+}
+canvas.addEventListener("pointerdown", ev => {
+  if (estado.fase !== "colocar") volverAColocar();
+  const [x, y] = aDohyo(ev);
+  const [hx, hy] = aMundo(estado.robot, 0.09, 0);
+  const tol = 14 / escala().s;
+  if (Math.hypot(x - hx, y - hy) < tol + 0.005) arrastre = { tipo: "girar" };
+  else if (Math.hypot(x - estado.robot.x, y - estado.robot.y) < 0.075) arrastre = { tipo: "robot", dx: estado.robot.x - x, dy: estado.robot.y - y };
+  else if (estado.modoEnemigo !== 0 && Math.hypot(x - estado.enemigo.x, y - estado.enemigo.y) < 0.06) arrastre = { tipo: "enemigo", dx: estado.enemigo.x - x, dy: estado.enemigo.y - y };
+  else return;
+  estado.reproducir = false;
+  canvas.setPointerCapture(ev.pointerId); canvas.classList.add("arrastrando");
+});
+canvas.addEventListener("pointermove", ev => {
+  if (!arrastre) return;
+  const [x, y] = aDohyo(ev);
+  const limitar = (px, py, max) => { const r = Math.hypot(px, py); return r > max ? [px * max / r, py * max / r] : [px, py]; };
+  if (arrastre.tipo === "girar") { estado.robot.th = Math.atan2(y - estado.robot.y, x - estado.robot.x); sincronizarOrientacion(); }
+  else if (arrastre.tipo === "robot") { [estado.robot.x, estado.robot.y] = limitar(x + arrastre.dx, y + arrastre.dy, R); }
+  else { [estado.enemigo.x, estado.enemigo.y] = limitar(x + arrastre.dx, y + arrastre.dy, R - 0.05); }
+  dibujar();
+});
+const soltar = () => { arrastre = null; canvas.classList.remove("arrastrando"); };
+canvas.addEventListener("pointerup", soltar);
+canvas.addEventListener("pointercancel", soltar);
+
+function sincronizarOrientacion() {
+  const g = Math.round(estado.robot.th * 180 / Math.PI);
+  $("orientacion").value = g; $("grados").textContent = g + "°";
+}
+$("orientacion").addEventListener("input", ev => {
+  estado.reproducir = false;
+  estado.robot.th = Number(ev.target.value) * Math.PI / 180; $("grados").textContent = ev.target.value + "°"; dibujar();
+});
+
+function volverAColocar() {
+  estado.fase = "colocar"; estado.sim = null; estado.t = 0; estado.cayoEn = null; estado.rastro = [];
+  actualizarBotones(); dibujar();
+}
+
+// ---------------------------------------------------------------- controles
+function segmentado(el, alCambiar) {
+  el.addEventListener("click", ev => {
+    const b = ev.target.closest("button"); if (!b) return;
+    for (const x of el.children) x.setAttribute("aria-pressed", x === b ? "true" : "false");
+    alCambiar(b.dataset.v);
+  });
+}
+segmentado($("firmware"), v => { estado.firmware = v; volverAColocar(); });
+segmentado($("enemigo"), v => { estado.modoEnemigo = Number(v); estado.reproducir = false; volverAColocar(); });
+segmentado($("velocidad"), v => { estado.vel = Number(v); });
+document.querySelectorAll("[data-param]").forEach(el => segmentado(el, v => { estado.params[el.dataset.param] = v; volverAColocar(); }));
+
+$("iniciar").addEventListener("click", async () => {
+  if (estado.fase === "fin") { estado.sim = null; }
+  await iniciar();
+});
+$("recolocar").addEventListener("click", volverAColocar);
+$("azar").addEventListener("click", async () => {
+  const e = await nuevaInstancia();
+  estado.semilla = 1 + Math.floor(Math.random() * 1e6);
+  e.sim_reiniciar(estado.semilla); configurar(e); e.sim_fijar(11, 0.34); e.sim_aleatorio(estado.modoEnemigo);
+  estado.robot = { x: e.sim_x(), y: e.sim_y(), th: e.sim_th() };
+  estado.enemigo = { x: e.sim_ex(), y: e.sim_ey(), th: e.sim_eth() };
+  estado.reproducir = true;
+  sincronizarOrientacion(); volverAColocar();
+});
+
+// Prueba masiva en tandas para no bloquear la página
+$("masiva").addEventListener("click", async () => {
+  const boton = $("masiva"), salida = $("resultado");
+  boton.disabled = true;
+  const total = 200, caidas = [];
+  const base = 1 + Math.floor(Math.random() * 1e6);
+  for (let i = 0; i < total; i++) {
+    const e = await nuevaInstancia();
+    const semilla = base + i;
+    e.sim_reiniciar(semilla); configurar(e); e.sim_fijar(11, 0.34); e.sim_aleatorio(estado.modoEnemigo);
+    const inicio = { robot: { x: e.sim_x(), y: e.sim_y(), th: e.sim_th() }, enemigo: { x: e.sim_ex(), y: e.sim_ey(), th: e.sim_eth() } };
+    e.sim_setup();
+    if (e.sim_avanzar(DURACION)) caidas.push({ semilla, t: e.sim_tiempo(), ...inicio });
+    if (i % 10 === 9) { salida.textContent = `Probando… ${i + 1} / ${total}`; await new Promise(r => setTimeout(r, 0)); }
+  }
+  boton.disabled = false;
+  salida.innerHTML = "";
+  const resumen = document.createElement("p");
+  resumen.innerHTML = caidas.length === 0
+    ? `<b style="color:var(--ok)">0 caídas</b> en ${total} posiciones al azar.`
+    : `<b style="color:var(--danger)">${caidas.length} caídas</b> en ${total} posiciones al azar. Toca una para verla:`;
+  salida.append(resumen);
+  if (caidas.length) {
+    const lista = document.createElement("div"); lista.className = "semillas";
+    for (const c of caidas.slice(0, 24)) {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = "cae a " + fmt(c.t, 1) + " s";
+      b.addEventListener("click", () => {
+        estado.semilla = c.semilla; estado.robot = { ...c.robot }; estado.enemigo = { ...c.enemigo };
+        estado.reproducir = true;
+        sincronizarOrientacion(); volverAColocar();
+      });
+      lista.append(b);
+    }
+    salida.append(lista);
+  }
+});
+
+// ---------------------------------------------------------------- bucle
+let previo = null;
+function cuadro(ts) {
+  if (previo !== null && estado.fase === "combate" && estado.sim) {
+    avanzar(Math.min(0.05, (ts - previo) / 1000) * estado.vel);
+    dibujar();
+  }
+  previo = ts;
+  requestAnimationFrame(cuadro);
+}
+window.addEventListener("resize", dibujar);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", dibujar);
+new MutationObserver(dibujar).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+sincronizarOrientacion();
+actualizarBotones();
+dibujar();
+requestAnimationFrame(cuadro);
+</script>

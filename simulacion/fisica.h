@@ -21,8 +21,8 @@ constexpr double PI = 3.14159265358979323846;
 
 struct Config {
     // Dohyo
-    double radio = 0.35;          // m (70 cm de diámetro, borde incluido)
-    double borde = 0.01;          // m de línea blanca
+    double radio = 0.385;         // m (77 cm de diámetro, borde incluido: minisumo reglamentario)
+    double borde = 0.025;         // m de línea blanca (2,5 cm reglamentarios)
     // Robot
     double largo = 0.10;          // m
     double ancho = 0.10;          // m
@@ -52,6 +52,10 @@ struct Config {
     // Posición inicial: radio máximo del centro del robot; el cuerpo entero queda dentro del dohyo
     double radioInicio = 0.12;
     double rangoEnemigo = 0.40;   // m, alcance de los sensores de enemigo
+    bool enemigoInvertido = false; // sensores de enemigo que dan LOW al detectar
+    // Driver de motores: false = TB6612 (PWM a 0 frena), true = L298N (PWM a 0,
+    // es decir enable a 0, deja el motor libre, y mientras conduce con PWM no frena)
+    bool driverL298 = false;
     // Enemigo
     double radioEnemigo = 0.05;   // m
     double velEnemigo = 0.25;     // m/s en modo errante
@@ -66,6 +70,7 @@ struct Config {
     // Simulación
     double duracion = 30.0;       // s de combate (tras los 5 s reglamentarios)
     double ruidoPiso = 15.0;      // desviación estándar del ADC
+    double retardoPiso = 0;       // s que tarda el sensor de piso en reflejar lo que tiene debajo
     double sobrecostoLoopUs = 20; // µs de loop() además de las lecturas
 };
 
@@ -132,6 +137,34 @@ inline double costoLoopUs = 0;
 inline uint8_t nivelPin[32];
 inline int pwmPin[32];
 
+// Posiciones recientes del robot, para simular sensores de piso lentos
+struct Pose {
+    double t, x, y, th;
+};
+constexpr int MaxHistorial = 1024;
+inline Pose historial[MaxHistorial];
+inline int historialIni = 0, historialN = 0;
+
+inline void guardarPose() {
+    const int i = (historialIni + historialN) % MaxHistorial;
+    historial[i] = {tiempoUs / 1e6, rob.x, rob.y, rob.th};
+    if (historialN < MaxHistorial) historialN++;
+    else historialIni = (historialIni + 1) % MaxHistorial;
+}
+
+// Pose del robot hace cfg.retardoPiso segundos (la más reciente si no hay retardo)
+inline Pose poseRetrasada() {
+    Pose p = {tiempoUs / 1e6, rob.x, rob.y, rob.th};
+    if (cfg.retardoPiso <= 0) return p;
+    const double objetivo = tiempoUs / 1e6 - cfg.retardoPiso;
+    for (int k = historialN - 1; k >= 0; k--) {
+        const Pose& h = historial[(historialIni + k) % MaxHistorial];
+        p = h;
+        if (h.t <= objetivo) break;
+    }
+    return p;
+}
+
 inline void aMundo(double rx, double ry, double& wx, double& wy) {
     const double c = mat::cos(rob.th), s = mat::sin(rob.th);
     wx = rob.x + c * rx - s * ry;
@@ -149,8 +182,10 @@ inline double valorPiso(double wx, double wy) {
 
 // El sensor promedia un área pequeña, así que la transición negro-blanco no es instantánea
 inline int lecturaPiso(double rx, double ry) {
-    double wx, wy;
-    aMundo(rx, ry, wx, wy);
+    const Pose p = poseRetrasada();
+    const double c = mat::cos(p.th), sn = mat::sin(p.th);
+    const double wx = p.x + c * rx - sn * ry;
+    const double wy = p.y + sn * rx + c * ry;
     const double m = cfg.manchaSensor;
     double valor = (valorPiso(wx, wy) * 2 + valorPiso(wx + m, wy) + valorPiso(wx - m, wy) +
                     valorPiso(wx, wy + m) + valorPiso(wx, wy - m)) / 6;
@@ -214,14 +249,18 @@ inline bool sensorEnemigo(uint8_t pin) {
 
 // ---------------------------------------------------------------- física
 
-inline int comandoMotor(uint8_t in1, uint8_t in2, uint8_t pwm) {
-    const int magnitud = pwmPin[pwm];
-    if (nivelPin[in1] == nivelPin[in2]) return 0;  // freno / libre
-    return nivelPin[in1] == HIGH ? magnitud : -magnitud;
+inline int comandoMotor(uint8_t direccion, uint8_t pwm) {
+    return nivelPin[direccion] == HIGH ? pwmPin[pwm] : -pwmPin[pwm];
 }
 
-inline int comandoIzq() { return comandoMotor(MA1A, MA2A, PWMA); }
-inline int comandoDer() { return comandoMotor(MA1B, MA2B, PWMB); }
+enum class Puente { Conduce, Frena, Libre };
+inline Puente estadoPuente(uint8_t pwm) {
+    // Modelo conservador: PWM=0 sin fuerza eléctrica; validar desaceleración real.
+    return pwmPin[pwm] == 0 ? Puente::Libre : Puente::Conduce;
+}
+
+inline int comandoIzq() { return comandoMotor(DIR_IZQ, PWMA); }
+inline int comandoDer() { return comandoMotor(DIR_DER, PWMB); }
 
 // Aplica una fricción de Coulomb de magnitud f a un movimiento con velocidad vel
 // y fuerza impulsora fuerza. Si está quieto y la fuerza no supera la fricción, no arranca.
@@ -235,11 +274,16 @@ inline double conFriccion(double fuerza, double vel, double f) {
 
 // Motor DC: F = Fb·(u·batería − v/v0), menos la fricción de la reductora,
 // limitada por la adherencia de cada rueda.
-inline double fuerzaRueda(int comando, double vRueda) {
-    const double u = comando / 255.0 * cfg.bateria;
+inline double fuerzaRueda(int comando, double vRueda, Puente puente = Puente::Conduce) {
+    const double u = (puente == Puente::Conduce ? comando : 0) / 255.0 * cfg.bateria;
     const double v0 = cfg.rpm / 60.0 * PI * cfg.diametro;
     const double fuerzaBloqueo = cfg.parBloqueo * 0.0981 / (cfg.diametro / 2);
-    double f = conFriccion(fuerzaBloqueo * (u - vRueda / v0), vRueda, cfg.friccionCaja * fuerzaBloqueo);
+    double motor = fuerzaBloqueo * (u - vRueda / v0);
+    // Libre: el motor no hace fuerza. L298N conduciendo con PWM: en la parte baja
+    // del PWM el motor queda libre y no puede frenar, solo empujar
+    if (puente == Puente::Libre) motor = 0;
+    if (puente == Puente::Conduce && cfg.driverL298 && motor * u < 0) motor = 0;
+    double f = conFriccion(motor, vRueda, cfg.friccionCaja * fuerzaBloqueo);
     const double adherencia = cfg.mu * cfg.masa / 2 * 9.81;
     return constrain(f, -adherencia, adherencia);
 }
@@ -249,8 +293,8 @@ inline void avanzarCuerpoDC(int cmdIzq, int cmdDer, double dt) {
     const double b = cfg.trocha / 2;
     double v = (rob.vl + rob.vr) / 2;
     double w = (rob.vr - rob.vl) / cfg.trocha;
-    const double fi = fuerzaRueda(cmdIzq, rob.vl);
-    const double fd = fuerzaRueda(cmdDer, rob.vr);
+    const double fi = fuerzaRueda(cmdIzq, rob.vl, estadoPuente(PWMA));
+    const double fd = fuerzaRueda(cmdDer, rob.vr, estadoPuente(PWMB));
     const double peso = cfg.masa * 9.81;
     const double inercia = cfg.masa * (cfg.largo * cfg.largo + cfg.ancho * cfg.ancho) / 12;
     const double fuerza = conFriccion(fi + fd + rob.fExt, v, cfg.rodadura * peso);
@@ -399,6 +443,7 @@ inline void reiniciar(unsigned long long semilla) {
         pwmPin[i] = 0;
     }
     tiempoUs = 0;
+    historialIni = historialN = 0;
     rob = {0, 0, 0, 0, 0};
     ene = {false, 0, 0, 0};
 }
@@ -432,6 +477,7 @@ inline double paso() {
     avanzarRobot(dt);
     avanzarEnemigo(dt);
     tiempoUs += dt * 1e6;
+    guardarPose();
     return dt;
 }
 
@@ -465,7 +511,7 @@ int analogRead(uint8_t pin) {
 
 int digitalRead(uint8_t pin) {
     sim::costoLoopUs += 4;
-    return sim::sensorEnemigo(pin) ? HIGH : LOW;
+    return sim::sensorEnemigo(pin) != sim::cfg.enemigoInvertido ? HIGH : LOW;
 }
 
 void digitalWrite(uint8_t pin, uint8_t value) {

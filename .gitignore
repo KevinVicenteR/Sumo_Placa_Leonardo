@@ -12,3 +12,5 @@ simulacion/build
 __pycache__
 simulacion/web/sim.wasm
 simulacion/web/dohyo.html
+simulacion/politica_q.txt
+simulacion/politica_n.txt

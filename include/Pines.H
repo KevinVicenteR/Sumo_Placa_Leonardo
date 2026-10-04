@@ -15,13 +15,15 @@ constexpr uint8_t S_FRONT_DER = A5;
 constexpr uint8_t S_LAT_IZQ   = 1;
 constexpr uint8_t S_LAT_DER   = A4;
 
-// Driver de motores
-// Nota: el pin 13 es el LED integrado; el bootloader lo hace parpadear tras el reset.
-constexpr uint8_t PWMA = 10;
-constexpr uint8_t MA1A = 9;
-constexpr uint8_t MA2A = 13;
+// Indicadores de usuario integrados, según la biblioteca XMotion.
+constexpr uint8_t LED_IZQ = 8;
+constexpr uint8_t LED_DER = 9;
+
+// XMotion: biblioteca oficial de JSUMO (LM_PWM=3, LM_DIR=12,
+// RM_PWM=11, RM_DIR=13). Una dirección por motor, HIGH = avance.
+constexpr uint8_t PWMA = 3;
+constexpr uint8_t DIR_IZQ = 12;
 constexpr uint8_t PWMB = 11;
-constexpr uint8_t MA1B = 8;
-constexpr uint8_t MA2B = 12;
+constexpr uint8_t DIR_DER = 13;
 
 #endif

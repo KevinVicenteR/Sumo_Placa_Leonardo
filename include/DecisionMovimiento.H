@@ -20,6 +20,8 @@ struct DecisionMovimiento {
     // El sensor frontal ve al enemigo (se informa también al evadir el borde).
     // Sin valor por defecto para seguir siendo agregado en C++11: {tipo} lo deja en false
     bool enemigoFrente;
+    // Algún sensor de piso empieza a ver la línea (ver LecturasSensores)
+    bool cercaBorde;
 };
 
 #endif

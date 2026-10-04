@@ -12,7 +12,8 @@ extern "C" void delay(unsigned long ms) {
 }
 
 extern "C" unsigned long millis(void) { return g_millis; }
-extern "C" int analogRead(uint8_t) { return 0; }
+int g_analogValues[256] = {0};
+extern "C" int analogRead(uint8_t pin) { return g_analogValues[pin]; }
 extern "C" int digitalRead(uint8_t) { return 0; }
 extern "C" void digitalWrite(uint8_t, uint8_t) {}
 extern "C" void analogWrite(uint8_t, int) {}

@@ -4,19 +4,25 @@
 #include "Parametros.H"
 
 namespace {
-void controlarPuente(uint8_t pinIn1, uint8_t pinIn2, uint8_t pinPwm, int velocidad) {
-	velocidad = constrain(velocidad, -VelocidadMaxima, VelocidadMaxima);
-	digitalWrite(pinIn1, velocidad >= 0 ? HIGH : LOW);
-	digitalWrite(pinIn2, velocidad >= 0 ? LOW : HIGH);
-	analogWrite(pinPwm, abs(velocidad));
+void controlarMotor(uint8_t direccion, uint8_t pwm, int velocidad) {
+    velocidad = constrain(velocidad, -VelocidadMaxima, VelocidadMaxima);
+    // PWM=0 equivale a StopMotors de XMotion; nunca PWM máximo al parar.
+    // Mantener PWM entre ciclos como hace la biblioteca oficial de XMotion.
+    digitalWrite(direccion, velocidad > 0 ? HIGH : LOW);
+    analogWrite(pwm, abs(velocidad));
 }
 }
 
 void Motor::mover(int velIzq, int velDer) {
-	controlarPuente(MA1A, MA2A, PWMA, velIzq); // Motor izquierdo (A)
-	controlarPuente(MA1B, MA2B, PWMB, velDer); // Motor derecho (B)
+    controlarMotor(DIR_IZQ, PWMA, velIzq);
+    controlarMotor(DIR_DER, PWMB, velDer);
 }
 
-void Motor::detener() {
-	mover(0, 0);
+void Motor::detener() { deshabilitar(); }
+
+void Motor::deshabilitar() {
+    analogWrite(PWMA, 0);
+    analogWrite(PWMB, 0);
+    digitalWrite(DIR_IZQ, LOW);
+    digitalWrite(DIR_DER, LOW);
 }

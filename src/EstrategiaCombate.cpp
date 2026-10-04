@@ -1,6 +1,14 @@
 #include "EstrategiaCombate.H"
+#include "Parametros.H"
+#include "PoliticaAprendida.H"
 
 DecisionMovimiento EstrategiaCombate::decidir(const LecturasSensores& lecturas) const {
+    DecisionMovimiento decision = elegir(lecturas);
+    decision.cercaBorde = lecturas.cercaBorde;
+    return decision;
+}
+
+DecisionMovimiento EstrategiaCombate::elegir(const LecturasSensores& lecturas) const {
     if (lecturas.lineaIzq || lecturas.lineaDer) {
         if (lecturas.lineaIzq && !lecturas.lineaDer) {
             return {TipoAccion::EvadirBordeIzq, lecturas.frontal};
@@ -9,6 +17,10 @@ DecisionMovimiento EstrategiaCombate::decidir(const LecturasSensores& lecturas) 
             return {TipoAccion::EvadirBordeDer, lecturas.frontal};
         }
         return {TipoAccion::EvadirBordeAmbos, lecturas.frontal};
+    }
+
+    if (UsarPoliticaAprendida) {
+        return elegirConPolitica(lecturas);
     }
 
     if (lecturas.frontal) {
@@ -40,4 +52,15 @@ DecisionMovimiento EstrategiaCombate::decidir(const LecturasSensores& lecturas) 
     }
 
     return {TipoAccion::Busqueda};
+}
+
+// Sin línea, la maniobra la decide la tabla aprendida en el simulador
+DecisionMovimiento EstrategiaCombate::elegirConPolitica(const LecturasSensores& lecturas) const {
+    const int estado = politica::codificarEstado(lecturas, ladoUltimo);
+    if (lecturas.c45Izq || lecturas.latIzq) {
+        ladoUltimo = 0;
+    } else if (lecturas.c45Der || lecturas.latDer) {
+        ladoUltimo = 1;
+    }
+    return {politica::Acciones[politica::elegirAccion(estado)], lecturas.frontal};
 }

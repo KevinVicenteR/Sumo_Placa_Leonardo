@@ -26,9 +26,9 @@ FUENTES = sorted((RAIZ / "src").glob("*.cpp")) + [RAIZ / "simulacion" / "sim.cpp
 MODOS = ["ninguno", "estatico", "errante", "agresivo"]
 
 
-def compilar(params: dict) -> Path:
+def compilar(params: dict, banderas: tuple = ()) -> Path:
     """Copia include/ aplicando los cambios a Parametros.H y compila."""
-    clave = hashlib.sha1(repr(sorted(params.items())).encode()).hexdigest()[:10]
+    clave = hashlib.sha1(repr((sorted(params.items()), banderas)).encode()).hexdigest()[:10]
     inc = BUILD / f"include_{clave}"
     binario = BUILD / f"sim_{clave}"
     if inc.exists():
@@ -43,7 +43,7 @@ def compilar(params: dict) -> Path:
             sys.exit(f"Parámetro desconocido: {nombre}")
     ruta.write_text(texto)
 
-    cmd = ["c++", "-std=c++17", "-O2", "-w",
+    cmd = ["c++", "-std=c++17", "-O2", "-w", *banderas,
            f"-I{inc}", f"-I{RAIZ / 'simulacion' / 'support'}",
            *map(str, FUENTES), "-o", str(binario)]
     subprocess.run(cmd, check=True)
@@ -76,6 +76,13 @@ def resumir(modo: str, filas: list) -> dict:
         "causas": dict(Counter(f.get("causa", "-") + ("/empujado" if f.get("empujado") == "1" else "")
                                for f in caidas)),
         "victorias": sum(1 for f in filas if f.get("gano") == "1"),
+        # Suavidad, por cada 10 s de combate
+        "vueltas": sum(float(f.get("vueltas", 0)) for f in filas) / max(1, sum(
+            float(f["t_caida"]) if f["cayo"] == "1" else float(f["t_gano"]) if f.get("gano") == "1" else 30
+            for f in filas)) * 10,
+        "tirones": sum(float(f.get("tirones", 0)) for f in filas) / max(1, sum(
+            float(f["t_caida"]) if f["cayo"] == "1" else float(f["t_gano"]) if f.get("gano") == "1" else 30
+            for f in filas)) * 10,
         "t_victoria": statistics.median([float(f["t_gano"]) for f in filas if f.get("gano") == "1"] or [float("nan")]),
     }
 

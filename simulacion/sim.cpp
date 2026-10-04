@@ -31,11 +31,13 @@ struct Resultado {
     double tPrimerFrontal = -1;  // s hasta ver al enemigo de frente
     double fracFrontal = 0;      // fracción del tiempo con el enemigo de frente
     double distancia = 0;        // m recorridos
+    bool gano = false;           // empujó al enemigo fuera del dohyo
+    double tGano = -1;
 };
 
 void imprimirCabecera() {
     std::printf("semilla,modo,cayo,t_caida,margen_min_cm,max_salida_cuerpo_cm,evasiones,"
-                "t_primer_frontal,frac_frontal,distancia_m\n");
+                "t_primer_frontal,frac_frontal,distancia_m,gano,t_gano\n");
 }
 
 const char* nombreModo(Modo m) {
@@ -90,6 +92,11 @@ Resultado correr(int semilla, FILE* trayectoria) {
             res.tCaida = t;
             break;
         }
+        if (enemigoFuera()) {
+            res.gano = true;
+            res.tGano = t;
+            break;
+        }
     }
     res.fracFrontal = tiempoFrontal / cfg.duracion;
     return res;
@@ -138,6 +145,8 @@ int main(int argc, char** argv) {
         else if (a == "--sensor-x") cfg.sensorPisoX = std::atof(v);
         else if (a == "--inicio-r") cfg.radioInicio = std::atof(v);
         else if (a == "--rango") cfg.rangoEnemigo = std::atof(v);
+        else if (a == "--masa-enemigo") cfg.masaEnemigo = std::atof(v);
+        else if (a == "--agarre-enemigo") cfg.agarreEnemigo = std::atof(v);
         else if (a == "--tray") rutaTray = v;
         else { uso(); return 1; }
         i++;
@@ -152,9 +161,10 @@ int main(int argc, char** argv) {
             FILE* tray = (rutaTray && i == 0) ? std::fopen(rutaTray, "w") : nullptr;
             const Resultado r = correr(s, tray);
             if (tray) std::fclose(tray);
-            std::printf("%d,%s,%d,%.3f,%.2f,%.2f,%d,%.3f,%.3f,%.2f\n", s, nombreModo(modo),
+            std::printf("%d,%s,%d,%.3f,%.2f,%.2f,%d,%.3f,%.3f,%.2f,%d,%.3f\n", s, nombreModo(modo),
                         r.cayo ? 1 : 0, r.tCaida, r.margenMin * 100, r.maxSalidaCuerpo * 100,
-                        r.evasiones, r.tPrimerFrontal, r.fracFrontal, r.distancia);
+                        r.evasiones, r.tPrimerFrontal, r.fracFrontal, r.distancia,
+                        r.gano ? 1 : 0, r.tGano);
             std::fflush(stdout);
             _exit(0);
         }

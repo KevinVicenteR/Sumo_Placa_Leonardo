@@ -23,6 +23,9 @@ private:
     bool continuarEvasion(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora);
     void recordarLadoEnemigo(TipoAccion tipo);
     void girarHaciaLado(IMotor& motor, int sentido);
+    void estimarVelocidad(unsigned long ahora);
+    bool calcularFreno(unsigned long duracionMaxima);
+    bool continuarParo(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora);
     bool continuarGiroLateral(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora);
     void buscar(IMotor& motor, unsigned long ahora);
 
@@ -31,10 +34,17 @@ private:
     unsigned long duracionRetroceso = 0;
     unsigned long duracionGiro = 0;
     int sentidoGiro = 1;
-    int ultimoIzq = 0;  // última orden fuera de una evasión, para frenar cada rueda
-    int ultimoDer = 0;
+    int ordenIzq = 0;  // última orden enviada a cada motor
+    int ordenDer = 0;
+    long estIzq = 0;   // velocidad estimada de cada rueda (PWM × 256)
+    long estDer = 0;
+    unsigned long ultimaEstimacion = 0;
     int frenoIzq = 0;
     int frenoDer = 0;
+    unsigned long duracionFreno = 0;
+    bool veniaAtacando = false;
+    bool enParo = false;
+    unsigned long inicioParo = 0;
     int sentidoEnSitio = 0;  // sentido del último giro en el sitio ordenado; 0 si no gira
     bool evasionEnSitio = false;
     bool huboAvance = false;          // false al arrancar: el robot está quieto

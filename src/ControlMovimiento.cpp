@@ -2,20 +2,46 @@
 #include "Parametros.H"
 
 namespace {
-int magnitud(int v) { return v < 0 ? -v : v; }
+long magnitud(long v) { return v < 0 ? -v : v; }
 }
 
 void ControlMovimiento::mover(IMotor& motor, int izq, int der) {
-    if (fase == Fase::Libre) {
-        ultimoIzq = izq;
-        ultimoDer = der;
-    }
+    ordenIzq = izq;
+    ordenDer = der;
     sentidoEnSitio = (izq > 0 && der < 0) ? 1 : (izq < 0 && der > 0) ? -1 : 0;
     if (sentidoEnSitio == 0 && (izq != 0 || der != 0)) {
         huboAvance = true;
         ultimoAvance = ahoraActual;
     }
     motor.mover(izq, der);
+}
+
+// Velocidad estimada de cada rueda (en unidades de PWM): sigue a la orden con la
+// inercia del robot, como un filtro de primer orden con constante TauRuedas
+void ControlMovimiento::estimarVelocidad(unsigned long ahora) {
+    const unsigned long dt = ahora - ultimaEstimacion;
+    if (dt == 0) {
+        return;
+    }
+    ultimaEstimacion = ahora;
+    const long paso = dt >= TauRuedas ? 256 : (long)dt * 256 / TauRuedas;
+    estIzq += ((long)ordenIzq * 256 - estIzq) * paso / 256;
+    estDer += ((long)ordenDer * 256 - estDer) * paso / 256;
+}
+
+// Freno de cada rueda en proporción a su velocidad estimada: la más rápida a
+// tope en sentido contrario, durante más tiempo cuanto más rápido iba.
+// Devuelve false si el robot apenas se movía.
+bool ControlMovimiento::calcularFreno(unsigned long duracionMaxima) {
+    const long izq = estIzq / 256, der = estDer / 256;
+    const long mayor = magnitud(izq) > magnitud(der) ? magnitud(izq) : magnitud(der);
+    if (mayor < VelocidadMinimaFreno) {
+        return false;
+    }
+    frenoIzq = -izq * VelocidadMaxima / mayor;
+    frenoDer = -der * VelocidadMaxima / mayor;
+    duracionFreno = duracionMaxima * mayor / VelocidadMaxima;
+    return true;
 }
 
 void ControlMovimiento::iniciarEvasion(int sentido, unsigned long duracionRet,
@@ -39,15 +65,14 @@ void ControlMovimiento::iniciarEvasion(int sentido, unsigned long duracionRet,
     if (fase == Fase::FrenandoRuedas) {
         return;
     }
+    enParo = false;
+    veniaAtacando = false;
     // Línea nueva mientras avanzaba o pivotaba: primero se frena cada rueda en
     // proporción a lo que iba haciendo. Retroceder con las dos ruedas a la vez
     // mantendría el giro que traía (la rueda rápida tarda más en parar) y la
     // parte trasera se balancearía hacia afuera.
     if (fase == Fase::Libre && !evasionEnSitio && TiempoFrenadoRuedas > 0) {
-        const int mayor = magnitud(ultimoIzq) > magnitud(ultimoDer) ? magnitud(ultimoIzq) : magnitud(ultimoDer);
-        if (mayor > 0) {
-            frenoIzq = -(long)ultimoIzq * VelocidadMaxima / mayor;
-            frenoDer = -(long)ultimoDer * VelocidadMaxima / mayor;
+        if (calcularFreno(TiempoFrenadoRuedas)) {
             fase = Fase::FrenandoRuedas;
             inicioFase = ahora;
             duracionRetroceso = duracionRet;
@@ -72,12 +97,12 @@ void ControlMovimiento::iniciarEvasion(int sentido, unsigned long duracionRet,
 
 bool ControlMovimiento::continuarEvasion(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     if (fase == Fase::FrenandoRuedas) {
-        if (ahora - inicioFase < TiempoFrenadoRuedas) {
+        if (ahora - inicioFase < duracionFreno) {
             mover(motor, frenoIzq, frenoDer);
             return true;
         }
         fase = Fase::Retrocediendo;
-        inicioFase += TiempoFrenadoRuedas;
+        inicioFase += duracionFreno;
     }
 
     if (fase == Fase::Retrocediendo) {
@@ -185,8 +210,31 @@ bool ControlMovimiento::continuarGiroLateral(const DecisionMovimiento& decision,
     return true;
 }
 
+// Si iba atacando y el enemigo desaparece (lo esquivó), frena en seco en vez de
+// seguir lanzado: a toda velocidad el robot no alcanzaría a parar al ver la línea
+bool ControlMovimiento::continuarParo(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
+    const bool atacando = decision.tipo == TipoAccion::AtaqueFrontal ||
+                          decision.tipo == TipoAccion::CorregirIzq ||
+                          decision.tipo == TipoAccion::CorregirDer;
+    if (decision.tipo == TipoAccion::Busqueda && veniaAtacando && calcularFreno(TiempoParoPerdida)) {
+        enParo = true;
+        inicioParo = ahora;
+    }
+    veniaAtacando = atacando;
+    if (!enParo) {
+        return false;
+    }
+    if (decision.tipo != TipoAccion::Busqueda || ahora - inicioParo >= duracionFreno) {
+        enParo = false;
+        return false;
+    }
+    mover(motor, frenoIzq, frenoDer);
+    return true;
+}
+
 void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     ahoraActual = ahora;
+    estimarVelocidad(ahora);
     recordarLadoEnemigo(decision.tipo);
 
     switch (decision.tipo) {
@@ -210,6 +258,10 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
 
     if (decision.tipo != TipoAccion::Busqueda) {
         buscando = false;
+    }
+
+    if (continuarParo(decision, motor, ahora)) {
+        return;
     }
 
     if (continuarGiroLateral(decision, motor, ahora)) {

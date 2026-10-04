@@ -70,11 +70,13 @@ EXPORTAR("sim_setup") void sim_setup() {
     inicioCombateUs = sim::tiempoUs;
 }
 
-// Avanza ciclos de loop() hasta el tiempo de combate dado (s). Devuelve 1 si el robot cayó.
+// Avanza ciclos de loop() hasta el tiempo de combate dado (s).
+// Devuelve 1 si el robot cayó y 2 si sacó al enemigo del dohyo.
 EXPORTAR("sim_avanzar") int sim_avanzar(double hastaSegundos) {
     while ((sim::tiempoUs - inicioCombateUs) / 1e6 < hastaSegundos) {
         sim::paso();
         if (sim::cayo()) return 1;
+        if (sim::enemigoFuera()) return 2;
     }
     return 0;
 }

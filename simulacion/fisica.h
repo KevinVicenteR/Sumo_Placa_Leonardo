@@ -55,6 +55,10 @@ struct Config {
     // Enemigo
     double radioEnemigo = 0.05;   // m
     double velEnemigo = 0.25;     // m/s en modo errante
+    // Choque con el enemigo (0 en masaEnemigo = fantasma, el robot lo atraviesa)
+    double masaEnemigo = 0.3;     // kg
+    double agarreEnemigo = 0.8;   // su resistencia a ser empujado (μ de sus ruedas)
+    double radioChoque = 0.055;   // m, radio de choque de nuestro robot
     // Simulación
     double duracion = 30.0;       // s de combate (tras los 5 s reglamentarios)
     double ruidoPiso = 15.0;      // desviación estándar del ADC
@@ -71,6 +75,7 @@ struct Robot {
 struct Enemigo {
     bool presente;
     double x, y, th;
+    double vx = 0, vy = 0;  // velocidad (la cambian sus motores y nuestros empujones)
 };
 
 // xorshift64* con Box-Muller: igual en todas las plataformas
@@ -275,19 +280,70 @@ inline void avanzarRobot(double dt) {
     rob.th += w * dt;
 }
 
+// El enemigo intenta ir a su velocidad deseada (quieto o deambulando) con la
+// aceleración que le permiten sus ruedas; esa misma adherencia es la que se
+// opone a que lo empujen.
 inline void avanzarEnemigo(double dt) {
-    if (!ene.presente || modo != Modo::Errante) return;
-    ene.th += azar.normal() * 3.0 * mat::sqrt(dt);
-    const double r = mat::hypot(ene.x, ene.y);
-    if (r > cfg.radio - 0.08) {
-        // Se aleja del borde girando hacia el centro
-        const double haciaCentro = mat::atan2(-ene.y, -ene.x);
-        double diff = mat::remainder(haciaCentro - ene.th, 2 * PI);
-        ene.th += diff * minimo(1.0, 8.0 * dt);
+    if (!ene.presente) return;
+    double vdx = 0, vdy = 0;
+    if (modo == Modo::Errante) {
+        ene.th += azar.normal() * 3.0 * mat::sqrt(dt);
+        const double r = mat::hypot(ene.x, ene.y);
+        if (r > cfg.radio - 0.08) {
+            // Se aleja del borde girando hacia el centro
+            const double haciaCentro = mat::atan2(-ene.y, -ene.x);
+            double diff = mat::remainder(haciaCentro - ene.th, 2 * PI);
+            ene.th += diff * minimo(1.0, 8.0 * dt);
+        }
+        vdx = cfg.velEnemigo * mat::cos(ene.th);
+        vdy = cfg.velEnemigo * mat::sin(ene.th);
     }
-    ene.x += cfg.velEnemigo * mat::cos(ene.th) * dt;
-    ene.y += cfg.velEnemigo * mat::sin(ene.th) * dt;
+    if (cfg.masaEnemigo <= 0) {
+        ene.vx = vdx;
+        ene.vy = vdy;
+    } else {
+        const double dvx = vdx - ene.vx, dvy = vdy - ene.vy;
+        const double dv = mat::hypot(dvx, dvy);
+        const double maxDv = cfg.agarreEnemigo * 9.81 * dt;
+        const double f = dv > maxDv ? maxDv / dv : 1.0;
+        ene.vx += dvx * f;
+        ene.vy += dvy * f;
+    }
+    ene.x += ene.vx * dt;
+    ene.y += ene.vy * dt;
 }
+
+// Choque inelástico entre los dos robots (como círculos): se separan y comparten
+// la velocidad a lo largo de la línea que une sus centros
+inline void resolverChoque() {
+    if (!ene.presente || cfg.masaEnemigo <= 0) return;
+    const double dx = ene.x - rob.x, dy = ene.y - rob.y;
+    const double d = mat::hypot(dx, dy);
+    const double minima = cfg.radioChoque + cfg.radioEnemigo;
+    if (d >= minima || d < 1e-9) return;
+    const double nx = dx / d, ny = dy / d;
+    const double mr = cfg.masa, me = cfg.masaEnemigo;
+    const double solape = minima - d;
+    rob.x -= nx * solape * me / (mr + me);
+    rob.y -= ny * solape * me / (mr + me);
+    ene.x += nx * solape * mr / (mr + me);
+    ene.y += ny * solape * mr / (mr + me);
+
+    const double v = (rob.vl + rob.vr) / 2;
+    const double c = mat::cos(rob.th) * nx + mat::sin(rob.th) * ny;  // rumbo · normal
+    const double vrn = v * c;
+    const double ven = ene.vx * nx + ene.vy * ny;
+    if (vrn <= ven) return;  // ya se separan
+    const double comun = (mr * vrn + me * ven) / (mr + me);
+    ene.vx += (comun - ven) * nx;
+    ene.vy += (comun - ven) * ny;
+    // El robot solo puede cambiar su velocidad hacia adelante (las ruedas no derrapan de lado)
+    const double dv = (comun - vrn) * c;
+    rob.vl += dv;
+    rob.vr += dv;
+}
+
+inline bool enemigoFuera() { return ene.presente && mat::hypot(ene.x, ene.y) > cfg.radio; }
 
 inline double maxRadioCuerpo() {
     double m = 0;
@@ -341,6 +397,7 @@ inline double paso() {
     const double dt = (costoLoopUs + cfg.sobrecostoLoopUs) / 1e6;
     avanzarRobot(dt);
     avanzarEnemigo(dt);
+    resolverChoque();
     tiempoUs += dt * 1e6;
     return dt;
 }

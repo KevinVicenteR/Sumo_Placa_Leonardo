@@ -11,12 +11,12 @@
 constexpr int VelocidadMaxima = 255;
 // Por encima de ~0,65 m/s reales el robot no alcanza a frenar entre que el
 // sensor de piso ve la línea y que el centro de masa llega al borde
-constexpr int VelocidadAtaque = 60;
-constexpr int VelocidadCurva = 40;
+constexpr int VelocidadAtaque = 255;
+constexpr int VelocidadCurva = 100;
 constexpr int VelocidadRetroceso = 140;
 constexpr int VelocidadGiroEvasion = 150;
-constexpr int VelocidadAvance = 40;
-constexpr int VelocidadGiroBusqueda = 110;
+constexpr int VelocidadAvance = 140;
+constexpr int VelocidadGiroBusqueda = 140;
 constexpr int VelocidadPivoteLateral = 170;
 // Enemigo visto por un sensor lateral: true = la rueda de ese lado se frena y hace
 // de pivote mientras la otra gira a VelocidadRuedaPivote; false = giro en el sitio
@@ -36,8 +36,15 @@ constexpr int MuestrasCalibracionPiso = 64;
 
 // Tiempos (ms)
 constexpr unsigned long TiempoInicioReglamentario = 5000;
-constexpr unsigned long TiempoFrenadoRuedas = 40;
+// Frenado al ver la línea o al perder al enemigo: cada rueda frena según su
+// velocidad estimada (orden filtrada con la inercia TauRuedas), hasta este tiempo a
+// toda velocidad; por debajo de VelocidadMinimaFreno no hace falta frenar
+constexpr unsigned long TiempoFrenadoRuedas = 70;
+constexpr unsigned long TauRuedas = 80;
+constexpr int VelocidadMinimaFreno = 20;
 constexpr unsigned long TiempoRetroceso = 130;
+// Paro en seco cuando el enemigo desaparece en pleno ataque (ms)
+constexpr unsigned long TiempoParoPerdida = 80;
 constexpr unsigned long TiempoRetrocesoAmbos = 100;
 constexpr unsigned long TiempoFrenado = 30;
 constexpr unsigned long TiempoGiroEvasion = 150;

@@ -82,21 +82,53 @@ void test_busqueda_inicial_gira_y_luego_avanza(void) {
     assertGiroBusqueda(m, 1);
 }
 
+// Repite una acción el tiempo suficiente para que la velocidad estimada de las
+// ruedas alcance la orden. Devuelve el instante final.
+static unsigned long acelerar(ControlMovimiento& c, MotorMock& m, TipoAccion accion, unsigned long t) {
+    c.ejecutar({accion}, m, t);
+    c.ejecutar({accion}, m, t + TauRuedas);
+    return t + TauRuedas;
+}
+
 void test_busqueda_gira_hacia_el_ultimo_lado_del_enemigo(void) {
     ControlMovimiento c;
     MotorMock m;
 
+    // Pierde al enemigo que veía a la izquierda: tras el paro busca hacia ese lado
     c.ejecutar({TipoAccion::CorregirIzq}, m, 1000);
     c.ejecutar({TipoAccion::Busqueda}, m, 1010);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1010 + TiempoParoPerdida);
     assertGiroBusqueda(m, -1);
 
     // Tras ver al enemigo de lado, la búsqueda empieza al acabar el giro lateral
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1020);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1020 + TiempoMaxGiroLateral);
+    c.ejecutar({TipoAccion::DefensaDer}, m, 2000);
+    c.ejecutar({TipoAccion::Busqueda}, m, 2000 + TiempoMaxGiroLateral);
     assertGiroBusqueda(m, 1);
 }
 
-// Al ver la línea avanzando: freno de cada rueda -> retroceso -> freno -> giro
+void test_paro_en_seco_al_perder_al_enemigo_en_pleno_ataque(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
+    assertMovimiento(m, -VelocidadMaxima, -VelocidadMaxima);
+
+    c.ejecutar({TipoAccion::Busqueda}, m, t + 1 + TiempoParoPerdida);
+    assertGiroBusqueda(m, 1);
+}
+
+void test_paro_se_cancela_si_vuelve_a_ver_al_enemigo(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + 10);
+    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+}
+
+// Al ver la línea avanzando a toda velocidad: freno de cada rueda -> retroceso -> freno -> giro
 static const unsigned long InicioRetroceso = TiempoFrenadoRuedas;
 static const unsigned long InicioGiro = TiempoFrenadoRuedas + TiempoRetroceso + TiempoFrenado;
 
@@ -106,27 +138,27 @@ void test_evadir_borde_izq_frena_retrocede_gira_derecha_y_avanza_sin_bloquear(vo
     g_delayCallCount = 0;
 
     // Venía atacando recto: frena las dos ruedas por igual
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1000);
+    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
     assertMovimiento(m, -VelocidadMaxima, -VelocidadMaxima);
 
     // La línea ya no se ve, pero la maniobra continúa
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + InicioRetroceso);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioRetroceso);
     assertRetrocede(m);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + InicioRetroceso + TiempoRetroceso - 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioRetroceso + TiempoRetroceso - 1);
     assertRetrocede(m);
 
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + InicioRetroceso + TiempoRetroceso);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioRetroceso + TiempoRetroceso);
     assertMovimiento(m, 0, 0);
 
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + InicioGiro);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro);
     assertGiroEvasion(m, 1);
 
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + InicioGiro + TiempoGiroEvasion - 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro + TiempoGiroEvasion - 1);
     assertGiroEvasion(m, 1);
 
     // Evasión completa: el robot mira hacia el centro y la búsqueda empieza avanzando
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + InicioGiro + TiempoGiroEvasion);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro + TiempoGiroEvasion);
     assertAvanceBusqueda(m);
 
     TEST_ASSERT_EQUAL_INT(0, g_delayCallCount);
@@ -136,9 +168,9 @@ void test_evadir_borde_der_gira_izquierda(void) {
     ControlMovimiento c;
     MotorMock m;
 
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 0);
-    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 0);
-    c.ejecutar({TipoAccion::Busqueda}, m, InicioGiro);
+    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
+    c.ejecutar({TipoAccion::EvadirBordeDer}, m, t);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro);
     assertGiroEvasion(m, -1);
 }
 
@@ -147,21 +179,29 @@ void test_frenado_proporcional_a_lo_que_hacia_cada_rueda(void) {
     MotorMock m;
 
     // En curva: la rueda más rápida frena a tope y la otra en proporción
-    c.ejecutar({TipoAccion::CorregirIzq}, m, 0);
-    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 10);
+    const unsigned long t = acelerar(c, m, TipoAccion::CorregirIzq, 0);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, t);
     assertMovimiento(m, -(long)VelocidadCurva * VelocidadMaxima / VelocidadAtaque, -VelocidadMaxima);
+}
+
+void test_quieto_no_frena_y_retrocede_directamente(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1000);
+    assertRetrocede(m);
 }
 
 void test_evadir_borde_ambos_gira_hacia_el_ultimo_lado_del_enemigo(void) {
     ControlMovimiento c;
     MotorMock m;
 
-    c.ejecutar({TipoAccion::CorregirIzq}, m, 0);
-    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 10);
-    c.ejecutar({TipoAccion::Busqueda}, m, 10 + InicioRetroceso + TiempoRetrocesoAmbos - 1);
+    const unsigned long t = acelerar(c, m, TipoAccion::CorregirIzq, 0);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, t);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioRetroceso + TiempoRetrocesoAmbos - 1);
     assertRetrocede(m);
 
-    const unsigned long giro = 10 + InicioRetroceso + TiempoRetrocesoAmbos + TiempoFrenado;
+    const unsigned long giro = t + InicioRetroceso + TiempoRetrocesoAmbos + TiempoFrenado;
     c.ejecutar({TipoAccion::Busqueda}, m, giro);
     assertGiroEvasion(m, -1);
 
@@ -189,17 +229,17 @@ void test_linea_girando_en_el_sitio_gira_sin_retroceder(void) {
     assertAvanceBusqueda(m);
 }
 
-void test_linea_al_girar_justo_tras_avanzar_frena_y_retrocede(void) {
+void test_linea_durante_el_paro_frena_y_retrocede(void) {
     ControlMovimiento c;
     MotorMock m;
 
-    // Aún se desliza por la inercia del ataque: frena el giro que traía y retrocede
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1010);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1000 + TiempoAsentarGiro - 1);
-    assertMovimiento(m, -VelocidadMaxima, VelocidadMaxima);
+    // Aún se desliza por la inercia del ataque: frena según lo que estima y retrocede
+    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t + 5);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
 
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoAsentarGiro - 1 + InicioRetroceso);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + 5 + TiempoFrenadoRuedas);
     assertRetrocede(m);
 }
 
@@ -207,11 +247,12 @@ void test_linea_al_girar_tras_asentarse_gira_sin_retroceder(void) {
     ControlMovimiento c;
     MotorMock m;
 
-    // Tras atacar, pierde al enemigo y busca girando en el sitio
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1010);
+    // Tras atacar y el paro, busca girando en el sitio; la inercia ya pasó
+    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + 1 + TiempoParoPerdida);
     assertGiroBusqueda(m, 1);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1000 + TiempoAsentarGiro);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t + 1 + TiempoAsentarGiro);
     assertGiroEvasion(m, 1);
 }
 
@@ -219,15 +260,15 @@ void test_enemigo_no_aborta_el_giro_minimo_de_evasion(void) {
     ControlMovimiento c;
     MotorMock m;
 
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 0);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 0);
-    c.ejecutar({TipoAccion::Busqueda}, m, InicioGiro);
+    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro);
     assertGiroEvasion(m, 1);
 
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, InicioGiro + TiempoMinimoGiroEvasion - 1);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + InicioGiro + TiempoMinimoGiroEvasion - 1);
     assertGiroEvasion(m, 1);
 
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, InicioGiro + TiempoMinimoGiroEvasion);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + InicioGiro + TiempoMinimoGiroEvasion);
     assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
 }
 
@@ -235,11 +276,11 @@ void test_enemigo_lateral_aborta_giro_de_evasion(void) {
     ControlMovimiento c;
     MotorMock m;
 
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 0);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 0);
-    c.ejecutar({TipoAccion::Busqueda}, m, InicioGiro);
+    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro);
 
-    c.ejecutar({TipoAccion::CorregirIzq}, m, InicioGiro + TiempoMinimoGiroEvasion);
+    c.ejecutar({TipoAccion::CorregirIzq}, m, t + InicioGiro + TiempoMinimoGiroEvasion);
     assertMovimiento(m, VelocidadCurva, VelocidadAtaque);
 }
 
@@ -247,14 +288,15 @@ void test_tras_giro_abortado_la_busqueda_empieza_girando(void) {
     ControlMovimiento c;
     MotorMock m;
 
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 0);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 0);
-    c.ejecutar({TipoAccion::Busqueda}, m, InicioGiro);
-    const unsigned long t = InicioGiro + TiempoMinimoGiroEvasion;
+    const unsigned long t0 = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t0);
+    c.ejecutar({TipoAccion::Busqueda}, m, t0 + InicioGiro);
+    const unsigned long t = t0 + InicioGiro + TiempoMinimoGiroEvasion;
     c.ejecutar({TipoAccion::CorregirDer}, m, t);
 
-    // El enemigo se pierde: el robot puede seguir de frente al borde, no debe avanzar
+    // El enemigo se pierde: tras el paro, el robot puede seguir de frente al borde, no debe avanzar
     c.ejecutar({TipoAccion::Busqueda}, m, t + 10);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + 10 + TiempoParoPerdida);
     assertGiroBusqueda(m, 1);
 }
 
@@ -299,14 +341,13 @@ void test_linea_interrumpe_el_giro_lateral(void) {
     ControlMovimiento c;
     MotorMock m;
 
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000);
-    c.ejecutar({TipoAccion::DefensaIzq}, m, 1010);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1020);
+    const unsigned long t = acelerar(c, m, TipoAccion::DefensaIzq, 1000);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
     // Frena solo lo que se movía: con rueda pivote, la rueda que empujaba
     if (GiroLateralEnRueda) {
         assertMovimiento(m, 0, -VelocidadMaxima);
     }
-    c.ejecutar({TipoAccion::Busqueda}, m, 1020 + InicioRetroceso);
+    c.ejecutar({TipoAccion::Busqueda}, m, t + TiempoFrenadoRuedas);
     assertRetrocede(m);
 }
 
@@ -314,9 +355,9 @@ void test_enemigo_frontal_no_aborta_retroceso(void) {
     ControlMovimiento c;
     MotorMock m;
 
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 0);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 0);
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, InicioRetroceso + 10);
+    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + InicioRetroceso + 10);
     assertRetrocede(m);
 }
 
@@ -325,12 +366,15 @@ int main(int, char**) {
     RUN_TEST(test_acciones_simples_velocidades_correctas);
     RUN_TEST(test_busqueda_inicial_gira_y_luego_avanza);
     RUN_TEST(test_busqueda_gira_hacia_el_ultimo_lado_del_enemigo);
+    RUN_TEST(test_paro_en_seco_al_perder_al_enemigo_en_pleno_ataque);
+    RUN_TEST(test_paro_se_cancela_si_vuelve_a_ver_al_enemigo);
     RUN_TEST(test_evadir_borde_izq_frena_retrocede_gira_derecha_y_avanza_sin_bloquear);
     RUN_TEST(test_evadir_borde_der_gira_izquierda);
     RUN_TEST(test_frenado_proporcional_a_lo_que_hacia_cada_rueda);
+    RUN_TEST(test_quieto_no_frena_y_retrocede_directamente);
     RUN_TEST(test_evadir_borde_ambos_gira_hacia_el_ultimo_lado_del_enemigo);
     RUN_TEST(test_linea_girando_en_el_sitio_gira_sin_retroceder);
-    RUN_TEST(test_linea_al_girar_justo_tras_avanzar_frena_y_retrocede);
+    RUN_TEST(test_linea_durante_el_paro_frena_y_retrocede);
     RUN_TEST(test_linea_al_girar_tras_asentarse_gira_sin_retroceder);
     RUN_TEST(test_enemigo_no_aborta_el_giro_minimo_de_evasion);
     RUN_TEST(test_enemigo_lateral_aborta_giro_de_evasion);

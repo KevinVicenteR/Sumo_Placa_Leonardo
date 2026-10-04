@@ -81,7 +81,7 @@ code { font-family: var(--f-mono); font-size: 13px; }
   <header>
     <div class="ceja">Mini sumo · dohyo Ø 70 cm · borde blanco 1 cm · 750 rpm · LiPo 2S · ruedas JSUMO 3 cm · 300 g</div>
     <h1>Dohyo Sumo Leonardo</h1>
-    <p class="lead">Arrastra el robot (azul) y el enemigo a donde quieras. Para girar el robot, arrastra el punto que tiene delante o usa el control de orientación. Lo que corre aquí es tu firmware real de <code>src/</code> compilado a WebAssembly, con la misma física que el simulador de consola.</p>
+    <p class="lead">Arrastra el robot (azul) y el enemigo a donde quieras. El enemigo pesa 300 g y resiste el empuje: gana quien saque al otro. Para girar el robot, arrastra el punto que tiene delante o usa el control de orientación. Lo que corre aquí es tu firmware real de <code>src/</code> compilado a WebAssembly, con la misma física que el simulador de consola.</p>
   </header>
 
   <div class="mesa">
@@ -197,7 +197,7 @@ const estado = {
   enemigo: { x: 0, y: 0.15, th: -Math.PI / 2 },
   params: { bateria: "1.23", motores: "0.15,0.5", ruedas: "0.03", piso: "900,100,1000", pared: "0" },
   fase: "colocar",   // colocar | combate | fin
-  semilla: 1, sim: null, t: 0, rastro: [], cayoEn: null,
+  semilla: 1, sim: null, t: 0, rastro: [], cayoEn: null, ganoEn: null,
   reproducir: false,  // true: repetir exactamente un sorteo (posición al azar o caída de la prueba masiva)
 };
 
@@ -236,17 +236,18 @@ async function iniciar() {
     e.sim_enemigo(estado.modoEnemigo, en.x, en.y, en.th);
   }
   e.sim_setup();
-  estado.sim = e; estado.t = 0; estado.rastro = [[r.x, r.y]]; estado.cayoEn = null; estado.fase = "combate";
+  estado.sim = e; estado.t = 0; estado.rastro = [[r.x, r.y]]; estado.cayoEn = null; estado.ganoEn = null; estado.fase = "combate";
   actualizarBotones();
 }
 
 function avanzar(dt) {
   const e = estado.sim;
   estado.t = Math.min(DURACION, estado.t + dt);
-  const cayo = e.sim_avanzar(estado.t);
+  const final = e.sim_avanzar(estado.t);
   estado.rastro.push([e.sim_x(), e.sim_y()]);
   if (estado.rastro.length > 400) estado.rastro.shift();
-  if (cayo) { estado.cayoEn = e.sim_tiempo(); estado.fase = "fin"; }
+  if (final === 1) { estado.cayoEn = e.sim_tiempo(); estado.fase = "fin"; }
+  else if (final === 2) { estado.ganoEn = e.sim_tiempo(); estado.fase = "fin"; }
   else if (estado.t >= DURACION) estado.fase = "fin";
   if (estado.fase === "fin") actualizarBotones();
 }
@@ -356,6 +357,7 @@ function actualizarEstado() {
   }
   const e = estado.sim;
   if (estado.cayoEn !== null) { chip.textContent = "Cayó a los " + fmt(estado.cayoEn, 2) + " s"; chip.className = "chip cayo"; }
+  else if (estado.ganoEn !== null) { chip.textContent = "¡Ganó! Sacó al enemigo a los " + fmt(estado.ganoEn, 2) + " s"; chip.className = "chip dentro"; }
   else if (estado.fase === "fin") { chip.textContent = "Aguantó los 30 s dentro"; chip.className = "chip dentro"; }
   else { chip.textContent = "En combate"; chip.className = "chip dentro"; }
   const l = e.sim_izq(), r = e.sim_der();
@@ -410,7 +412,7 @@ $("orientacion").addEventListener("input", ev => {
 });
 
 function volverAColocar() {
-  estado.fase = "colocar"; estado.sim = null; estado.t = 0; estado.cayoEn = null; estado.rastro = [];
+  estado.fase = "colocar"; estado.sim = null; estado.t = 0; estado.cayoEn = null; estado.ganoEn = null; estado.rastro = [];
   actualizarBotones(); dibujar();
 }
 
@@ -447,6 +449,7 @@ $("masiva").addEventListener("click", async () => {
   const boton = $("masiva"), salida = $("resultado");
   boton.disabled = true;
   const total = 200, caidas = [];
+  let victorias = 0;
   const base = 1 + Math.floor(Math.random() * 1e6);
   for (let i = 0; i < total; i++) {
     const e = await nuevaInstancia();
@@ -454,15 +457,18 @@ $("masiva").addEventListener("click", async () => {
     e.sim_reiniciar(semilla); configurar(e); e.sim_fijar(11, 0.34); e.sim_aleatorio(estado.modoEnemigo);
     const inicio = { robot: { x: e.sim_x(), y: e.sim_y(), th: e.sim_th() }, enemigo: { x: e.sim_ex(), y: e.sim_ey(), th: e.sim_eth() } };
     e.sim_setup();
-    if (e.sim_avanzar(DURACION)) caidas.push({ semilla, t: e.sim_tiempo(), ...inicio });
+    const final = e.sim_avanzar(DURACION);
+    if (final === 1) caidas.push({ semilla, t: e.sim_tiempo(), ...inicio });
+    else if (final === 2) victorias++;
     if (i % 10 === 9) { salida.textContent = `Probando… ${i + 1} / ${total}`; await new Promise(r => setTimeout(r, 0)); }
   }
   boton.disabled = false;
   salida.innerHTML = "";
   const resumen = document.createElement("p");
+  const ganadas = estado.modoEnemigo !== 0 ? ` Sacó al enemigo en <b>${victorias}</b>.` : "";
   resumen.innerHTML = caidas.length === 0
-    ? `<b style="color:var(--ok)">0 caídas</b> en ${total} posiciones al azar.`
-    : `<b style="color:var(--danger)">${caidas.length} caídas</b> en ${total} posiciones al azar. Toca una para verla:`;
+    ? `<b style="color:var(--ok)">0 caídas</b> en ${total} posiciones al azar.${ganadas}`
+    : `<b style="color:var(--danger)">${caidas.length} caídas</b> en ${total} posiciones al azar.${ganadas} Toca una caída para verla:`;
   salida.append(resumen);
   if (caidas.length) {
     const lista = document.createElement("div"); lista.className = "semillas";

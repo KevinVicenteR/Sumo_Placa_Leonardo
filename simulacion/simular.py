@@ -72,15 +72,17 @@ def resumir(modo: str, filas: list) -> dict:
         "t_ver_mediana": statistics.median(vistos) if vistos else float("nan"),
         "frac_frontal": statistics.mean(float(f["frac_frontal"]) for f in filas),
         "semillas_caida": [int(f["semilla"]) for f in caidas][:8],
+        "victorias": sum(1 for f in filas if f.get("gano") == "1"),
+        "t_victoria": statistics.median([float(f["t_gano"]) for f in filas if f.get("gano") == "1"] or [float("nan")]),
     }
 
 
 def imprimir(resumenes: list):
-    print(f"{'escenario':<10}{'caídas':>10}{'margen mín':>12}{'margen p10':>12}"
-          f"{'sobresale':>11}{'ve enemigo':>12}{'% de frente':>13}")
+    print(f"{'escenario':<10}{'caídas':>10}{'victorias':>12}{'gana en':>9}{'margen p10':>12}"
+          f"{'ve enemigo':>12}{'% de frente':>13}")
     for r in resumenes:
-        print(f"{r['modo']:<10}{r['caidas']:>5}/{r['n']:<4}{r['margen_min']:>9.1f} cm"
-              f"{r['margen_p10']:>9.1f} cm{r['salida_max']:>8.1f} cm"
+        print(f"{r['modo']:<10}{r['caidas']:>5}/{r['n']:<4}{r['victorias']:>7}/{r['n']:<4}"
+              f"{r['t_victoria']:>7.1f} s{r['margen_p10']:>9.1f} cm"
               f"{r['t_ver_mediana']:>10.2f} s{100 * r['frac_frontal']:>11.0f} %")
         if r["semillas_caida"]:
             print(f"{'':<10}semillas con caída: {r['semillas_caida']}")

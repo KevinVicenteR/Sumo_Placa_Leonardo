@@ -21,6 +21,16 @@ import simular
 ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.3"]
 
 # Variaciones plausibles del robot real que no se conocen con exactitud
+# Condiciones súper extremas para el robot con LiPo 2S
+ENTORNOS_EXTREMOS = [
+    "--mu 1.0 --inicio-r 0.34 --bateria 1.25",                                   # nominal
+    "--mu 1.0 --inicio-r 0.34 --bateria 1.4",                                    # LiPo recién cargada
+    "--mu 0.6 --inicio-r 0.34 --bateria 1.4 --sensor-x 0.03",                    # dohyo con polvo, sensores cerca de las ruedas
+    "--mu 0.7 --inicio-r 0.34 --bateria 1.4 --friccion-caja 0.08 --friccion-giro 0.3",  # motores sueltos
+    "--mu 0.8 --inicio-r 0.34 --bateria 1.4 --adc-negro 150 --adc-blanco 850 --adc-fuera 150",  # sensor invertido
+    "--mu 1.0 --inicio-r 0.34 --bateria 1.25 --agarre-enemigo 1.2 --masa-enemigo 0.5",  # enemigo pesado
+]
+
 ENTORNOS_ROBUSTOS = [
     "",                                              # robot nominal
     "--bateria 1.3 --friccion-caja 0.08 --friccion-giro 0.3",  # batería alta y motores suaves (rápido)
@@ -46,10 +56,11 @@ def main():
     ap.add_argument("--dur", type=float, default=30)
     ap.add_argument("--entorno", action="append", default=[])
     ap.add_argument("--robusto", action="store_true")
+    ap.add_argument("--extremo", action="store_true")
     ap.add_argument("--mostrar", type=int, default=12)
     a = ap.parse_args()
 
-    entornos = a.entorno or ([*ENTORNOS_ROBUSTOS] if a.robusto else [""])
+    entornos = a.entorno or ([*ENTORNOS_EXTREMOS] if a.extremo else [*ENTORNOS_ROBUSTOS] if a.robusto else [""])
     opciones = {k: v.split(",") for k, v in (o.split("=", 1) for o in a.opciones)}
     combos = [dict(zip(opciones, vals)) for vals in itertools.product(*opciones.values())]
     simular.BUILD.mkdir(parents=True, exist_ok=True)
@@ -64,19 +75,21 @@ def main():
         con_enemigo = [r for ent in por_entorno for r in ent[1:]]
         frente = sum(r["frac_frontal"] for r in con_enemigo) / len(con_enemigo)
         ver = sorted(r["t_ver_mediana"] for r in con_enemigo)[len(con_enemigo) // 2]
-        return caidas, peor_margen, frente, ver
+        victorias = sum(r["victorias"] for r in con_enemigo)
+        return caidas, peor_margen, frente, ver, victorias
 
     filas = sorted(((p, metricas(pe), pe) for p, pe in resultados),
-                   key=lambda f: (f[1][0], -f[1][2]))
-    print(f"{'parámetros':<70}{'caídas':>8}{'p10 margen':>12}{'% frente':>10}{'ve':>8}")
-    for params, (caidas, margen, frente, ver), pe in filas[:a.mostrar]:
+                   key=lambda f: (f[1][0], -f[1][4], -f[1][2]))
+    print(f"{'parámetros':<70}{'caídas':>8}{'victorias':>11}{'p10 margen':>12}{'% frente':>10}{'ve':>8}")
+    for params, (caidas, margen, frente, ver, victorias), pe in filas[:a.mostrar]:
         txt = " ".join(f"{k}={v}" for k, v in params.items() if len(opciones[k]) > 1)
-        print(f"{txt:<70}{caidas:>8}{margen:>9.1f} cm{100 * frente:>8.0f} %{ver:>7.2f}s")
+        print(f"{txt:<70}{caidas:>8}{victorias:>11}{margen:>9.1f} cm{100 * frente:>8.0f} %{ver:>7.2f}s")
     if len(entornos) > 1:
         params, _, pe = filas[0]
         print("\nMejor combinación por entorno (caídas sin/est/err):")
         for ent, res in zip(entornos, pe):
-            print(f"  {ent or 'nominal':<52}" + "/".join(str(r["caidas"]) for r in res))
+            print(f"  {ent or 'nominal':<60} caídas " + "/".join(str(r["caidas"]) for r in res)
+                  + "   victorias " + "/".join(str(r["victorias"]) for r in res[1:]))
 
 
 if __name__ == "__main__":

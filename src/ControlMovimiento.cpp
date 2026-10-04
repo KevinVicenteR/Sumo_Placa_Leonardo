@@ -20,8 +20,8 @@ bool ControlMovimiento::continuarEvasion(const DecisionMovimiento& decision, IMo
     }
 
     if (fase == Fase::Girando) {
-        // Si el enemigo aparece de frente durante el giro, se aborta para atacar
-        if (decision.tipo != TipoAccion::AtaqueFrontal && ahora - inicioFase < TiempoGiroEvasion) {
+        // Si cualquier sensor de enemigo lo detecta durante el giro, se aborta para atacar
+        if (decision.tipo == TipoAccion::Busqueda && ahora - inicioFase < TiempoGiroEvasion) {
             motor.mover(sentidoGiro * VelocidadMaxima, -sentidoGiro * VelocidadMaxima);
             return true;
         }

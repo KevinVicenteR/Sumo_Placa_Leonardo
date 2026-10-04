@@ -115,6 +115,18 @@ void test_enemigo_frontal_aborta_giro_de_evasion(void) {
     assertMovimiento(m, VelocidadMaxima, VelocidadMaxima);
 }
 
+void test_enemigo_lateral_aborta_giro_de_evasion(void) {
+    ControlMovimiento c;
+    MotorMock m;
+
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 0);
+    c.ejecutar({TipoAccion::Busqueda}, m, TiempoRetroceso + 10);
+    assertMovimiento(m, VelocidadMaxima, -VelocidadMaxima);
+
+    c.ejecutar({TipoAccion::CorregirIzq}, m, TiempoRetroceso + 20);
+    assertMovimiento(m, VelocidadCurva, VelocidadMaxima);
+}
+
 void test_enemigo_frontal_no_aborta_retroceso(void) {
     ControlMovimiento c;
     MotorMock m;
@@ -132,6 +144,7 @@ int main(int, char**) {
     RUN_TEST(test_evadir_borde_ambos_retrocede_mas_tiempo);
     RUN_TEST(test_borde_durante_giro_reinicia_retroceso);
     RUN_TEST(test_enemigo_frontal_aborta_giro_de_evasion);
+    RUN_TEST(test_enemigo_lateral_aborta_giro_de_evasion);
     RUN_TEST(test_enemigo_frontal_no_aborta_retroceso);
     return UNITY_END();
 }

@@ -14,6 +14,10 @@ void ConfiguracionHardware::inicializarPines() const {
     pinMode(S_PISO_IZQ, INPUT);
     pinMode(S_PISO_DER, INPUT);
 
+    // ADC con prescaler 32 (~26 us por lectura en vez de ~112 us): el borde
+    // se revisa varias veces por ciclo y el umbral no necesita 10 bits finos.
+    ADCSRA = (ADCSRA & ~0x07) | 0x05;
+
     // Pines de control de Motores
     pinMode(PWMA, OUTPUT);
     pinMode(MA1A, OUTPUT);

@@ -17,6 +17,7 @@ ConfiguracionHardware hardware;
 
 void setup() {
   hardware.inicializarPines();
+  Percepcion::calibrarPiso();
   estado.setMotor(&motor);
   wdt_enable(WDTO_1S); // Watchdog Activo
 }

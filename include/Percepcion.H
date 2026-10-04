@@ -7,6 +7,9 @@
 class Percepcion: public IPercepcion {
 public:
     LecturasSensores leer() const override;
+    LecturasSensores leerBorde() const override;
+    // Llamar en setup() con el robot sobre el negro del dohyo.
+    static void calibrarPiso();
 
 private:
     static bool lecturaDigitalMayoritaria(int pin);

@@ -2,15 +2,12 @@
 #include "UtilMatematica.H"
 
 namespace {
-// -- SESGO DE ATAQUE EN ÁNGULO --
-// Modificamos los pesos. El frontal ya no es 0. 
-// Al ponerlo en 1, el PID siempre intentará atacar cargado hacia un lado, 
-// metiendo la esquina de tu solera debajo del enemigo.
+// Pesos simétricos: el enemigo frontal no provoca una curva artificial.
 constexpr int8_t PESO_LAT_IZQ = -4;
 constexpr int8_t PESO_C45_IZQ = -2;
-constexpr int8_t PESO_FRONTAL = 1;  // <-- ¡Aquí está la magia del ángulo!
-constexpr int8_t PESO_C45_DER = 3;
-constexpr int8_t PESO_LAT_DER = 5;
+constexpr int8_t PESO_FRONTAL = 0;
+constexpr int8_t PESO_C45_DER = 2;
+constexpr int8_t PESO_LAT_DER = 4;
 }
 
 int8_t EstrategiaCombate::calcularErrorDireccion(const LecturasSensores& lecturas) {
@@ -39,13 +36,11 @@ DecisionMovimiento EstrategiaCombate::decidir(const LecturasSensores& lecturas) 
         return DecisionMovimiento{TipoAccion::EvadirBordeAmbos, 0};
     }
 
-    // -- PRIORIDAD 2: ATAQUE EN ÁNGULO --
+    // -- PRIORIDAD 2: SEGUIR AL ENEMIGO --
     const bool hayEnemigo = lecturas.latIzq || lecturas.c45Izq || lecturas.frontal || lecturas.c45Der || lecturas.latDer;
     const int8_t error = hayEnemigo ? calcularErrorDireccion(lecturas) : 0;
 
     if (hayEnemigo) {
-        // Al enviar el error modificado, el PID nunca se centrará perfectamente.
-        // La alta tracción de tus llantas de silicona hará el resto del trabajo empujándolo de lado.
         if (lecturas.frontal) return DecisionMovimiento{TipoAccion::AtaqueFrontal, error};
         if (lecturas.c45Izq) return DecisionMovimiento{TipoAccion::CorregirIzq, error};
         if (lecturas.c45Der) return DecisionMovimiento{TipoAccion::CorregirDer, error};

@@ -25,6 +25,7 @@ private:
     
     // Variables de la Máquina de Estados Asíncrona
     mutable unsigned long tiempoInicioEvasion = 0;
+    mutable unsigned long tiempoUltimoBorde = 0;
     mutable uint8_t faseEvasion = 0;
     mutable TipoAccion tipoEvasionActual = TipoAccion::Busqueda;
 };

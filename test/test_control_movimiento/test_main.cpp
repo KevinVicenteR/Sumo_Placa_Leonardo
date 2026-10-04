@@ -1,147 +1,130 @@
 #include <unity.h>
 #include "ControlMovimiento.H"
+#include "EstrategiaCombate.H"
 #include "Pines.H"
 #include "Arduino.h"
 
 class MotorMock : public IMotor {
 public:
-    int calls = 0;
-    int izq[32] = {0};
-    int der[32] = {0};
-
+    int izq = 0, der = 0;
     void avanzar(int) override {}
     void retroceder(int) override {}
     void detener() override {}
     void girar(int) override {}
     void curva(int) override {}
-
-    void mover(int velIzq, int velDer) override {
-        if (calls < 32) {
-            izq[calls] = velIzq;
-            der[calls] = velDer;
-        }
-        calls++;
-    }
+    void mover(int i, int d) override { izq = i; der = d; }
 };
+void setUp() { testMillis() = 0; g_delayCallCount = 0; }
+void tearDown() {}
 
-static void resetDelays() {
-    g_delayCallCount = 0;
-    for (int i = 0; i < 16; i++) {
-        g_delayValues[i] = 0;
-    }
+void test_borde_tiene_prioridad_sobre_todos_los_enemigos() {
+    LecturasSensores l{};
+    l.frontal = l.c45Izq = l.c45Der = l.latIzq = l.latDer = true;
+    EstrategiaCombate e;
+    l.lineaIzq = true;
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeIzq, (int)e.decidir(l).tipo);
+    l.lineaDer = true;
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeAmbos, (int)e.decidir(l).tipo);
+    l.lineaIzq = false;
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeDer, (int)e.decidir(l).tipo);
 }
-
-void test_ataque_frontal_velocidades_correctas(void) {
-    ControlMovimiento c;
-    MotorMock m;
-    resetDelays();
-
+void test_enemigo_no_cancela_retirada_y_giro() {
+    ControlMovimiento c; MotorMock m;
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m);
+    TEST_ASSERT_EQUAL_INT(-VelocidadRetroceso, m.izq);
+    TEST_ASSERT_EQUAL_INT(-VelocidadRetroceso, m.der);
+    testMillis() = 100;
     c.ejecutar({TipoAccion::AtaqueFrontal}, m);
-
-    TEST_ASSERT_EQUAL_INT(1, m.calls);
-    TEST_ASSERT_EQUAL_INT(VelocidadAtaqueFrontal, m.izq[0]);
-    TEST_ASSERT_EQUAL_INT(VelocidadAtaqueFrontal, m.der[0]);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
+    testMillis() = 220;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    testMillis() = 221;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    TEST_ASSERT_EQUAL_INT(VelocidadGiro, m.izq);
+    TEST_ASSERT_EQUAL_INT(-VelocidadGiro, m.der);
+    testMillis() = 400;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    testMillis() = 401;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    TEST_ASSERT_EQUAL_INT(0, m.izq);
+    testMillis() = 500;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    testMillis() = 501;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    TEST_ASSERT_EQUAL_INT(VelocidadAtaqueFrontal, m.izq);
     TEST_ASSERT_EQUAL_INT(0, g_delayCallCount);
 }
-
-void test_evadir_borde_izq_hace_retroceso_y_giro_con_delays(void) {
-    ControlMovimiento c;
-    MotorMock m;
-    resetDelays();
-
+void test_linea_persistente_impide_giro() {
+    ControlMovimiento c; MotorMock m;
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m);
+    testMillis() = 1000;
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m);
+    testMillis() = 1079;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
+    testMillis() = 1080;
+    c.ejecutar({TipoAccion::Busqueda}, m);
+    testMillis() = 1081;
+    c.ejecutar({TipoAccion::Busqueda}, m);
+    TEST_ASSERT_TRUE(m.izq * m.der < 0);
+}
+void test_borde_durante_giro_reinicia_retroceso() {
+    ControlMovimiento c; MotorMock m;
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m);
+    testMillis() = 220;
+    c.ejecutar({TipoAccion::Busqueda}, m);
+    testMillis() = 230;
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
+    testMillis() = 440;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
+}
+void test_un_sensor_solo_gira_alejandose_del_borde() {
+    ControlMovimiento c; MotorMock m;
     c.ejecutar({TipoAccion::EvadirBordeIzq}, m);
+    // Nariz hacia la derecha: rueda derecha retrocede más que la izquierda.
+    TEST_ASSERT_TRUE(m.der < m.izq && m.izq <= 0);
+    testMillis() = 89;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    TEST_ASSERT_TRUE(m.der < m.izq);
+    testMillis() = 90;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    testMillis() = 91;
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m);
+    // Sin retroceso largo ni pausa: vuelve a atacar enseguida.
+    TEST_ASSERT_EQUAL_INT(VelocidadAtaqueFrontal, m.izq);
 
-    TEST_ASSERT_EQUAL_INT(2, m.calls);
-    TEST_ASSERT_EQUAL_INT(-VelocidadRetroceso, m.izq[0]);
-    TEST_ASSERT_EQUAL_INT(-VelocidadRetroceso, m.der[0]);
-    TEST_ASSERT_EQUAL_INT(0, m.izq[1]);
-    TEST_ASSERT_EQUAL_INT(VelocidadMaxima, m.der[1]);
-
-    TEST_ASSERT_EQUAL_INT(2, g_delayCallCount);
-    TEST_ASSERT_EQUAL_UINT32(280, g_delayValues[0]);
-    TEST_ASSERT_EQUAL_UINT32(260, g_delayValues[1]);
+    c.ejecutar({TipoAccion::EvadirBordeDer}, m);
+    TEST_ASSERT_TRUE(m.izq < m.der && m.der <= 0);
 }
-
-void test_busqueda_por_defecto(void) {
-    ControlMovimiento c;
-    MotorMock m;
-    resetDelays();
-
+void test_esquina_durante_pivote_obliga_a_retroceder() {
+    ControlMovimiento c; MotorMock m;
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m);
+    testMillis() = 10;
+    c.ejecutar({TipoAccion::EvadirBordeDer}, m);
+    TEST_ASSERT_EQUAL_INT(-VelocidadRetroceso, m.izq);
+    TEST_ASSERT_EQUAL_INT(-VelocidadRetroceso, m.der);
+}
+void test_busqueda_no_avanza_y_ataque_frontal_centrado() {
+    ControlMovimiento c; MotorMock m; EstrategiaCombate e;
     c.ejecutar({TipoAccion::Busqueda}, m);
-
-    TEST_ASSERT_EQUAL_INT(1, m.calls);
-    TEST_ASSERT_TRUE(m.izq[0] > m.der[0]);
-    TEST_ASSERT_TRUE(m.izq[0] < VelocidadAvance);
-    TEST_ASSERT_TRUE(m.der[0] < VelocidadAvance);
+    TEST_ASSERT_EQUAL_INT(0, m.izq + m.der);
+    LecturasSensores l{}; l.frontal = true;
+    DecisionMovimiento d = e.decidir(l);
+    TEST_ASSERT_EQUAL_INT(0, d.error);
+    c.ejecutar(d, m);
+    TEST_ASSERT_EQUAL_INT(VelocidadAtaqueFrontal, m.izq);
+    TEST_ASSERT_EQUAL_INT(m.izq, m.der);
 }
-
-void test_busqueda_barre_lentamente_el_ring(void) {
-    ControlMovimiento c;
-    MotorMock m;
-    resetDelays();
-
-    for (int i = 0; i < 8; ++i) {
-        c.ejecutar({TipoAccion::Busqueda}, m);
-    }
-
-    TEST_ASSERT_EQUAL_INT(8, m.calls);
-    TEST_ASSERT_TRUE(m.izq[0] > m.der[0]);
-    TEST_ASSERT_EQUAL_INT(m.izq[3], m.der[3]);
-    TEST_ASSERT_EQUAL_INT(m.izq[4], m.der[4]);
-    TEST_ASSERT_TRUE(m.izq[7] < m.der[7]);
-    TEST_ASSERT_TRUE(m.izq[0] < VelocidadMaxima);
-    TEST_ASSERT_TRUE(m.der[0] < VelocidadMaxima);
-}
-
-void test_busqueda_recuerda_el_ultimo_lado_detectado(void) {
-    ControlMovimiento c;
-    MotorMock m;
-    resetDelays();
-
-    c.ejecutar({TipoAccion::AtaqueFrontal, 4}, m);
-    c.ejecutar({TipoAccion::Busqueda}, m);
-    c.ejecutar({TipoAccion::Busqueda}, m);
-
-    TEST_ASSERT_EQUAL_INT(3, m.calls);
-    TEST_ASSERT_EQUAL_INT(-VelocidadMaxima, m.izq[1]);
-    TEST_ASSERT_EQUAL_INT(-VelocidadMaxima, m.der[1]);
-    TEST_ASSERT_TRUE(m.izq[2] < m.der[2]);
-}
-
-void test_defensa_izq_hace_pivote_con_una_sola_llanta(void) {
-    ControlMovimiento c;
-    MotorMock m;
-    resetDelays();
-
-    c.ejecutar({TipoAccion::DefensaIzq}, m);
-
-    TEST_ASSERT_EQUAL_INT(1, m.calls);
-    TEST_ASSERT_EQUAL_INT(0, m.izq[0]);
-    TEST_ASSERT_EQUAL_INT(VelocidadPivoteLateral, m.der[0]);
-    TEST_ASSERT_EQUAL_INT(0, g_delayCallCount);
-}
-
-void test_defensa_der_hace_pivote_con_una_sola_llanta(void) {
-    ControlMovimiento c;
-    MotorMock m;
-    resetDelays();
-
-    c.ejecutar({TipoAccion::DefensaDer}, m);
-
-    TEST_ASSERT_EQUAL_INT(1, m.calls);
-    TEST_ASSERT_EQUAL_INT(VelocidadPivoteLateral, m.izq[0]);
-    TEST_ASSERT_EQUAL_INT(0, m.der[0]);
-    TEST_ASSERT_EQUAL_INT(0, g_delayCallCount);
-}
-
 int main(int, char**) {
     UNITY_BEGIN();
-    RUN_TEST(test_ataque_frontal_velocidades_correctas);
-    RUN_TEST(test_evadir_borde_izq_hace_retroceso_y_giro_con_delays);
-    RUN_TEST(test_busqueda_por_defecto);
-    RUN_TEST(test_busqueda_barre_lentamente_el_ring);
-    RUN_TEST(test_busqueda_recuerda_el_ultimo_lado_detectado);
-    RUN_TEST(test_defensa_izq_hace_pivote_con_una_sola_llanta);
-    RUN_TEST(test_defensa_der_hace_pivote_con_una_sola_llanta);
+    RUN_TEST(test_borde_tiene_prioridad_sobre_todos_los_enemigos);
+    RUN_TEST(test_enemigo_no_cancela_retirada_y_giro);
+    RUN_TEST(test_linea_persistente_impide_giro);
+    RUN_TEST(test_borde_durante_giro_reinicia_retroceso);
+    RUN_TEST(test_un_sensor_solo_gira_alejandose_del_borde);
+    RUN_TEST(test_esquina_durante_pivote_obliga_a_retroceder);
+    RUN_TEST(test_busqueda_no_avanza_y_ataque_frontal_centrado);
     return UNITY_END();
 }

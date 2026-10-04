@@ -6,8 +6,18 @@ namespace {
     // Aumenta estos valores si el robot pierde al enemigo muy rápido
     constexpr uint8_t MEMORIA_LATERAL = 15; // Mucha memoria para no perderlo al girar
     constexpr uint8_t MEMORIA_DIAGONAL = 10;
-    constexpr uint8_t MEMORIA_FRONTAL = 5;  // Poca memoria para ser preciso al frente
+    constexpr uint8_t MEMORIA_FRONTAL = 0;  // Poca memoria para ser preciso al frente
+
+    // -- SENSIBILIDAD DEL PISO --
+    // El umbral se coloca en este porcentaje del camino entre el negro calibrado y
+    // BLANCO. Más alto = detecta antes (más sensible), pero más riesgo de falsos.
+    constexpr int SENSIBILIDAD_PISO_PCT = 50;
+    constexpr uint8_t MUESTRAS_CALIBRACION = 16;
 }
+
+// Umbrales activos (BLANCO hasta que se calibre sobre el dohyo negro).
+static int umbralPisoIzq = BLANCO;
+static int umbralPisoDer = BLANCO;
 
 // Variables estáticas para llevar la cuenta de la memoria de cada sensor
 static uint8_t cuentaLatIzq = 0;
@@ -21,19 +31,46 @@ bool Percepcion::lecturaDigitalMayoritaria(int pin) {
     return digitalRead(pin) == LOW; 
 }
 
+static int calcularUmbral(uint8_t pin) {
+    long suma = 0;
+    for (uint8_t i = 0; i < MUESTRAS_CALIBRACION; ++i) suma += analogRead(pin);
+    const int negro = static_cast<int>(suma / MUESTRAS_CALIBRACION);
+    // Lectura dudosa (robot sobre blanco o sensor desconectado): umbral fijo.
+    if (negro <= BLANCO * 2) return BLANCO;
+    return BLANCO + static_cast<int>((static_cast<long>(negro - BLANCO) * SENSIBILIDAD_PISO_PCT) / 100);
+}
+
+void Percepcion::calibrarPiso() {
+    umbralPisoIzq = calcularUmbral(S_PISO_IZQ);
+    umbralPisoDer = calcularUmbral(S_PISO_DER);
+}
+
 bool Percepcion::detectarLineaSeguro(uint8_t pin) {
-    // Leemos el piso (asumiendo que BLANCO es un valor analógico o digital bajo)
-    // Si usas digital: return digitalRead(pin) == LOW;
-    // Si usas analógico:
-    return analogRead(pin) < BLANCO;
+    // Blanco refleja más: lectura baja. Una sola muestra basta para reaccionar.
+    return analogRead(pin) < (pin == S_PISO_IZQ ? umbralPisoIzq : umbralPisoDer);
+}
+
+LecturasSensores Percepcion::leerBorde() const {
+    LecturasSensores lecturas{};
+    // Leer siempre ambos: el control distingue un sensor (girar) de dos (retroceder).
+    lecturas.lineaIzq = detectarLineaSeguro(S_PISO_IZQ);
+    lecturas.lineaDer = detectarLineaSeguro(S_PISO_DER);
+    if (lecturas.lineaIzq || lecturas.lineaDer) {
+        cuentaLatIzq = cuentaC45Izq = cuentaFrontal = cuentaC45Der = cuentaLatDer = 0;
+    }
+    return lecturas;
 }
 
 LecturasSensores Percepcion::leer() const {
-    LecturasSensores lecturas;
+    LecturasSensores lecturas = leerBorde();
 
     // 1. LECTURA DE PISO (Prioridad absoluta, sin retardo)
-    lecturas.lineaIzq = detectarLineaSeguro(S_PISO_IZQ);
-    lecturas.lineaDer = detectarLineaSeguro(S_PISO_DER);
+
+    // Entregar el borde inmediatamente, sin leer ni retener al enemigo.
+    if (lecturas.lineaIzq || lecturas.lineaDer) {
+        cuentaLatIzq = cuentaC45Izq = cuentaFrontal = cuentaC45Der = cuentaLatDer = 0;
+        return lecturas;
+    }
 
     // 2. LECTURA DE ENEMIGO (Con Memoria / Filtro Antirrebote)
     

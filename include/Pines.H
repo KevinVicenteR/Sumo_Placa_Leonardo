@@ -24,15 +24,15 @@ constexpr uint8_t MA1B = 8;
 constexpr uint8_t MA2B = 12;
 
 // -- VELOCIDADES --
-constexpr int16_t VelocidadMaxima = 255;
+constexpr int16_t VelocidadMaxima = 180;
 constexpr int16_t VelocidadMinima = 50;
-constexpr int16_t VelocidadCurva = 150;
-constexpr int16_t VelocidadGiro = 200;
-constexpr int16_t VelocidadRetroceso = 255;
-constexpr int16_t VelocidadAvance = 160;
-constexpr int16_t VelocidadAtaqueFrontal = 255;
-constexpr int16_t VelocidadBusquedaDer = 90;
-constexpr int16_t VelocidadPivoteLateral = 220;
-constexpr int16_t VelocidadCurvaAtaqueLateral = 100;
+constexpr int16_t VelocidadCurva = 105;
+constexpr int16_t VelocidadGiro = 110;
+constexpr int16_t VelocidadRetroceso = 180;
+constexpr int16_t VelocidadAvance = 112;
+constexpr int16_t VelocidadAtaqueFrontal = 135;
+constexpr int16_t VelocidadBusquedaDer = 63;
+constexpr int16_t VelocidadPivoteLateral = 110;
+constexpr int16_t VelocidadCurvaAtaqueLateral = 70;
 
 #endif

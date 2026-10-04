@@ -1,6 +1,9 @@
 #include <unity.h>
 #include "Estados.H"
 
+void setUp() {}
+void tearDown() {}
+
 class MotorDummy : public IMotor {
 public:
     void avanzar(int) override {}
@@ -15,6 +18,8 @@ class PercepcionMock : public IPercepcion {
 public:
     mutable int calls = 0;
     LecturasSensores next{};
+    LecturasSensores bordeFinal{};
+    LecturasSensores leerBorde() const override { return bordeFinal; }
 
     LecturasSensores leer() const override {
         calls++;
@@ -73,16 +78,32 @@ void test_orquesta_leer_decidir_ejecutar(void) {
     estado.actualizarEstado();
 
     TEST_ASSERT_EQUAL_INT(1, p.calls);
-    TEST_ASSERT_EQUAL_INT(1, e.calls);
+    TEST_ASSERT_EQUAL_INT(0, e.calls);
     TEST_ASSERT_EQUAL_INT(1, c.calls);
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeDer, (int)c.ultima);
 
-    TEST_ASSERT_EQUAL_INT((int)p.next.lineaDer, (int)e.recibido.lineaDer);
+
+}
+
+void test_borde_aparece_durante_decision_cancela_ataque(void) {
+    PercepcionMock p;
+    EstrategiaMock e;
+    ControlMock c;
+    MotorDummy m;
+    e.salida = {TipoAccion::AtaqueFrontal};
+    p.bordeFinal.lineaIzq = true;
+    Estado estado(p, e, c);
+    estado.setMotor(&m);
+    estado.actualizarEstado();
+    TEST_ASSERT_EQUAL_INT(1, e.calls);
+    TEST_ASSERT_EQUAL_INT(1, c.calls);
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeIzq, (int)c.ultima);
 }
 
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_no_hace_nada_si_no_hay_motor);
     RUN_TEST(test_orquesta_leer_decidir_ejecutar);
+    RUN_TEST(test_borde_aparece_durante_decision_cancela_ataque);
     return UNITY_END();
 }

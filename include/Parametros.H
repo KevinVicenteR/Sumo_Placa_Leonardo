@@ -32,7 +32,7 @@ constexpr int VelocidadCurva = 85;
 // parada y hace de pivote mientras la otra empuja a la velocidad de ataque;
 // false = curva con las dos ruedas (la interior a VelocidadCurva)
 constexpr bool Corregir45EnPivote = true;
-constexpr int VelocidadRetroceso = 210;
+constexpr int VelocidadRetroceso = 195;
 constexpr int VelocidadGiroEvasion = 75;
 constexpr int VelocidadAvance = 32;
 constexpr int VelocidadGiroBusqueda = 75;
@@ -77,13 +77,13 @@ constexpr unsigned long TauRuedas = 80;
 constexpr int VelocidadMinimaFreno = 20;
 constexpr unsigned long TiempoRetroceso = 180;
 // Paro en seco cuando el enemigo desaparece en pleno ataque (ms)
-constexpr unsigned long TiempoParoPerdida = 150;
-constexpr unsigned long TiempoRetrocesoAmbos = 220;
+constexpr unsigned long TiempoParoPerdida = 250;
+constexpr unsigned long TiempoRetrocesoAmbos = 200;
 // Negro continuo antes del giro; límite de recuperación sin sensores traseros.
-constexpr unsigned long TiempoSeparacionBorde = 100;
-constexpr unsigned long TiempoSeparacionUnSensor = 80;
-constexpr unsigned long TiempoRetrocesoUnSensor = 100;
-constexpr int VelocidadRetrocesoUnSensor = 130;
+constexpr unsigned long TiempoSeparacionBorde = 90;
+constexpr unsigned long TiempoSeparacionUnSensor = 72;
+constexpr unsigned long TiempoRetrocesoUnSensor = 90;
+constexpr int VelocidadRetrocesoUnSensor = 118;
 constexpr unsigned long TiempoRectoBordeUnSensor = 80;
 constexpr int PorcentajeRetrocesoUnSensor = 60;
 constexpr unsigned long TiempoMaximoRecuperacionBorde = 700;
@@ -114,7 +114,7 @@ constexpr int PorcentajeArcoZigzag = 100;
 constexpr unsigned long TiempoArcoZigzag = 0;
 // Duración de la subida gradual de VelocidadAtaque a VelocidadEmpuje (ms).
 // Se reinicia si pierde la alineación antes de completar la subida o evade el borde.
-constexpr unsigned long TiempoEmbestida = 1500;
+constexpr unsigned long TiempoEmbestida = 2500;
 constexpr unsigned long TiempoRetencionEnemigo = 40;
 // Giro hacia un enemigo visto de lado: sigue hasta verlo de frente o hasta este tiempo
 constexpr unsigned long TiempoMaxGiroLateral = 400;
@@ -219,7 +219,11 @@ constexpr bool PivoteRound2 = true;
 // Velocidad de la rueda que empuja en el pivote del round 2 (la otra queda parada)
 constexpr int VelocidadPivoteInicio = 180;
 constexpr int VelocidadAvanceInicio = 45;
-constexpr unsigned long TiempoAvanceInicio = 6000;
+constexpr unsigned long TiempoAvanceInicio = 2500;
+// Round 3: tras el avance, espera quieto mirando al frente a que llegue el rival
+// (reacciona a cualquier sensor); si no llega en TiempoEsperaRound3, busca
+constexpr bool EsperarRound3 = true;
+constexpr unsigned long TiempoEsperaRound3 = 3000;
 // Al encontrar al rival con la rutina de los rounds 1 y 2 está pegado y el borde
 // lejos: embiste a esta velocidad mientras lo tenga delante, hasta este tiempo.
 // Con una rutina elegida no se aplica el arranque suave (TiempoArranqueSuave).

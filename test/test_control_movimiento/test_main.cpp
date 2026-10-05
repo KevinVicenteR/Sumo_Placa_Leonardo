@@ -573,6 +573,23 @@ void test_round_1_mantiene_su_velocidad_tras_la_embestida(void) {
     TEST_ASSERT_EQUAL_INT(VelocidadEmpuje, m.izq);
 }
 
+void test_rutina_frente_espera_quieto_tras_avanzar(void) {
+    if (!EsperarRound3) {
+        return;
+    }
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(3, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoAvanceInicio + 1);
+    assertMovimiento(m, 0, 0);
+    TEST_ASSERT_EQUAL_INT(3, c.rutinaActual());
+    // Esperando, un lateral confirmado sí termina la rutina
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1000 + TiempoAvanceInicio + 10);
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1000 + TiempoAvanceInicio + 10 + ConfirmacionDeteccion);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+}
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_busqueda_tras_un_sensor_sigue_hacia_el_lado_del_escape);
@@ -607,5 +624,6 @@ int main(int, char**) {
     RUN_TEST(test_rutina_lado_sin_lateral_usa_el_dip3);
     RUN_TEST(test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado);
     RUN_TEST(test_round_1_mantiene_su_velocidad_tras_la_embestida);
+    RUN_TEST(test_rutina_frente_espera_quieto_tras_avanzar);
     return UNITY_END();
 }

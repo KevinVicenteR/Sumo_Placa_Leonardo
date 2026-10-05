@@ -459,9 +459,15 @@ bool ControlMovimiento::continuarRutina(const DecisionMovimiento& decision, IMot
         // hay gente y objetos, así que no cortan el avance.
         const bool porDelante = veDeFrente(decision) || decision.tipo == TipoAccion::CorregirIzq ||
                                 decision.tipo == TipoAccion::CorregirDer;
-        const bool confirmado = confirmar(porDelante, ahora, detectaRutina, inicioDetectaRutina);
-        sigue = !(confirmado && t >= TiempoMinimoAvanceInicio) && t < TiempoAvanceInicio;
-        if (sigue) {
+        const bool esperando = EsperarRound3 && t >= TiempoAvanceInicio;
+        // Ya cerca del centro, los laterales apuntan dentro del dohyo: valen todos
+        const bool visto = esperando ? decision.tipo != TipoAccion::Busqueda : porDelante;
+        const bool confirmado = confirmar(visto, ahora, detectaRutina, inicioDetectaRutina);
+        const unsigned long fin = TiempoAvanceInicio + (EsperarRound3 ? TiempoEsperaRound3 : 0);
+        sigue = !(confirmado && t >= TiempoMinimoAvanceInicio) && t < fin;
+        if (sigue && esperando) {
+            mover(motor, 0, 0, true);
+        } else if (sigue) {
             mover(motor, VelocidadAvanceInicio, VelocidadAvanceInicio);
         }
     }

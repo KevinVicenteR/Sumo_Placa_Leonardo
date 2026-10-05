@@ -549,6 +549,30 @@ void test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado(void) {
     assertMovimiento(m, VelocidadAtaque, 0);
 }
 
+void test_round_1_mantiene_su_velocidad_tras_la_embestida(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(1, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    const unsigned long visto = 1000 + TiempoMinimoGiroEspalda + 2 * TauRuedas;
+    c.ejecutar({TipoAccion::Busqueda}, m, visto - 1);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion);
+    // Acabada la embestida, sigue empujando a la velocidad de siempre, no al máximo
+    const unsigned long despues = visto + ConfirmacionDeteccion + TiempoEmbestidaInicio + TiempoEmbestida + 10;
+    for (unsigned long t = visto + ConfirmacionDeteccion + 1; t <= despues; t += 10) {
+        c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
+    }
+    TEST_ASSERT_TRUE(m.izq <= VelocidadAtaqueRound12 && m.izq > 0);
+    // Al perder al rival y volver a encontrarlo, ataque normal
+    c.ejecutar({TipoAccion::Busqueda}, m, despues + 10);
+    c.ejecutar({TipoAccion::Busqueda}, m, despues + 10 + TiempoParoPerdida + 10);
+    for (unsigned long t = despues + 400; t <= despues + 400 + TiempoEmbestida + 20; t += 10) {
+        c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
+    }
+    TEST_ASSERT_EQUAL_INT(VelocidadEmpuje, m.izq);
+}
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_busqueda_tras_un_sensor_sigue_hacia_el_lado_del_escape);
@@ -582,5 +606,6 @@ int main(int, char**) {
     RUN_TEST(test_rutina_lado_elige_el_lado_con_el_sensor_lateral);
     RUN_TEST(test_rutina_lado_sin_lateral_usa_el_dip3);
     RUN_TEST(test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado);
+    RUN_TEST(test_round_1_mantiene_su_velocidad_tras_la_embestida);
     return UNITY_END();
 }

@@ -111,6 +111,7 @@ private:
     bool rutinaEnCurso = false;
     bool conRutina = false;           // se eligió una rutina: sin arranque suave
     bool embestidaInicio = false;     // la rutina encontró al rival pegado
+    bool ataqueDeRutina = false;      // sigue el ataque que empezó la rutina del round 1 o 2
     bool frenandoGiroRutina = false;  // contragiro para no pasarse de largo
     unsigned long inicioFrenoRutina = 0;
     unsigned long finEmbestidaInicio = 0;

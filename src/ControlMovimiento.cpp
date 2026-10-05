@@ -438,6 +438,7 @@ bool ControlMovimiento::continuarRutina(const DecisionMovimiento& decision, IMot
         }
         if (encontrado) {
             embestidaInicio = true;
+            ataqueDeRutina = true;
             finEmbestidaInicio = ahora + TiempoEmbestidaInicio;
             if (calcularFreno(TiempoFrenadoRuedas)) {
                 frenandoGiroRutina = true;
@@ -582,6 +583,9 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
     if (embestidaInicio && (!esAtaque(decision.tipo) || (long)(ahora - finEmbestidaInicio) >= 0)) {
         embestidaInicio = false;
     }
+    if (ataqueDeRutina && !esAtaque(decision.tipo) && rutina == 0) {
+        ataqueDeRutina = false;
+    }
     int ataque = VelocidadAtaque;
     if (embestidaInicio) {
         ataque = VelocidadEmbestidaInicio;
@@ -592,6 +596,10 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         const unsigned long progreso = transcurrido < TiempoEmbestida
                                       ? transcurrido : TiempoEmbestida;
         ataque += (long)(VelocidadEmpuje - VelocidadAtaque) * progreso / TiempoEmbestida;
+    }
+    // Rounds 1 y 2: tras la embestida de la rutina, la velocidad de siempre
+    if (ataqueDeRutina && !embestidaInicio && ataque > VelocidadAtaqueRound12) {
+        ataque = VelocidadAtaqueRound12;
     }
     switch (decision.tipo) {
     case TipoAccion::AtaqueFrontal:

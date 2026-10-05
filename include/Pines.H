@@ -25,6 +25,8 @@ constexpr uint8_t MA1B = 8;
 constexpr uint8_t MA2B = 12;
 // D8/D9 participan en el control: no usarlos para parpadeo independiente.
 
+constexpr int PIN_MODULO_ARRANQUE = -1;
+
 // Interruptores DIP de la placa JSumo XMotion (eligen la rutina de inicio)
 constexpr uint8_t DIP_1 = 5;
 constexpr uint8_t DIP_2 = 6;

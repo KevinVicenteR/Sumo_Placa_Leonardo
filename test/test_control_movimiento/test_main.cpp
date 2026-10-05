@@ -590,6 +590,21 @@ void test_rutina_frente_espera_quieto_tras_avanzar(void) {
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
 }
 
+void test_reiniciar_vuelve_al_estado_inicial(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(1, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 1010);
+    c.reiniciar();
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    TEST_ASSERT_EQUAL_INT(0, c.ordenIzquierda());
+    // Tras reiniciar, una nueva rutina arranca normalmente
+    c.iniciarRutina(1, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 5000);
+    assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
+}
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_busqueda_tras_un_sensor_sigue_hacia_el_lado_del_escape);
@@ -625,5 +640,6 @@ int main(int, char**) {
     RUN_TEST(test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado);
     RUN_TEST(test_round_1_mantiene_su_velocidad_tras_la_embestida);
     RUN_TEST(test_rutina_frente_espera_quieto_tras_avanzar);
+    RUN_TEST(test_reiniciar_vuelve_al_estado_inicial);
     return UNITY_END();
 }

@@ -249,6 +249,9 @@ constexpr unsigned long TiempoMinimoGiroLado = 60;
 constexpr unsigned long TiempoMinimoAvanceInicio = 150;
 constexpr unsigned long TiempoMinimoGiroLateral = 60;
 
+constexpr bool ModuloArranqueActivoAlto = true;
+constexpr unsigned long FiltroModuloArranqueMs = 5;
+
 // Rutina (1 espalda, 2 lado, 3 frente, 0 ninguna) según DIP1 (bit 0) y DIP2 (bit 1)
 constexpr int rutinaSegunInterruptores(int dip) {
     return (dip & 3) == 0 ? 1 : (dip & 3) == 1 ? 2 : (dip & 3) == 2 ? 3 : 0;

@@ -35,6 +35,8 @@ public:
         conRutina = rutinaInicio != 0;
     }
     int rutinaActual() const { return rutina; }
+    // Vuelve al estado del encendido (para cada START del módulo de arranque)
+    void reiniciar();
     int ordenDerecha() const { return ordenDer; }
 
 private:

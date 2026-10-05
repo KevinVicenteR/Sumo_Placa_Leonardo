@@ -14,6 +14,9 @@ void ConfiguracionHardware::inicializarPines() const {
     pinMode(S_FRONT_DER, INPUT);
     pinMode(S_LAT_IZQ, INPUT);
     pinMode(S_LAT_DER, INPUT);
+    if (PIN_MODULO_ARRANQUE >= 0) {
+        pinMode((uint8_t)PIN_MODULO_ARRANQUE, INPUT);
+    }
     pinMode(DIP_1, INPUT_PULLUP);
     pinMode(DIP_2, INPUT_PULLUP);
     pinMode(DIP_3, INPUT_PULLUP);

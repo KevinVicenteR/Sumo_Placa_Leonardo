@@ -636,3 +636,41 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         break;
     }
 }
+
+void ControlMovimiento::reiniciar() {
+    fase = Fase::Libre;
+    inicioFase = inicioEvasion = inicioNegro = 0;
+    negroContinuo = evasionUnSensor = salidaSuaveUnSensor = false;
+    inicioSalidaSuave = 0;
+    limiteSalidaSuave = 255;
+    duracionRetroceso = duracionGiro = 0;
+    sentidoGiro = 1;
+    ordenIzq = ordenDer = 0;
+    estIzq = estDer = 0;
+    ultimaEstimacion = 0;
+    frenoIzq = frenoDer = 0;
+    duracionFreno = 0;
+    veniaAtacando = enParo = false;
+    inicioParo = 0;
+    viendoFrente = empujando = limitarAvance = false;
+    inicioFrente = 0;
+    pasoRampa = 255;
+    ultimaRampa = 0;
+    primeraRampa = true;
+    inicioMovimiento = 0;
+    limiteArranque = limiteEstimador = 255;
+    estimador = EstimadorBorde();
+    ultimaPrediccion = 0;
+    bordeAntes = false;
+    giroLateral = 0;
+    inicioGiroLateral = 0;
+    rutina = 0;
+    ladoRutina = 1;
+    rutinaEnCurso = conRutina = embestidaInicio = ataqueDeRutina = frenandoGiroRutina = false;
+    inicioFrenoRutina = finEmbestidaInicio = inicioRutina = 0;
+    ladoDecidido = detectaRutina = detectaGiroLateral = false;
+    inicioDetectaRutina = inicioDetectaGiroLateral = 0;
+    sentidoBusqueda = 1;
+    buscando = evasionCompleta = false;
+    inicioBusqueda = 0;
+}

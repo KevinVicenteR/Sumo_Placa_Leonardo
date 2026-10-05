@@ -100,21 +100,22 @@ void loop() {
   delay(100);
 }
 #else
-void setup() {
-  hardware.inicializarPines();
-  // Mantener PWM=0 mientras se inicializa; el encendido inicia el combate.
-  motor.deshabilitar();
+#include "ModuloArranque.H"
 
-#if defined(MONITOREO_COMBATE)
-  Serial.begin(115200);
-#endif
-  // Competencia sin módulo de arranque: encender da la señal de inicio.
+ModuloArranque moduloArranque(FiltroModuloArranqueMs);
+bool enCombate = false;
+
+// Empieza (o reempieza) un combate: el robot ya está colocado sobre el negro
+void empezarCombate() {
+  motor.deshabilitar();
   // Medir el piso sobre negro, con motores apagados y sin espera añadida.
-  // No calibrar enemigos: el rival puede estar delante al encender.
+  // No calibrar enemigos: el rival puede estar delante al empezar.
   percepcion.calibrarPiso();
+  controlMovimiento.reiniciar();
   // Rutina de inicio del round según los interruptores DIP
   const int dip = hardware.leerInterruptores();
   controlMovimiento.iniciarRutina(rutinaSegunInterruptores(dip), (dip & 4) ? -1 : 1);
+  enCombate = true;
 #if defined(MONITOREO_COMBATE)
   Serial.print(F("DIP=")); Serial.print(dip); Serial.print(' ');
   Serial.print(F("INICIO negroIzq=")); Serial.print(percepcion.negroIzquierdo());
@@ -124,7 +125,30 @@ void setup() {
 #endif
 }
 
+void setup() {
+  hardware.inicializarPines();
+  // Mantener PWM=0 mientras se inicializa
+  motor.deshabilitar();
+#if defined(MONITOREO_COMBATE)
+  Serial.begin(115200);
+#endif
+  if (PIN_MODULO_ARRANQUE < 0) {
+    empezarCombate();
+  }
+}
+
 void loop() {
+  if (PIN_MODULO_ARRANQUE >= 0) {
+    const bool alto = digitalRead((uint8_t)PIN_MODULO_ARRANQUE) == HIGH;
+    if (!moduloArranque.enMarcha(alto == ModuloArranqueActivoAlto, millis())) {
+      motor.deshabilitar();
+      enCombate = false;
+      return;
+    }
+    if (!enCombate) {
+      empezarCombate();
+    }
+  }
   robot.actualizar();
 #if defined(MONITOREO_COMBATE)
   static unsigned long ultimaTraza = 0;

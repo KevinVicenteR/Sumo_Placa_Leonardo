@@ -19,13 +19,16 @@ constexpr uint8_t S_LAT_DER   = A4;
 // D10 y D11 admiten PWM en Arduino Leonardo.
 constexpr uint8_t PWMA = 10;
 constexpr uint8_t MA1A = 9;
+
 constexpr uint8_t MA2A = 13;
 constexpr uint8_t PWMB = 11;
+
 constexpr uint8_t MA1B = 8;
 constexpr uint8_t MA2B = 12;
 // D8/D9 participan en el control: no usarlos para parpadeo independiente.
 
-constexpr int PIN_MODULO_ARRANQUE = -1;
+// Señal del módulo de arranque (control remoto); -1 = sin módulo, arranca al encender
+constexpr int PIN_MODULO_ARRANQUE = A0;
 
 // Interruptores DIP de la placa JSumo XMotion (eligen la rutina de inicio)
 constexpr uint8_t DIP_1 = 5;

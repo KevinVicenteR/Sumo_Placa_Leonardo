@@ -211,15 +211,15 @@ constexpr int RampaPwmPorMs = 1;
 // cancela la rutina: el borde siempre tiene prioridad.
 // DipActivoBajo: true si un interruptor en ON lee LOW (contra GND, con pull-up)
 constexpr bool DipActivoBajo = true;
-constexpr int VelocidadGiroInicio = 120;
+constexpr int VelocidadGiroInicio = 180;
 constexpr unsigned long TiempoMaxGiroEspalda = 500;
 constexpr unsigned long TiempoMaxGiroLado = 500;
 // Round 2: true = pivota sobre la rueda del lado del rival; false = gira en el sitio
 constexpr bool PivoteRound2 = true;
 // Velocidad de la rueda que empuja en el pivote del round 2 (la otra queda parada)
-constexpr int VelocidadPivoteInicio = 180;
-constexpr int VelocidadAvanceInicio = 45;
-constexpr unsigned long TiempoAvanceInicio = 2500;
+constexpr int VelocidadPivoteInicio = 255;
+constexpr int VelocidadAvanceInicio = 33;
+constexpr unsigned long TiempoAvanceInicio = 4000;
 // Round 3: tras el avance, espera quieto mirando al frente a que llegue el rival
 // (reacciona a cualquier sensor); si no llega en TiempoEsperaRound3, busca
 constexpr bool EsperarRound3 = true;
@@ -227,11 +227,11 @@ constexpr unsigned long TiempoEsperaRound3 = 3000;
 // Al encontrar al rival con la rutina de los rounds 1 y 2 está pegado y el borde
 // lejos: embiste a esta velocidad mientras lo tenga delante, hasta este tiempo.
 // Con una rutina elegida no se aplica el arranque suave (TiempoArranqueSuave).
-constexpr int VelocidadEmbestidaInicio = 200;
+constexpr int VelocidadEmbestidaInicio = 255;
 // Tras esa embestida, mientras siga el mismo ataque, los rounds 1 y 2 conservan
 // su velocidad de siempre (no suben hasta VelocidadEmpuje); al perder al rival
 // vuelve el ataque normal
-constexpr int VelocidadAtaqueRound12 = 130;
+constexpr int VelocidadAtaqueRound12 = 255;
 constexpr unsigned long TiempoEmbestidaInicio = 1500;
 
 // Protección contra detecciones falsas (reflejos, manos, parpadeos del sensor):

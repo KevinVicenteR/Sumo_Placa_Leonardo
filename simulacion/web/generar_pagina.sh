@@ -1,13 +1,4 @@
 #!/bin/sh
-# Genera simulacion/web/dohyo.html: la página interactiva con el firmware actual
-# y, para comparar, el de un commit anterior (por defecto el original, c2d950b).
-#
-# El firmware se compila a WebAssembly y wasm2js lo traduce a JavaScript, para
-# que la página funcione aunque el navegador no permita WebAssembly.
-#
-#   simulacion/web/generar_pagina.sh [commit-anterior]
-#
-# Requiere: brew install llvm lld binaryen
 set -e
 cd "$(dirname "$0")"
 ANTERIOR=${1:-c2d950b}
@@ -26,7 +17,6 @@ from pathlib import Path
 tmp = Path(sys.argv[1])
 
 def fabrica(ruta):
-    # Módulo ES de wasm2js -> función (env) => exports, con memoria propia en cada llamada
     lineas = [l for l in ruta.read_text().splitlines()
               if not l.startswith("import ") and not l.startswith("export ")]
     return "(function (env) {\n" + "\n".join(lineas) + "\nreturn retasmFunc;\n})"

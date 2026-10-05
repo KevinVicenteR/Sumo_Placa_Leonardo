@@ -1,6 +1,3 @@
-// Funciones matemáticas de la simulación. En consola son las de <cmath>; en la
-// página web (WebAssembly sin biblioteca estándar) las aporta JavaScript (Math).
-
 #ifndef SIMULACION_MATEMATICA_H
 #define SIMULACION_MATEMATICA_H
 
@@ -27,7 +24,7 @@ inline double remainder(double x, double y) {
     const double n = __builtin_rint(x / y);
     return x - n * y;
 }
-}  // namespace mat
+}
 
 #else
 
@@ -42,7 +39,7 @@ using std::remainder;
 using std::sin;
 using std::sqrt;
 inline double hypot(double x, double y) { return std::sqrt(x * x + y * y); }
-}  // namespace mat
+}
 
 #endif
 

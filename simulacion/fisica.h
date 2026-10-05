@@ -1,10 +1,3 @@
-// Física del robot y del dohyo, y Arduino simulado.
-//
-// La comparten el simulador de consola (sim.cpp) y el de la página web
-// (web/sim_web.cpp), para que una misma semilla dé el mismo combate en ambos.
-// Cada programa debe incluir este archivo una sola vez: define las funciones
-// de Arduino (millis, analogRead, digitalWrite...) que usa el firmware.
-
 #ifndef SIMULACION_FISICA_H
 #define SIMULACION_FISICA_H
 
@@ -16,94 +9,73 @@ void setup();
 void loop();
 
 namespace sim {
-
 constexpr double PI = 3.14159265358979323846;
 
 struct Config {
-    // Dohyo
-    double radio = 0.385;         // m (77 cm de diámetro, borde incluido: minisumo reglamentario)
-    double borde = 0.025;         // m de línea blanca (2,5 cm reglamentarios)
-    // Robot
-    double largo = 0.10;          // m
-    double ancho = 0.10;          // m
-    double trocha = 0.085;        // m entre ruedas
-    double sensorPisoX = 0.045;   // m hacia adelante desde el eje de ruedas
-    double sensorPisoY = 0.040;   // m a cada lado
-    double vmax = 0.8;            // m/s con PWM 255
-    double tau = 0.05;            // s, constante de tiempo del motor
-    double mu = 0.9;              // adherencia rueda-piso (limita aceleración)
-    // Modelo de motor DC (se activa con rpm > 0; si no, se usa vmax/tau)
-    double rpm = 0;               // rpm en vacío del motorreductor
-    double diametro = 0.03;       // m, diámetro de rueda
-    double masa = 0.3;            // kg
-    double parBloqueo = 0.6;      // kg·cm por motor con el rotor bloqueado
-    double bateria = 1.0;         // tensión de batería / tensión nominal del motor
-    double friccionCaja = 0.15;   // fricción de la reductora (fracción de la fuerza de bloqueo)
-    double rodadura = 0.03;       // coeficiente de resistencia a la rodadura
-    double friccionGiro = 0.5;    // roce lateral al girar en el sitio (ruedas, pala)
-    double brazoGiro = 0.012;     // m, brazo efectivo de ese roce
-    // Sensores de piso (lecturas ADC) y su mancha de lectura
+    double radio = 0.385;
+    double borde = 0.025;
+    double largo = 0.10;
+    double ancho = 0.10;
+    double trocha = 0.085;
+    double sensorPisoX = 0.045;
+    double sensorPisoY = 0.040;
+    double vmax = 0.8;
+    double tau = 0.05;
+    double mu = 0.9;
+    double rpm = 0;
+    double diametro = 0.03;
+    double masa = 0.3;
+    double parBloqueo = 0.6;
+    double bateria = 1.0;
+    double friccionCaja = 0.15;
+    double rodadura = 0.03;
+    double friccionGiro = 0.5;
+    double brazoGiro = 0.012;
     double adcNegro = 900;
     double adcBlanco = 100;
-    double adcFuera = 1000;       // fuera del dohyo, sin superficie debajo
-    double manchaSensor = 0.003;  // m de radio del área que ve el sensor de piso
-    // Objetos fuera del dohyo que ven los sensores de enemigo (0 = ninguno)
-    double radioPared = 0;        // m desde el centro
-    // Posición inicial: radio máximo del centro del robot; el cuerpo entero queda dentro del dohyo
+    double adcFuera = 1000;
+    double manchaSensor = 0.003;
+    double radioPared = 0;
     double radioInicio = 0.12;
-    double rangoEnemigo = 0.40;   // m, alcance de los sensores de enemigo
-    bool enemigoInvertido = false; // sensores de enemigo que dan LOW al detectar
-    // Driver de motores: false = TB6612 (PWM a 0 frena), true = L298N (PWM a 0,
-    // es decir enable a 0, deja el motor libre, y mientras conduce con PWM no frena)
+    double rangoEnemigo = 0.40;
+    bool enemigoInvertido = false;
     bool driverL298 = false;
-    // Posición de salida: 0 aleatoria, 1 espalda con espalda, 2 lado a lado
-    // (mirando en sentidos opuestos), 3 enfrentados cerca de los bordes
     int salida = 0;
-    int ladoRival = 1;            // round 2: +1 rival a la derecha, -1 a la izquierda
-    int dip = 0;                  // interruptores DIP en ON (bit 0 = DIP1...)
-    // Pines de los DIP (XMotion: 5, 6, 7) y si ON lee LOW; deben coincidir con
-    // Pines.H y DipActivoBajo del firmware (aquí fijos para poder simular
-    // también firmwares anteriores que no los tienen)
+    int ladoRival = 1;
+    int dip = 0;
     uint8_t pinesDip[3] = {5, 6, 7};
     bool dipActivoBajo = true;
-    // Detecciones fantasma (reflejos, manos, parpadeos): cada sensor de enemigo
-    // ve algo que no existe, en promedio fantasmasPorSegundo veces por segundo,
-    // durante entre 5 y 30 ms
     double fantasmasPorSegundo = 0;
-    // Enemigo
-    double radioEnemigo = 0.05;   // m
-    double velEnemigo = 0.25;     // m/s en modo errante
-    double velAgresivo = 0.6;     // m/s del enemigo que embiste (modo agresivo)
-    double giroAgresivo = 6.0;    // rad/s máximos con los que se orienta hacia nosotros
-    // Choque con el enemigo (0 en masaEnemigo = fantasma, el robot lo atraviesa)
-    double masaEnemigo = 0.3;     // kg
-    double agarreEnemigo = 0.8;   // su resistencia a ser empujado (μ de sus ruedas)
-    double radioChoque = 0.055;   // m, radio de choque de nuestro robot
-    double rigidezChoque = 3000;  // N/m del contacto entre robots (unos mm de solape)
-    double amortiguaChoque = 25;  // N·s/m
-    // Simulación
-    double duracion = 30.0;       // s de combate (tras los 5 s reglamentarios)
-    double ruidoPiso = 15.0;      // desviación estándar del ADC
-    double retardoPiso = 0;       // s que tarda el sensor de piso en reflejar lo que tiene debajo
-    double sobrecostoLoopUs = 20; // µs de loop() además de las lecturas
+    double radioEnemigo = 0.05;
+    double velEnemigo = 0.25;
+    double velAgresivo = 0.6;
+    double giroAgresivo = 6.0;
+    double masaEnemigo = 0.3;
+    double agarreEnemigo = 0.8;
+    double radioChoque = 0.055;
+    double rigidezChoque = 3000;
+    double amortiguaChoque = 25;
+    double duracion = 30.0;
+    double ruidoPiso = 15.0;
+    double retardoPiso = 0;
+    double sobrecostoLoopUs = 20;
 };
 
 enum class Modo { Ninguno, Estatico, Errante, Agresivo };
 
 struct Robot {
-    double x, y, th;  // posición del eje de ruedas y orientación (rad, antihorario)
-    double vl, vr;    // velocidad real de cada rueda
-    double vlat = 0;  // deslizamiento lateral (hacia la izquierda), solo si lo empujan de lado
-    double fExt = 0;  // fuerza del enemigo a lo largo del rumbo en este paso (N)
+    double x, y, th;
+    double vl, vr;
+    double vlat = 0;
+    double fExt = 0;
 };
 
 struct Enemigo {
     bool presente;
     double x, y, th;
-    double vx = 0, vy = 0;  // velocidad (la cambian sus motores y nuestros empujones)
+    double vx = 0, vy = 0;
 };
 
-// xorshift64* con Box-Muller: igual en todas las plataformas
 class Aleatorio {
 public:
     void sembrar(unsigned long long semilla) {
@@ -151,7 +123,6 @@ inline double costoLoopUs = 0;
 inline uint8_t nivelPin[32];
 inline int pwmPin[32];
 
-// Posiciones recientes del robot, para simular sensores de piso lentos
 struct Pose {
     double t, x, y, th;
 };
@@ -166,7 +137,6 @@ inline void guardarPose() {
     else historialIni = (historialIni + 1) % MaxHistorial;
 }
 
-// Pose del robot hace cfg.retardoPiso segundos (la más reciente si no hay retardo)
 inline Pose poseRetrasada() {
     Pose p = {tiempoUs / 1e6, rob.x, rob.y, rob.th};
     if (cfg.retardoPiso <= 0) return p;
@@ -185,8 +155,6 @@ inline void aMundo(double rx, double ry, double& wx, double& wy) {
     wy = rob.y + s * rx + c * ry;
 }
 
-// ---------------------------------------------------------------- sensores
-
 inline double valorPiso(double wx, double wy) {
     const double r = mat::hypot(wx, wy);
     if (r <= cfg.radio - cfg.borde) return cfg.adcNegro;
@@ -194,7 +162,6 @@ inline double valorPiso(double wx, double wy) {
     return cfg.adcFuera;
 }
 
-// El sensor promedia un área pequeña, así que la transición negro-blanco no es instantánea
 inline int lecturaPiso(double rx, double ry) {
     const Pose p = poseRetrasada();
     const double c = mat::cos(p.th), sn = mat::sin(p.th);
@@ -218,7 +185,6 @@ inline bool sensorPisoSobreBlanco() {
     return sobreBlanco(cfg.sensorPisoX, cfg.sensorPisoY) || sobreBlanco(cfg.sensorPisoX, -cfg.sensorPisoY);
 }
 
-// Rayo desde (rx, ry) en el marco del robot con ángulo relativo ang
 inline bool rayoVeEnemigo(double rx, double ry, double ang) {
     if (!ene.presente) return false;
     double ox, oy;
@@ -234,13 +200,11 @@ inline bool rayoVeEnemigo(double rx, double ry, double ang) {
     return salida >= 0 && entrada <= cfg.rangoEnemigo;
 }
 
-// Objetos alrededor del dohyo (pared, muebles, personas) como un círculo de radio radioPared
 inline bool rayoVePared(double rx, double ry, double ang) {
     if (cfg.radioPared <= 0) return false;
     double ox, oy;
     aMundo(rx, ry, ox, oy);
     const double ux = mat::cos(rob.th + ang), uy = mat::sin(rob.th + ang);
-    // Distancia hasta salir del círculo: |o + t·u| = R
     const double b = ox * ux + oy * uy;
     const double c = ox * ox + oy * oy - cfg.radioPared * cfg.radioPared;
     const double t = -b + mat::sqrt(b * b - c);
@@ -279,8 +243,6 @@ inline bool sensorEnemigo(uint8_t pin) {
     return false;
 }
 
-// ---------------------------------------------------------------- física
-
 inline int comandoMotor(uint8_t in1, uint8_t in2, uint8_t pwm) {
     if (nivelPin[in1] == nivelPin[in2]) return 0;
     return nivelPin[in1] == HIGH ? pwmPin[pwm] : -pwmPin[pwm];
@@ -288,15 +250,12 @@ inline int comandoMotor(uint8_t in1, uint8_t in2, uint8_t pwm) {
 
 enum class Puente { Conduce, Frena, Libre };
 inline Puente estadoPuente(uint8_t pwm) {
-    // Modelo conservador: PWM=0 sin fuerza eléctrica; validar desaceleración real.
     return pwmPin[pwm] == 0 ? Puente::Libre : Puente::Conduce;
 }
 
 inline int comandoIzq() { return comandoMotor(MA1A, MA2A, PWMA); }
 inline int comandoDer() { return comandoMotor(MA1B, MA2B, PWMB); }
 
-// Aplica una fricción de Coulomb de magnitud f a un movimiento con velocidad vel
-// y fuerza impulsora fuerza. Si está quieto y la fuerza no supera la fricción, no arranca.
 inline double conFriccion(double fuerza, double vel, double f) {
     if (mat::fabs(vel) < 1e-4) {
         if (mat::fabs(fuerza) <= f) return 0;
@@ -305,15 +264,11 @@ inline double conFriccion(double fuerza, double vel, double f) {
     return fuerza - (vel > 0 ? f : -f);
 }
 
-// Motor DC: F = Fb·(u·batería − v/v0), menos la fricción de la reductora,
-// limitada por la adherencia de cada rueda.
 inline double fuerzaRueda(int comando, double vRueda, Puente puente = Puente::Conduce) {
     const double u = (puente == Puente::Conduce ? comando : 0) / 255.0 * cfg.bateria;
     const double v0 = cfg.rpm / 60.0 * PI * cfg.diametro;
     const double fuerzaBloqueo = cfg.parBloqueo * 0.0981 / (cfg.diametro / 2);
     double motor = fuerzaBloqueo * (u - vRueda / v0);
-    // Libre: el motor no hace fuerza. L298N conduciendo con PWM: en la parte baja
-    // del PWM el motor queda libre y no puede frenar, solo empujar
     if (puente == Puente::Libre) motor = 0;
     if (puente == Puente::Conduce && cfg.driverL298 && motor * u < 0) motor = 0;
     double f = conFriccion(motor, vRueda, cfg.friccionCaja * fuerzaBloqueo);
@@ -321,7 +276,6 @@ inline double fuerzaRueda(int comando, double vRueda, Puente puente = Puente::Co
     return constrain(f, -adherencia, adherencia);
 }
 
-// Cuerpo rígido: avance v y giro w con rodadura y roce lateral al girar
 inline void avanzarCuerpoDC(int cmdIzq, int cmdDer, double dt) {
     const double b = cfg.trocha / 2;
     double v = (rob.vl + rob.vr) / 2;
@@ -334,7 +288,6 @@ inline void avanzarCuerpoDC(int cmdIzq, int cmdDer, double dt) {
     const double par = conFriccion((fd - fi) * b, w, cfg.friccionGiro * peso * cfg.brazoGiro);
     double vNueva = v + fuerza / cfg.masa * dt;
     double wNueva = w + par / inercia * dt;
-    // La fricción frena hasta cero, no invierte el movimiento
     if (v != 0 && vNueva * v < 0 && mat::fabs(fi + fd + rob.fExt) < cfg.rodadura * peso) vNueva = 0;
     if (w != 0 && wNueva * w < 0 && mat::fabs((fd - fi) * b) < cfg.friccionGiro * peso * cfg.brazoGiro) wNueva = 0;
     rob.vl = vNueva - wNueva * b;
@@ -366,9 +319,6 @@ inline void avanzarRobot(double dt) {
     rob.th += w * dt;
 }
 
-// El enemigo intenta ir a su velocidad deseada (quieto o deambulando) con la
-// aceleración que le permiten sus ruedas; esa misma adherencia es la que se
-// opone a que lo empujen.
 inline void avanzarEnemigo(double dt) {
     if (!ene.presente) return;
     double vdx = 0, vdy = 0;
@@ -376,7 +326,6 @@ inline void avanzarEnemigo(double dt) {
         ene.th += azar.normal() * 3.0 * mat::sqrt(dt);
         const double r = mat::hypot(ene.x, ene.y);
         if (r > cfg.radio - 0.08) {
-            // Se aleja del borde girando hacia el centro
             const double haciaCentro = mat::atan2(-ene.y, -ene.x);
             double diff = mat::remainder(haciaCentro - ene.th, 2 * PI);
             ene.th += diff * minimo(1.0, 8.0 * dt);
@@ -384,8 +333,6 @@ inline void avanzarEnemigo(double dt) {
         vdx = cfg.velEnemigo * mat::cos(ene.th);
         vdy = cfg.velEnemigo * mat::sin(ene.th);
     } else if (modo == Modo::Agresivo) {
-        // Se orienta hacia nosotros con giro limitado y embiste; cerca del borde,
-        // si no nos está empujando, frena y gira hacia el centro como un robot real
         const double haciaRobot = mat::atan2(rob.y - ene.y, rob.x - ene.x);
         double diff = mat::remainder(haciaRobot - ene.th, 2 * PI);
         const double maxGiro = cfg.giroAgresivo * dt;
@@ -417,11 +364,6 @@ inline void avanzarEnemigo(double dt) {
     ene.y += ene.vy * dt;
 }
 
-// Contacto entre los dos robots (como círculos): una fuerza elástica con
-// amortiguación a lo largo de la línea que une sus centros. Sobre nuestro robot,
-// la parte a lo largo del rumbo se suma a la de las ruedas (lo frena o lo
-// arrastra) y la lateral solo lo desliza de lado si supera el agarre lateral
-// de las ruedas. El enemigo la compara con su propio agarre en avanzarEnemigo.
 inline void resolverChoque(double dt) {
     rob.fExt = 0;
     double fLat = 0;
@@ -436,14 +378,13 @@ inline void resolverChoque(double dt) {
             const double vrx = v * c - rob.vlat * s, vry = v * s + rob.vlat * c;
             const double acercamiento = (vrx - ene.vx) * nx + (vry - ene.vy) * ny;
             double f = cfg.rigidezChoque * (minima - d) + cfg.amortiguaChoque * acercamiento;
-            if (f < 0) f = 0;  // solo empuja, no tira
+            if (f < 0) f = 0;
             ene.vx += f * nx / cfg.masaEnemigo * dt;
             ene.vy += f * ny / cfg.masaEnemigo * dt;
             rob.fExt = -f * (nx * c + ny * s);
             fLat = -f * (-nx * s + ny * c);
         }
     }
-    // Deslizamiento lateral con fricción de Coulomb de todas las ruedas
     const double agarre = cfg.mu * cfg.masa * 9.81;
     const double neta = conFriccion(fLat, rob.vlat, agarre);
     const double nueva = rob.vlat + neta / cfg.masa * dt;
@@ -466,9 +407,6 @@ inline double maxRadioCuerpo() {
     return m;
 }
 
-// ---------------------------------------------------------------- corrida
-
-// Estado inicial: pines a cero, tiempo cero, robot y enemigo quietos
 inline void reiniciar(unsigned long long semilla) {
     azar.sembrar(semilla);
     for (int i = 0; i < 32; i++) {
@@ -482,26 +420,20 @@ inline void reiniciar(unsigned long long semilla) {
     ene = {false, 0, 0, 0};
 }
 
-// Posición inicial uniforme dentro de radioInicio, con orientación aleatoria,
-// con el cuerpo entero dentro del dohyo. No se coloca con un sensor de piso
-// sobre la línea (lo prohíbe el reglamento y la calibración saldría mal).
-// Posiciones de salida de los rounds (orientación global al azar y pequeñas
-// imprecisiones al colocar los robots a mano)
 inline void colocarRound() {
     const double phi = azar.entre(-PI, PI);
     const double th = phi + azar.normal() * 0.14;
-    const double ux = mat::cos(th), uy = mat::sin(th);      // hacia donde mira nuestro robot
-    const double rx = mat::sin(th), ry = -mat::cos(th);     // su derecha
+    const double ux = mat::cos(th), uy = mat::sin(th);
+    const double rx = mat::sin(th), ry = -mat::cos(th);
     const double cx = azar.normal() * 0.015, cy = azar.normal() * 0.015;
     const double contacto = cfg.radioChoque + cfg.radioEnemigo + 0.01;
-    double ox = 0, oy = 0;  // del centro a nuestro robot; el rival en el opuesto
+    double ox = 0, oy = 0;
     if (cfg.salida == 1) {
         ox = ux * contacto / 2; oy = uy * contacto / 2;
     } else if (cfg.salida == 2) {
         ox = -(cfg.ladoRival * rx * contacto - ux * 0.04) / 2;
         oy = -(cfg.ladoRival * ry * contacto - uy * 0.04) / 2;
     } else {
-        // Pegados al borde, como en el reglamento del round 3 (unos 66 cm entre centros)
         ox = -ux * 0.33; oy = -uy * 0.33;
     }
     rob = {cx + ox, cy + oy, th, 0, 0};
@@ -524,7 +456,6 @@ inline void colocarAleatorio() {
 
     ene.presente = modo != Modo::Ninguno;
     if (ene.presente) {
-        // Sin tocarse al empezar (con contacto el choque los dispararía)
         do {
             const double r = mat::sqrt(azar.uniforme()) * (cfg.radio - 0.06);
             const double a = azar.entre(-PI, PI);
@@ -533,7 +464,6 @@ inline void colocarAleatorio() {
     }
 }
 
-// Un ciclo de loop() del firmware y la física correspondiente. Devuelve dt en s.
 inline double paso() {
     costoLoopUs = 0;
     loop();
@@ -546,17 +476,12 @@ inline double paso() {
     return dt;
 }
 
-// El robot cae cuando su centro de masa sale del dohyo
 inline bool cayo() { return mat::hypot(rob.x, rob.y) > cfg.radio; }
 
-}  // namespace sim
-
-// ---------------------------------------------------------------- Arduino simulado
+}
 
 extern "C" {
-
 void delay(unsigned long ms) {
-    // Durante la espera el robot está quieto (motores detenidos en setup)
     const double finUs = sim::tiempoUs + ms * 1000.0;
     while (sim::tiempoUs < finUs) {
         sim::avanzarRobot(0.001);
@@ -568,7 +493,7 @@ unsigned long millis(void) { return (unsigned long)(sim::tiempoUs / 1000); }
 unsigned long micros(void) { return (unsigned long)sim::tiempoUs; }
 
 int analogRead(uint8_t pin) {
-    sim::costoLoopUs += 112;  // conversión ADC con prescaler 128 a 16 MHz
+    sim::costoLoopUs += 112;
     if (pin == S_PISO_IZQ) return sim::lecturaPiso(sim::cfg.sensorPisoX, sim::cfg.sensorPisoY);
     if (pin == S_PISO_DER) return sim::lecturaPiso(sim::cfg.sensorPisoX, -sim::cfg.sensorPisoY);
     return 0;
@@ -597,6 +522,6 @@ void analogWrite(uint8_t pin, int value) {
 
 void pinMode(uint8_t, uint8_t) {}
 
-}  // extern "C"
+}
 
 #endif

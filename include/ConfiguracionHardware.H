@@ -6,7 +6,6 @@
 class ConfiguracionHardware: public IConfiguracionHardware {
 public:
     void inicializarPines() const override;
-    // Interruptores DIP en ON: bit 0 = DIP1, bit 1 = DIP2, bit 2 = DIP3
     int leerInterruptores() const;
 };
 

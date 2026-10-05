@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""Compila el firmware con el Arduino simulado y ejecuta lotes de combates.
-
-Ejemplos:
-  python3 simulacion/simular.py                       # resumen de los 3 escenarios
-  python3 simulacion/simular.py --vmax 1.2 --n 300
-  python3 simulacion/simular.py --param TiempoRetroceso=150 --param VelocidadAvance=120
-  python3 simulacion/simular.py --tray simulacion/salida  # guarda trayectorias de ejemplo
-"""
 
 import argparse
 import csv
@@ -25,9 +17,7 @@ BUILD = RAIZ / "simulacion" / "build"
 FUENTES = sorted((RAIZ / "src").glob("*.cpp")) + [RAIZ / "simulacion" / "sim.cpp"]
 MODOS = ["ninguno", "estatico", "errante", "agresivo"]
 
-
 def compilar(params: dict, banderas: tuple = ()) -> Path:
-    """Copia include/ aplicando los cambios a Parametros.H y compila."""
     clave = hashlib.sha1(repr((sorted(params.items()), banderas)).encode()).hexdigest()[:10]
     inc = BUILD / f"include_{clave}"
     binario = BUILD / f"sim_{clave}"
@@ -49,14 +39,12 @@ def compilar(params: dict, banderas: tuple = ()) -> Path:
     subprocess.run(cmd, check=True)
     return binario
 
-
 def ejecutar(binario: Path, modo: str, n: int, extra: list, tray: Path | None = None):
     cmd = [str(binario), "--modo", modo, "--n", str(n), *extra]
     if tray:
         cmd += ["--tray", str(tray)]
     salida = subprocess.run(cmd, check=True, capture_output=True, text=True).stdout
     return list(csv.DictReader(io.StringIO(salida)))
-
 
 def resumir(modo: str, filas: list) -> dict:
     caidas = [f for f in filas if f["cayo"] == "1"]
@@ -76,7 +64,6 @@ def resumir(modo: str, filas: list) -> dict:
         "causas": dict(Counter(f.get("causa", "-") + ("/empujado" if f.get("empujado") == "1" else "")
                                for f in caidas)),
         "victorias": sum(1 for f in filas if f.get("gano") == "1"),
-        # Suavidad, por cada 10 s de combate
         "vueltas": sum(float(f.get("vueltas", 0)) for f in filas) / max(1, sum(
             float(f["t_caida"]) if f["cayo"] == "1" else float(f["t_gano"]) if f.get("gano") == "1" else 30
             for f in filas)) * 10,
@@ -85,7 +72,6 @@ def resumir(modo: str, filas: list) -> dict:
             for f in filas)) * 10,
         "t_victoria": statistics.median([float(f["t_gano"]) for f in filas if f.get("gano") == "1"] or [float("nan")]),
     }
-
 
 def imprimir(resumenes: list):
     print(f"{'escenario':<10}{'caídas':>10}{'victorias':>12}{'gana en':>9}{'margen p10':>12}"
@@ -96,7 +82,6 @@ def imprimir(resumenes: list):
               f"{r['t_ver_mediana']:>10.2f} s{100 * r['frac_frontal']:>11.0f} %")
         if r["semillas_caida"]:
             print(f"{'':<10}semillas con caída: {r['semillas_caida']}  causas: {r['causas']}")
-
 
 def main():
     ap = argparse.ArgumentParser()
@@ -120,7 +105,6 @@ def main():
     binario = compilar(params)
     extra = ["--dur", str(a.dur), "--vmax", str(a.vmax), "--mu", str(a.mu),
              "--tau", str(a.tau), "--rango", str(a.rango)]
-    # Opciones de realismo (--bateria, --pared, --adc-*, --friccion-*...) pasan tal cual al simulador
     extra += [x for o in otros for x in o.split("=", 1)]
     if a.rpm > 0:
         extra += ["--rpm", str(a.rpm), "--diam", str(a.diam), "--masa", str(a.masa), "--par", str(a.par)]
@@ -143,7 +127,6 @@ def main():
             tray = a.tray / f"tray_{modo}.csv"
         resumenes.append(resumir(modo, ejecutar(binario, modo, a.n, extra, tray)))
     imprimir(resumenes)
-
 
 if __name__ == "__main__":
     main()

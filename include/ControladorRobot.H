@@ -6,7 +6,6 @@
 #include "IEstrategiaCombate.H"
 #include "IControlMovimiento.H"
 
-// Orquesta un ciclo de control: leer sensores -> decidir -> ejecutar
 class ControladorRobot {
     IPercepcion& percepcion;
     IEstrategiaCombate& estrategia;

@@ -4,7 +4,6 @@
 #include "Parametros.H"
 
 void ConfiguracionHardware::inicializarPines() const {
-    // Deshabilitar los puentes antes de configurar sus entradas de dirección.
     digitalWrite(PWMA, LOW);
     digitalWrite(PWMB, LOW);
     pinMode(PWMA, OUTPUT);

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Imprime los cambios de comando de una trayectoria (últimos N segundos)."""
 import csv, math, sys
 ruta, ultimos = sys.argv[1], float(sys.argv[2]) if len(sys.argv) > 2 else 2.0
 filas = list(csv.reader(open(ruta)))

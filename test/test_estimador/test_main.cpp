@@ -5,7 +5,6 @@
 void test_al_arrancar_no_se_fia_de_la_prediccion(void) {
     EstimadorBorde e;
     TEST_ASSERT_FALSE(e.confiable());
-    // Aun sin saber el rumbo, cerca del centro hay sitio para avanzar algo
     TEST_ASSERT_TRUE(e.distanciaLibre() > 0.05f);
 }
 
@@ -20,14 +19,12 @@ void test_al_ver_la_linea_de_frente_el_borde_esta_encima(void) {
 void test_tras_dar_media_vuelta_tiene_el_dohyo_por_delante(void) {
     EstimadorBorde e;
     e.lineaVista(0, true);
-    // Gira en el sitio hasta mirar hacia el centro (aprox. media vuelta)
     float girado = 0;
     while (girado < 3.14159f) {
         e.predecir(150, -150, 0.001f, 0);
         girado += 2 * EstimadorBorde::velocidadRegimen(150) / TrochaRuedas * 0.001f;
     }
     for (int i = 0; i < 100; i++) e.predecir(0, 0, 0.001f, 0);
-    // Con un giro tan largo el rumbo ya es incierto, pero la distancia al centro no
     TEST_ASSERT_TRUE(e.incertidumbrePosicion() < IncertPosicionConfiable);
 }
 

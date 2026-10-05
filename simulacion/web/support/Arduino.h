@@ -1,9 +1,6 @@
 #ifndef ARDUINO_H
 #define ARDUINO_H
 
-// Arduino simulado para WebAssembly (sin biblioteca estándar de C).
-// Las funciones las implementa simulacion/fisica.h.
-
 #include <stdint.h>
 
 #define HIGH 0x1
@@ -12,7 +9,6 @@
 #define OUTPUT 0x1
 #define INPUT_PULLUP 0x2
 
-// Numeración de pines analógicos del Leonardo (ATmega32u4)
 #define A0 18
 #define A1 19
 #define A2 20
@@ -36,7 +32,6 @@ void analogWrite(uint8_t pin, int value);
 void pinMode(uint8_t pin, uint8_t mode);
 }
 
-// Serial solo se usa en MODO_DIAGNOSTICO; se deja vacío
 struct SerialSim {
     void begin(unsigned long) {}
     template <typename T> void print(T) {}

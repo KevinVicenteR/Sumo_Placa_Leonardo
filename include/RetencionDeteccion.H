@@ -1,9 +1,6 @@
 #ifndef RETENCION_DETECCION_H
 #define RETENCION_DETECCION_H
 
-// Filtra un sensor de enemigo. Una detección nueva solo se acepta si se
-// mantiene confirmacionMs seguidos (descarta reflejos y lecturas sueltas), y
-// una vez aceptada se mantiene duracionMs tras perderla (tolera parpadeos).
 class RetencionDeteccion {
 public:
     explicit RetencionDeteccion(unsigned long duracionMs, unsigned long confirmacionMs = 0)

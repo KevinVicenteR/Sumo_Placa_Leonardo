@@ -1,18 +1,9 @@
-// Simulador para la página web: el firmware real (src/) y la física de
-// simulacion/fisica.h compilados a WebAssembly. La página coloca el robot y
-// el enemigo, llama a sim_setup() (espera de 5 s y calibración) y luego
-// avanza el combate con sim_avanzar().
-//
-// Para empezar un combate nuevo con el firmware recién reiniciado, la página
-// crea otra instancia del módulo (memoria limpia, como tras un reset).
-
 #include "../fisica.h"
 
 #define EXPORTAR(nombre) extern "C" __attribute__((export_name(nombre)))
 
 SerialSim Serial;
 
-// Soporte mínimo de C++ sin biblioteca estándar
 void operator delete(void*) noexcept {}
 void operator delete(void*, unsigned long) noexcept {}
 extern "C" void __cxa_pure_virtual() { __builtin_trap(); }
@@ -21,7 +12,6 @@ namespace {
 double inicioCombateUs = 0;
 }
 
-// Robot de 750 rpm, ruedas JSUMO de 3 cm (silicona) y 300 g por defecto
 EXPORTAR("sim_reiniciar") void sim_reiniciar(double semilla) {
     sim::cfg.rpm = 750;
     sim::cfg.diametro = 0.03;
@@ -30,7 +20,6 @@ EXPORTAR("sim_reiniciar") void sim_reiniciar(double semilla) {
     sim::reiniciar((unsigned long long)semilla);
 }
 
-// Parámetros del robot y del entorno (ver sim::Config)
 EXPORTAR("sim_fijar") void sim_fijar(int id, double v) {
     switch (id) {
     case 0: sim::cfg.rpm = v; break;
@@ -53,7 +42,6 @@ EXPORTAR("sim_robot") void sim_robot(double x, double y, double th) {
     sim::rob = {x, y, th, 0, 0};
 }
 
-// modo: 0 sin enemigo, 1 quieto, 2 se mueve, 3 embiste
 static sim::Modo modoDe(int modo) {
     return modo == 3 ? sim::Modo::Agresivo : modo == 2 ? sim::Modo::Errante
          : modo == 1 ? sim::Modo::Estatico : sim::Modo::Ninguno;
@@ -64,7 +52,6 @@ EXPORTAR("sim_enemigo") void sim_enemigo(int modo, double x, double y, double th
     sim::ene = {modo != 0, x, y, th};
 }
 
-// Colocación aleatoria igual que el simulador de consola (para comparar ambos)
 EXPORTAR("sim_aleatorio") void sim_aleatorio(int modo) {
     sim::modo = modoDe(modo);
     sim::colocarAleatorio();
@@ -75,8 +62,6 @@ EXPORTAR("sim_setup") void sim_setup() {
     inicioCombateUs = sim::tiempoUs;
 }
 
-// Avanza ciclos de loop() hasta el tiempo de combate dado (s).
-// Devuelve 1 si el robot cayó y 2 si sacó al enemigo del dohyo.
 EXPORTAR("sim_avanzar") int sim_avanzar(double hastaSegundos) {
     while ((sim::tiempoUs - inicioCombateUs) / 1e6 < hastaSegundos) {
         sim::paso();

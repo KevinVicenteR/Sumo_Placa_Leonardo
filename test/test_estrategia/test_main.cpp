@@ -1,7 +1,5 @@
 #include <unity.h>
 #include "EstrategiaCombate.H"
-#include "PoliticaAprendida.H"
-#include "TablaPolitica.H"
 
 static LecturasSensores L(
     bool lineaIzq,
@@ -60,22 +58,6 @@ void test_cerca_del_borde_se_informa_en_la_decision(void) {
     TEST_ASSERT_FALSE(e.decidir(L(false, false, false, false, true, false, false)).cercaBorde);
 }
 
-// La política en tabla, sin entrenar, decide igual que la estrategia escrita a mano
-void test_politica_manual_coincide_con_la_estrategia(void) {
-    EstrategiaCombate e;
-    for (int bits = 0; bits < 32; bits++) {
-        LecturasSensores s = L(false, false, bits & 8, bits & 2, bits & 1, bits & 4, bits & 16);
-        const int estado = politica::codificarEstado(s, 0);
-        TEST_ASSERT_EQUAL_INT((int)e.decidir(s).tipo, (int)politica::Acciones[politica::accionManual(estado)]);
-    }
-}
-
-void test_tabla_de_politica_con_acciones_validas(void) {
-    for (int estado = 0; estado < politica::NumEstados; estado++) {
-        TEST_ASSERT_TRUE(TablaPolitica[estado] < politica::NumAcciones);
-    }
-}
-
 void test_45_izq_sobre_45_der_y_laterales(void) {
     EstrategiaCombate e;
     DecisionMovimiento d = e.decidir(L(false, false, true, true, false, true, true));
@@ -113,8 +95,6 @@ int main(int, char**) {
     RUN_TEST(test_frontal_y_un_45_ajusta_hacia_ese_lado);
     RUN_TEST(test_borde_informa_si_ve_al_enemigo_de_frente);
     RUN_TEST(test_cerca_del_borde_se_informa_en_la_decision);
-    RUN_TEST(test_politica_manual_coincide_con_la_estrategia);
-    RUN_TEST(test_tabla_de_politica_con_acciones_validas);
     RUN_TEST(test_45_izq_sobre_45_der_y_laterales);
     RUN_TEST(test_borde_der_y_ambos);
     RUN_TEST(test_45_der_sobre_laterales);

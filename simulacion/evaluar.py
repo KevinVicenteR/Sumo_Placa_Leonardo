@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""Evalúa el firmware en todos los entornos (robustos y extremos de barrido.py)
-y los 4 escenarios, con el desglose de caídas por causa.
-
-  python3 simulacion/evaluar.py                                  # firmware actual
-  python3 simulacion/evaluar.py --n 200                          # más combates
-  python3 simulacion/evaluar.py --extra "--retardo-piso 40 --mancha 0.006"   # sensor de piso lento
-  python3 simulacion/evaluar.py UsarEstimadorBorde=false         # cambiando parámetros
-  python3 simulacion/evaluar.py UsarEstimadorBorde=true --banderas -DODOMETRIA_SIMULADA  # con encoders y giroscopio
-"""
 import argparse
 import os
 import sys
@@ -16,7 +7,6 @@ from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(__file__))
 import barrido
 import simular
-
 
 def main():
     ap = argparse.ArgumentParser()
@@ -55,7 +45,6 @@ def main():
     print(f"\n{total} combates: caídas propias (sin enemigo, quieto, errante) {propias}, "
           f"duelos perdidos contra el que embiste {duelos}, victorias {victorias}\n"
           f"suavidad: {vueltas:.1f} vueltas y {tirones:.0f} tirones cada 10 s de combate")
-
 
 if __name__ == "__main__":
     main()

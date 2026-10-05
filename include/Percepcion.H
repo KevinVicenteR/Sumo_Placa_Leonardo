@@ -14,10 +14,7 @@ public:
         calibrar(pisoDer, NegroPisoDerecho);
     }
     LecturasSensores leer() const override;
-    // Debe llamarse con el robot sobre el negro del dohyo
     void calibrarPiso();
-    // Averigua si los sensores de enemigo dan HIGH o LOW al detectar (ver
-    // PolaridadSensoresEnemigo). Debe llamarse con el robot ya colocado.
     void calibrarSensoresEnemigo();
     int negroIzquierdo() const { return pisoIzq.negro; }
     int negroDerecho() const { return pisoDer.negro; }
@@ -25,7 +22,6 @@ public:
     int margenDerecho() const { return pisoDer.margen; }
 
 private:
-    // Referencia guardada; la calibración manual solo se usa en diagnóstico.
     struct SensorPiso {
         int negro = 0;
         int margen = UmbralLineaMinimo;

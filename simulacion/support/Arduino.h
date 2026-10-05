@@ -1,8 +1,6 @@
 #ifndef ARDUINO_H
 #define ARDUINO_H
 
-// Arduino simulado: las funciones las implementa simulacion/sim.cpp
-
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -12,7 +10,6 @@
 #define OUTPUT 0x1
 #define INPUT_PULLUP 0x2
 
-// Numeración de pines analógicos del Leonardo (ATmega32u4)
 #define A0 18
 #define A1 19
 #define A2 20
@@ -40,7 +37,6 @@ void pinMode(uint8_t pin, uint8_t mode);
 }
 #endif
 
-// Serial solo se usa en MODO_DIAGNOSTICO; se deja vacío
 struct SerialSim {
     void begin(unsigned long) {}
     template <typename T> void print(T) {}

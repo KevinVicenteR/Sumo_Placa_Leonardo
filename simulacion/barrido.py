@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""Barrido de parámetros: prueba combinaciones y las ordena por caídas.
-
-Cada combinación se evalúa en todos los escenarios (simular.MODOS) y en todos los entornos dados,
-para elegir parámetros que funcionen aunque el robot real no sea exactamente
-como el simulado.
-
-  python3 simulacion/barrido.py TiempoRetroceso=80,120 VelocidadAtaque=130,160
-  python3 simulacion/barrido.py VelocidadAtaque=130,160 --entorno="--bateria 1.3" --entorno="--pared 0.5"
-  python3 simulacion/barrido.py VelocidadAtaque=130,160 --robusto      # entornos típicos
-  python3 simulacion/barrido.py VelocidadAtaque=130,160 --todos        # típicos y extremos
-"""
 import argparse
 import itertools
 import os
@@ -21,25 +10,22 @@ import simular
 
 ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.3"]
 
-# Variaciones plausibles del robot real que no se conocen con exactitud
-# Condiciones súper extremas para el robot con LiPo 2S
 ENTORNOS_EXTREMOS = [
-    "--mu 1.0 --inicio-r 0.34 --bateria 1.25",                                   # nominal
-    "--mu 1.0 --inicio-r 0.34 --bateria 1.4",                                    # LiPo recién cargada
-    "--mu 0.6 --inicio-r 0.34 --bateria 1.4 --sensor-x 0.03",                    # dohyo con polvo, sensores cerca de las ruedas
-    "--mu 0.7 --inicio-r 0.34 --bateria 1.4 --friccion-caja 0.08 --friccion-giro 0.3",  # motores sueltos
-    "--mu 0.8 --inicio-r 0.34 --bateria 1.4 --adc-negro 150 --adc-blanco 850 --adc-fuera 150",  # sensor invertido
-    "--mu 1.0 --inicio-r 0.34 --bateria 1.25 --agarre-enemigo 1.2 --masa-enemigo 0.5",  # enemigo pesado
+    "--mu 1.0 --inicio-r 0.34 --bateria 1.25",
+    "--mu 1.0 --inicio-r 0.34 --bateria 1.4",
+    "--mu 0.6 --inicio-r 0.34 --bateria 1.4 --sensor-x 0.03",
+    "--mu 0.7 --inicio-r 0.34 --bateria 1.4 --friccion-caja 0.08 --friccion-giro 0.3",
+    "--mu 0.8 --inicio-r 0.34 --bateria 1.4 --adc-negro 150 --adc-blanco 850 --adc-fuera 150",
+    "--mu 1.0 --inicio-r 0.34 --bateria 1.25 --agarre-enemigo 1.2 --masa-enemigo 0.5",
 ]
 
 ENTORNOS_ROBUSTOS = [
-    "",                                              # robot nominal
-    "--bateria 1.3 --friccion-caja 0.08 --friccion-giro 0.3",  # batería alta y motores suaves (rápido)
-    "--friccion-caja 0.3 --friccion-giro 1.0",       # motores duros y mucho roce al girar
-    "--pared 0.5 --bateria 1.15",                    # objetos a 15 cm del borde
-    "--adc-negro 150 --adc-blanco 850 --adc-fuera 150",  # sensor de piso invertido
+    "",
+    "--bateria 1.3 --friccion-caja 0.08 --friccion-giro 0.3",
+    "--friccion-caja 0.3 --friccion-giro 1.0",
+    "--pared 0.5 --bateria 1.15",
+    "--adc-negro 150 --adc-blanco 850 --adc-fuera 150",
 ]
-
 
 def evaluar(params, n, entornos, dur):
     b = simular.compilar(params)
@@ -48,7 +34,6 @@ def evaluar(params, n, entornos, dur):
         extra = ROBOT + ["--dur", str(dur)] + ent.split()
         por_entorno.append([simular.resumir(m, simular.ejecutar(b, m, n, extra)) for m in simular.MODOS])
     return params, por_entorno
-
 
 def main():
     ap = argparse.ArgumentParser()
@@ -94,7 +79,6 @@ def main():
             print(f"  {ent or 'nominal':<60} caídas " + "/".join(str(r["caidas"]) for r in res)
                   + "   victorias " + "/".join(str(r["victorias"]) for r in res[1:])
                   + "".join(f"\n      {r['modo']}: {r['causas']}" for r in res if r["causas"]))
-
 
 if __name__ == "__main__":
     main()

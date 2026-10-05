@@ -11,15 +11,15 @@ void test_start_tras_el_antirrebote(void) {
     ModuloArranque m(5);
     m.enMarcha(false, 100);
     TEST_ASSERT_FALSE(m.enMarcha(true, 101));
-    TEST_ASSERT_FALSE(m.enMarcha(true, 103));  // 2 ms: todavía no
-    TEST_ASSERT_TRUE(m.enMarcha(true, 106));   // 5 ms seguidos: RUN
+    TEST_ASSERT_FALSE(m.enMarcha(true, 103));
+    TEST_ASSERT_TRUE(m.enMarcha(true, 106));
 }
 
 void test_un_pico_suelto_no_arranca(void) {
     ModuloArranque m(5);
     m.enMarcha(false, 100);
     TEST_ASSERT_FALSE(m.enMarcha(true, 101));
-    TEST_ASSERT_FALSE(m.enMarcha(false, 102));  // ruido de 1 ms
+    TEST_ASSERT_FALSE(m.enMarcha(false, 102));
     TEST_ASSERT_FALSE(m.enMarcha(false, 110));
 }
 

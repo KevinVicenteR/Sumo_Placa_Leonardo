@@ -1,10 +1,4 @@
 #!/bin/sh
-# Compila el firmware real y la física a WebAssembly y genera la página.
-#
-#   simulacion/web/compilar.sh                 # firmware actual -> sim.wasm
-#   simulacion/web/compilar.sh RAIZ salida.wasm   # firmware de otra copia del proyecto
-#
-# Requiere clang y wasm-ld de LLVM: brew install llvm lld
 set -e
 cd "$(dirname "$0")"
 RAIZ=${1:-../..}

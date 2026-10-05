@@ -16,9 +16,6 @@ ControladorRobot robot(percepcion, estrategia, controlMovimiento, motor);
 ConfiguracionHardware hardware;
 
 #if defined(MODO_PRUEBA_MOTORES)
-// Prueba de motores con el robot levantado (ruedas en el aire): repite una
-// secuencia de movimientos y la anuncia por USB para comprobar que cada rueda
-// gira hacia donde dice
 namespace {
 void paso(const __FlashStringHelper* texto, int izq, int der) {
   Serial.println(texto);
@@ -54,7 +51,6 @@ void loop() {
   Serial.println(F("--- repite ---"));
 }
 #elif defined(MODO_DIAGNOSTICO)
-// Motores deshabilitados durante todo el diagnóstico.
 namespace {
 void calibrarDiagnostico() {
   motor.deshabilitar();
@@ -105,14 +101,10 @@ void loop() {
 ModuloArranque moduloArranque(FiltroModuloArranqueMs);
 bool enCombate = false;
 
-// Empieza (o reempieza) un combate: el robot ya está colocado sobre el negro
 void empezarCombate() {
   motor.deshabilitar();
-  // Medir el piso sobre negro, con motores apagados y sin espera añadida.
-  // No calibrar enemigos: el rival puede estar delante al empezar.
   percepcion.calibrarPiso();
   controlMovimiento.reiniciar();
-  // Rutina de inicio del round según los interruptores DIP
   const int dip = hardware.leerInterruptores();
   controlMovimiento.iniciarRutina(rutinaSegunInterruptores(dip), (dip & 4) ? -1 : 1);
   enCombate = true;
@@ -127,7 +119,6 @@ void empezarCombate() {
 
 void setup() {
   hardware.inicializarPines();
-  // Mantener PWM=0 mientras se inicializa
   motor.deshabilitar();
 #if defined(MONITOREO_COMBATE)
   Serial.begin(115200);

@@ -225,6 +225,9 @@ void uso() {
                  "         [--bateria Vbat/Vmotor] [--friccion-caja f] [--friccion-giro f]\n"
                  "         [--adc-negro n --adc-blanco n --adc-fuera n] [--pared m] [--sensor-x m]\n"
                  "         [--inicio-r m] [--retardo-piso ms] [--mancha m]\n"
+                 "         [--salida espalda|lado|frente] [--rival-lado der|izq] [--dip N]\n"
+                 "                  (posición de salida de cada round; DIP: bit0=DIP1, bit1=DIP2, bit2=DIP3)\n"
+                 "         [--fantasmas n]  (detecciones falsas por segundo y sensor)\n"
                  "         [--driver tb6612|l298n]  (con L298N, PWM a 0 deja el motor libre)\n"
                  "         [--enemigo-invertido 1]  (sensores de enemigo que dan LOW al detectar)\n"
                  "         [--radio m --borde m]  (por defecto 0.385 y 0.025: minisumo reglamentario)\n"
@@ -274,6 +277,13 @@ int main(int argc, char** argv) {
         else if (a == "--radio") cfg.radio = std::atof(v);
         else if (a == "--enemigo-invertido") cfg.enemigoInvertido = std::atoi(v) != 0;
         else if (a == "--driver") cfg.driverL298 = std::string(v) == "l298n";
+        else if (a == "--salida") {
+            const std::string m = v;
+            cfg.salida = m == "espalda" ? 1 : m == "lado" ? 2 : m == "frente" ? 3 : 0;
+        }
+        else if (a == "--rival-lado") cfg.ladoRival = std::string(v) == "izq" ? -1 : 1;
+        else if (a == "--dip") cfg.dip = std::atoi(v);
+        else if (a == "--fantasmas") cfg.fantasmasPorSegundo = std::atof(v);
         else if (a == "--borde") cfg.borde = std::atof(v);
         else if (a == "--tray") rutaTray = v;
 #ifdef ENTRENAMIENTO_POLITICA

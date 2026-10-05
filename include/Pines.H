@@ -15,15 +15,19 @@ constexpr uint8_t S_FRONT_DER = A5;
 constexpr uint8_t S_LAT_IZQ   = 1;
 constexpr uint8_t S_LAT_DER   = A4;
 
-// Indicadores de usuario integrados, según la biblioteca XMotion.
-constexpr uint8_t LED_IZQ = 8;
-constexpr uint8_t LED_DER = 9;
-
-// XMotion: biblioteca oficial de JSUMO (LM_PWM=3, LM_DIR=12,
-// RM_PWM=11, RM_DIR=13). Una dirección por motor, HIGH = avance.
-constexpr uint8_t PWMA = 3;
-constexpr uint8_t DIR_IZQ = 12;
+// Configuración que mueve ambos motores según la prueba física del usuario.
+// D10 y D11 admiten PWM en Arduino Leonardo.
+constexpr uint8_t PWMA = 10;
+constexpr uint8_t MA1A = 9;
+constexpr uint8_t MA2A = 13;
 constexpr uint8_t PWMB = 11;
-constexpr uint8_t DIR_DER = 13;
+constexpr uint8_t MA1B = 8;
+constexpr uint8_t MA2B = 12;
+// D8/D9 participan en el control: no usarlos para parpadeo independiente.
+
+// Interruptores DIP de la placa JSumo XMotion (eligen la rutina de inicio)
+constexpr uint8_t DIP_1 = 5;
+constexpr uint8_t DIP_2 = 6;
+constexpr uint8_t DIP_3 = 7;
 
 #endif

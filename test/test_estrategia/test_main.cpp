@@ -27,12 +27,14 @@ void test_prioriza_borde_sobre_todo(void) {
     EstrategiaCombate e;
     DecisionMovimiento d = e.decidir(L(true, false, true, true, true, true, true));
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeIzq, (int)d.tipo);
+    TEST_ASSERT_FALSE(d.ataqueDirecto);
 }
 
 void test_frontal_sobre_45_y_laterales(void) {
     EstrategiaCombate e;
     DecisionMovimiento d = e.decidir(L(false, false, true, true, true, true, true));
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::AtaqueFrontal, (int)d.tipo);
+    TEST_ASSERT_TRUE(d.ataqueDirecto);
 }
 
 void test_frontal_y_un_45_ajusta_hacia_ese_lado(void) {

@@ -21,6 +21,11 @@ public:
     }
 };
 
+// Rueda del lado del enemigo cuando lo ve solo un sensor de 45°
+static int interior45(int ataque) {
+    return Corregir45EnPivote ? 0 : VelocidadCurva * ataque / VelocidadAtaque;
+}
+
 static void assertMovimiento(MotorMock& m, int izq, int der) {
     TEST_ASSERT_EQUAL_INT(izq, m.izq);
     TEST_ASSERT_EQUAL_INT(der, m.der);
@@ -56,8 +61,9 @@ static void assertAccionSimple(TipoAccion accion, int izq, int der) {
 
 void test_acciones_simples_velocidades_correctas(void) {
     assertAccionSimple(TipoAccion::AtaqueFrontal, VelocidadAtaque, VelocidadAtaque);
-    assertAccionSimple(TipoAccion::CorregirIzq, VelocidadCurva, VelocidadAtaque);
-    assertAccionSimple(TipoAccion::CorregirDer, VelocidadAtaque, VelocidadCurva);
+    // Visto solo a 45°: pivota sobre la rueda de ese lado (o curva)
+    assertAccionSimple(TipoAccion::CorregirIzq, interior45(VelocidadAtaque), VelocidadAtaque);
+    assertAccionSimple(TipoAccion::CorregirDer, VelocidadAtaque, interior45(VelocidadAtaque));
     if (GiroLateralEnRueda) {
         // La rueda del lado del enemigo se frena y hace de pivote
         assertAccionSimple(TipoAccion::DefensaIzq, 0, VelocidadRuedaPivote);
@@ -128,7 +134,7 @@ void test_paro_en_seco_al_perder_al_enemigo_en_pleno_ataque(void) {
 
     const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
     c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
-    assertMovimiento(m, -VelocidadMaxima, -VelocidadMaxima);
+    assertMovimiento(m, -VelocidadFreno, -VelocidadFreno);
 
     c.ejecutar({TipoAccion::Busqueda}, m, t + 1 + TiempoParoPerdida);
     assertGiroBusqueda(m, 1);
@@ -142,180 +148,6 @@ void test_paro_se_cancela_si_vuelve_a_ver_al_enemigo(void) {
     c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
     c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + 10);
     assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
-}
-
-// Al ver la línea avanzando a toda velocidad: freno de cada rueda -> retroceso -> freno -> giro
-// (el freno dura en proporción a la velocidad: a VelocidadAtaque, no a la máxima)
-static const unsigned long InicioRetroceso = TiempoFrenadoRuedas * VelocidadAtaque / VelocidadMaxima;
-static const unsigned long InicioGiro = InicioRetroceso + TiempoRetroceso + TiempoFrenado;
-
-void test_evadir_borde_izq_frena_retrocede_gira_derecha_y_avanza_sin_bloquear(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    g_delayCallCount = 0;
-
-    // Venía atacando recto: frena las dos ruedas por igual
-    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
-    assertMovimiento(m, -VelocidadMaxima, -VelocidadMaxima);
-
-    // La línea ya no se ve, pero la maniobra continúa
-    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioRetroceso);
-    assertRetrocede(m);
-    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioRetroceso + TiempoRetroceso - 1);
-    assertRetrocede(m);
-
-    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioRetroceso + TiempoRetroceso);
-    assertMovimiento(m, 0, 0);
-
-    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro);
-    assertGiroEvasion(m, 1);
-
-    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro + TiempoGiroEvasion - 1);
-    assertGiroEvasion(m, 1);
-
-    // Evasión completa: el robot mira hacia el centro y la búsqueda empieza avanzando
-    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro + TiempoGiroEvasion);
-    assertAvanceBusqueda(m);
-
-    TEST_ASSERT_EQUAL_INT(0, g_delayCallCount);
-}
-
-void test_evadir_borde_der_gira_izquierda(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-
-    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
-    c.ejecutar({TipoAccion::EvadirBordeDer}, m, t);
-    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro);
-    assertGiroEvasion(m, -1);
-}
-
-void test_frenado_proporcional_a_lo_que_hacia_cada_rueda(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-
-    // En curva: la rueda más rápida frena a tope y la otra en proporción
-    const unsigned long t = acelerar(c, m, TipoAccion::CorregirIzq, 0);
-    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, t);
-    assertMovimiento(m, -(long)VelocidadCurva * VelocidadMaxima / VelocidadAtaque, -VelocidadMaxima);
-}
-
-void test_quieto_no_frena_y_retrocede_directamente(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1000);
-    assertRetrocede(m);
-}
-
-void test_evadir_borde_ambos_gira_hacia_el_ultimo_lado_del_enemigo(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-
-    const unsigned long t = acelerar(c, m, TipoAccion::CorregirIzq, 0);
-    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, t);
-    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioRetroceso + TiempoRetrocesoAmbos - 1);
-    assertRetrocede(m);
-
-    const unsigned long giro = t + InicioRetroceso + TiempoRetrocesoAmbos + TiempoFrenado;
-    c.ejecutar({TipoAccion::Busqueda}, m, giro);
-    assertGiroEvasion(m, -1);
-
-    c.ejecutar({TipoAccion::Busqueda}, m, giro + TiempoGiroEvasionAmbos - 1);
-    assertGiroEvasion(m, -1);
-}
-
-void test_linea_girando_en_el_sitio_gira_sin_retroceder(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-
-    // Al arrancar el robot está quieto y la búsqueda empieza girando a la derecha
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertGiroBusqueda(m, 1);
-
-    // El sensor derecho (el que va por delante) toca la línea: gira al otro lado, sin retroceder
-    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1010);
-    assertGiroEvasion(m, -1);
-
-    // Nuevos toques durante el giro en el sitio no reinician la maniobra
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1010 + TiempoGiroEvasionEnSitio - 1);
-    assertGiroEvasion(m, -1);
-
-    c.ejecutar({TipoAccion::Busqueda}, m, 1010 + TiempoGiroEvasionEnSitio);
-    assertAvanceBusqueda(m);
-}
-
-void test_linea_durante_el_paro_frena_y_retrocede(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-
-    // Aún se desliza por la inercia del ataque: frena según lo que estima y retrocede
-    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
-    c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t + 5);
-    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
-
-    // El freno dura a lo sumo lo que corresponde a VelocidadAtaque (InicioRetroceso)
-    c.ejecutar({TipoAccion::Busqueda}, m, t + 5 + InicioRetroceso);
-    assertRetrocede(m);
-}
-
-void test_linea_al_girar_tras_asentarse_gira_sin_retroceder(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-
-    // Tras atacar y el paro, busca girando en el sitio; la inercia ya pasó
-    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
-    c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
-    c.ejecutar({TipoAccion::Busqueda}, m, t + 1 + TiempoParoPerdida);
-    assertGiroBusqueda(m, 1);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t + 1 + TiempoParoPerdida + 2 * TauRuedas);
-    assertGiroEvasion(m, 1);
-}
-
-void test_enemigo_no_aborta_el_giro_minimo_de_evasion(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-
-    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
-    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro);
-    assertGiroEvasion(m, 1);
-
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + InicioGiro + TiempoGiroEvasion - 1);
-    assertGiroEvasion(m, 1);
-
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + InicioGiro + TiempoGiroEvasion);
-    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
-}
-
-void test_enemigo_lateral_espera_fin_del_giro_de_evasion(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-
-    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
-    c.ejecutar({TipoAccion::Busqueda}, m, t + InicioGiro);
-
-    c.ejecutar({TipoAccion::CorregirIzq}, m, t + InicioGiro + TiempoGiroEvasion);
-    assertMovimiento(m, VelocidadCurva, VelocidadAtaque);
-}
-
-void test_tras_ataque_al_final_del_escape_busqueda_empieza_girando(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-
-    const unsigned long t0 = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t0);
-    c.ejecutar({TipoAccion::Busqueda}, m, t0 + InicioGiro);
-    const unsigned long t = t0 + InicioGiro + TiempoGiroEvasion;
-    c.ejecutar({TipoAccion::CorregirDer}, m, t);
-
-    // El enemigo se pierde tras atacar: la búsqueda reinicia con un giro
-    c.ejecutar({TipoAccion::Busqueda}, m, t + 10);
-    c.ejecutar({TipoAccion::Busqueda}, m, t + 10 + TiempoParoPerdida);
-    assertGiroBusqueda(m, 1);
 }
 
 static void assertGiroLateral(MotorMock& m, int sentido) {
@@ -339,8 +171,23 @@ void test_giro_lateral_sigue_hasta_ver_al_enemigo_de_frente(void) {
     c.ejecutar({TipoAccion::CorregirIzq}, m, 1100);
     assertGiroLateral(m, -1);
 
+    // Una lectura frontal suelta no corta el giro; confirmada, sí
     c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1150);
+    assertGiroLateral(m, -1);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1150 + ConfirmacionDeteccion);
     assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+}
+
+void test_giro_lateral_ignora_un_frontal_antes_del_giro_minimo(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1000);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1001);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1001 + ConfirmacionDeteccion);
+    if (ConfirmacionDeteccion + 1 < TiempoMinimoGiroLateral) {
+        assertGiroLateral(m, 1);
+    }
 }
 
 void test_giro_lateral_termina_por_tiempo(void) {
@@ -355,29 +202,9 @@ void test_giro_lateral_termina_por_tiempo(void) {
     assertGiroBusqueda(m, 1);
 }
 
-void test_linea_interrumpe_el_giro_lateral(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
 
-    const unsigned long t = acelerar(c, m, TipoAccion::DefensaIzq, 1000);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
-    // Frena solo lo que se movía: con rueda pivote, la rueda que empujaba
-    if (GiroLateralEnRueda) {
-        assertMovimiento(m, 0, -VelocidadMaxima);
-    }
-    c.ejecutar({TipoAccion::Busqueda}, m, t + TiempoFrenadoRuedas);
-    assertRetrocede(m);
-}
 
-void test_enemigo_frontal_no_aborta_retroceso(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
 
-    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + InicioRetroceso + 10);
-    assertRetrocede(m);
-}
 
 
 void test_ajuste_centra_al_enemigo_sin_dejar_de_atacar(void) {
@@ -393,16 +220,17 @@ void test_se_acomoda_y_luego_va_con_todo(void) {
     c.ejecutar({TipoAccion::CorregirIzq}, m, 1000);
     c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000 + TiempoEmbestida / 2);
     c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000 + TiempoEmbestida);
-    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+    const int mitad = VelocidadAtaque + (VelocidadEmpuje - VelocidadAtaque) / 2;
+    assertMovimiento(m, mitad, mitad);
 
-    // Alineado de frente TiempoEmbestida: va con todo
+    // Alineado de frente TiempoEmbestida: alcanza el techo
     const unsigned long alineado = 1000 + TiempoEmbestida / 2 + TiempoEmbestida;
     c.ejecutar({TipoAccion::AtaqueFrontal}, m, alineado);
     assertMovimiento(m, VelocidadEmpuje, VelocidadEmpuje);
 
     // Ya lanzado, sigue con todo aunque el enemigo pase a un sensor de 45°
     c.ejecutar({TipoAccion::CorregirDer}, m, alineado + 1);
-    assertMovimiento(m, VelocidadEmpuje, VelocidadCurva * VelocidadEmpuje / VelocidadAtaque);
+    assertMovimiento(m, VelocidadEmpuje, interior45(VelocidadEmpuje));
     c.ejecutar({TipoAccion::AjusteDer}, m, alineado + 2);
     assertMovimiento(m, VelocidadEmpuje, VelocidadEmpuje * PorcentajeAjuste / 100);
 }
@@ -417,19 +245,7 @@ void test_el_empuje_empieza_de_cero_tras_perder_al_enemigo(void) {
     assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
 }
 
-void test_linea_justo_tras_girar_gira_sin_retroceder_aunque_ya_avance(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
 
-    // Gira en el sitio y justo después se le ordena avanzar: por la inercia las
-    // ruedas aún giran en sentidos opuestos, así que no debe retroceder
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TauRuedas);
-    assertGiroBusqueda(m, 1);
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000 + TauRuedas + 1);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1000 + TauRuedas + 2);
-    assertGiroEvasion(m, 1);
-}
 
 void test_avance_de_busqueda_en_pulsos(void) {
     if (TiempoPulsoAvance == 0) {
@@ -460,64 +276,311 @@ void test_cerca_del_borde_limita_tambien_el_ataque(void) {
     c.ejecutar(lateral, m, 1000);
     TEST_ASSERT_TRUE(m.izq <= VelocidadCercaBorde);
 
+    // Termina el giro lateral (frontal confirmado tras el giro mínimo) y ataca limitado
     DecisionMovimiento ataque = {TipoAccion::AtaqueFrontal, true, true};
-    c.ejecutar(ataque, m, 1001);
+    c.ejecutar(ataque, m, 1000 + TiempoMinimoGiroLateral);
+    c.ejecutar(ataque, m, 1000 + TiempoMinimoGiroLateral + ConfirmacionDeteccion);
     assertMovimiento(m, VelocidadCercaBorde, VelocidadCercaBorde);
 }
 
-void test_enemigo_espera_el_giro_completo() {
+
+
+
+
+void test_ataque_sube_gradualmente_y_borde_lo_interrumpe() {
     ControlMovimiento c(CLASICO);
     MotorMock m;
-    const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 0);
-    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, t);
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + InicioGiro + TiempoMinimoGiroEvasion);
-    assertGiroEvasion(m, 1);
-    c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + InicioGiro + TiempoGiroEvasion);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000);
     assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000 + TiempoEmbestida / 4);
+    const int cuarto = VelocidadAtaque + (VelocidadEmpuje - VelocidadAtaque) / 4;
+    assertMovimiento(m, cuarto, cuarto);
+    c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000 + TiempoEmbestida / 2);
+    const int mitad = VelocidadAtaque + (VelocidadEmpuje - VelocidadAtaque) / 2;
+    assertMovimiento(m, mitad, mitad);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos, true}, m, 1001 + TiempoEmbestida / 2);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
 }
 
-void test_blanco_al_terminar_escape_en_sitio_no_avanza() {
+void test_un_sensor_retrocede_recto_y_gira_tras_separarse() {
+    for (int lado = -1; lado <= 1; lado += 2) {
+        ControlMovimiento c(CLASICO);
+        MotorMock m;
+        const TipoAccion borde = lado < 0 ? TipoAccion::EvadirBordeIzq : TipoAccion::EvadirBordeDer;
+        c.ejecutar({borde}, m, 1000);
+        assertMovimiento(m, -VelocidadRetrocesoUnSensor, -VelocidadRetrocesoUnSensor);
+        c.ejecutar({borde}, m, 1100);
+        assertMovimiento(m, -VelocidadRetrocesoUnSensor, -VelocidadRetrocesoUnSensor);
+        c.ejecutar({TipoAccion::Busqueda}, m, 1200);
+        const unsigned long paro = 1200 + TiempoSeparacionUnSensor;
+        c.ejecutar({TipoAccion::Busqueda}, m, paro);
+        assertMovimiento(m, 0, 0);
+        const unsigned long giro = paro + TiempoFrenado;
+        c.ejecutar({TipoAccion::AtaqueFrontal}, m, giro);
+        assertGiroEvasion(m, -lado);
+        c.ejecutar({TipoAccion::AtaqueFrontal}, m, giro + TiempoGiroEvasion);
+        assertMovimiento(m, 0, 0);
+        c.ejecutar({TipoAccion::AtaqueFrontal}, m, giro + TiempoGiroEvasion + TiempoAsentamientoEvasion);
+        assertMovimiento(m, VelocidadSalidaUnSensor, VelocidadSalidaUnSensor);
+        const unsigned long fin = giro + TiempoGiroEvasion + TiempoAsentamientoEvasion;
+        c.ejecutar({TipoAccion::AtaqueFrontal}, m, fin + TiempoSalidaSuaveUnSensor - 1);
+        assertMovimiento(m, VelocidadSalidaUnSensor, VelocidadSalidaUnSensor);
+        c.ejecutar({TipoAccion::AtaqueFrontal}, m, fin + TiempoSalidaSuaveUnSensor);
+        TEST_ASSERT_TRUE(m.izq > VelocidadSalidaUnSensor && m.izq == m.der);
+        c.ejecutar({borde}, m, fin + TiempoSalidaSuaveUnSensor + 1);
+        assertMovimiento(m, -VelocidadRetrocesoUnSensor, -VelocidadRetrocesoUnSensor);
+    }
+}
+void test_busqueda_tras_un_sensor_sigue_hacia_el_lado_del_escape() {
+    for (int sentido = -1; sentido <= 1; sentido += 2) {
+        ControlMovimiento c(0);
+        MotorMock m;
+        // Recordar un enemigo al lado opuesto al escape.
+        c.ejecutar({sentido > 0 ? TipoAccion::AjusteIzq : TipoAccion::AjusteDer}, m, 900);
+        c.ejecutar({sentido > 0 ? TipoAccion::EvadirBordeIzq : TipoAccion::EvadirBordeDer}, m, 1000);
+        c.ejecutar({TipoAccion::Busqueda}, m, 1200);
+        const unsigned long paro = 1200 + TiempoSeparacionUnSensor;
+        c.ejecutar({TipoAccion::Busqueda}, m, paro);
+        c.ejecutar({TipoAccion::Busqueda}, m, paro + TiempoFrenado);
+        c.ejecutar({TipoAccion::Busqueda}, m, paro + TiempoFrenado + TiempoGiroEvasion);
+        const unsigned long fin = paro + TiempoFrenado + TiempoGiroEvasion + TiempoAsentamientoEvasion;
+        c.ejecutar({TipoAccion::Busqueda}, m, fin);
+        c.ejecutar({TipoAccion::Busqueda}, m, fin + TiempoArranqueBusqueda / 2);
+        TEST_ASSERT_TRUE(sentido > 0 ? m.izq > m.der : m.der > m.izq);
+    }
+}
+void test_segundo_sensor_cambia_a_recto_sin_reiniciar_limite() {
     ControlMovimiento c(CLASICO);
     MotorMock m;
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1000);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1100);
+    assertMovimiento(m, -VelocidadRetrocesoUnSensor, -VelocidadRetrocesoUnSensor);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 1110);
+    assertRetrocede(m);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 1000 + TiempoMaximoRecuperacionBorde);
+    assertMovimiento(m, 0, 0);
+}
+void test_ambos_retrocede_sin_reinicios_y_blanco_interrumpe_giro() {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 1000);
+    assertRetrocede(m);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 1000 + TiempoRetrocesoAmbos - 1);
+    assertRetrocede(m);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoRetrocesoAmbos);
+    assertRetrocede(m);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoRetrocesoAmbos + TiempoSeparacionBorde);
+    assertMovimiento(m, 0, 0);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoRetrocesoAmbos + TiempoSeparacionBorde + TiempoFrenado);
+    assertGiroEvasion(m, 1);
+    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1001 + TiempoRetrocesoAmbos + TiempoSeparacionBorde + TiempoFrenado);
+    assertRetrocede(m);
+}
+void test_busqueda_default_en_curvas_sin_paradas_y_borde_la_interrumpe() {
+    ControlMovimiento c(0);
+    MotorMock m;
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1010);
-    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1010 + TiempoGiroEvasionEnSitio);
     assertMovimiento(m, 0, 0);
-    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 2010);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoArranqueBusqueda / 2);
+    TEST_ASSERT_TRUE(m.izq > 0 && m.der > 0);
+    TEST_ASSERT_TRUE(m.izq <= VelocidadAvance / 2 && m.der <= VelocidadAvance / 2);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoArcoBusqueda - 1);
+    const int antesIzq = m.izq, antesDer = m.der;
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoArcoBusqueda);
+    TEST_ASSERT_INT_WITHIN(1, antesIzq, m.izq);
+    TEST_ASSERT_INT_WITHIN(1, antesDer, m.der);
+    assertMovimiento(m, VelocidadAvance * PorcentajeArcoBusqueda / 100, VelocidadAvance);
+    c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1001 + TiempoArcoBusqueda);
+    assertMovimiento(m, -VelocidadRetrocesoUnSensor, -VelocidadRetrocesoUnSensor);
+}
+void test_linea_persistente_no_reinicia_ni_vuelve_a_avanzar() {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1000);
+    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1000 + TiempoRetroceso);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
+    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1000 + TiempoMaximoRecuperacionBorde);
     assertMovimiento(m, 0, 0);
-    c.ejecutar({TipoAccion::Busqueda}, m, 2011);
-    assertAvanceBusqueda(m);
+    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 5000);
+    assertMovimiento(m, 0, 0);
+}
+
+void test_tres_frontales_cancelan_giro_y_pausa_pero_no_evasion() {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    const DecisionMovimiento directo{TipoAccion::AtaqueFrontal, true, false, true};
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000);
+    c.ejecutar(directo, m, 1010);
+    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1020);
+    c.ejecutar(directo, m, 1030);
+    TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 1040);
+    c.ejecutar(directo, m, 1050);
+    assertRetrocede(m);
+}
+
+void test_arranque_no_dispara_aunque_tres_frontales_vean_enemigo() {
+    ControlMovimiento c;
+    MotorMock m;
+    const DecisionMovimiento ataque{TipoAccion::AtaqueFrontal, true, false, true};
+    c.ejecutar(ataque, m, 5000);
+    assertMovimiento(m, 0, 0);
+    c.ejecutar(ataque, m, 5000 + TiempoArranqueSuave / 4);
+    TEST_ASSERT_TRUE(m.izq > 0 && m.izq <= VelocidadAtaque / 4);
+    TEST_ASSERT_EQUAL(m.izq, m.der);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 5001 + TiempoArranqueSuave / 4);
+    assertRetrocede(m);
+}
+
+void test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(1, 1);
+
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
+    // Ve de lado durante el giro: sigue girando
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TauRuedas);
+    assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
+    // Un frontal antes del giro mínimo (un reflejo) no lo detiene
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, 1000 + TiempoMinimoGiroEspalda / 2);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, 1000 + TiempoMinimoGiroEspalda / 2 + ConfirmacionDeteccion);
+    assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
+    // De frente y confirmado tras el mínimo: contragiro para no pasarse de largo
+    const unsigned long visto = 1000 + TiempoMinimoGiroEspalda + 2 * TauRuedas;
+    c.ejecutar({TipoAccion::Busqueda}, m, visto - 1);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto);
+    assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der > 0);
+    // Tras el freno, embiste
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion + TiempoFrenadoRuedas + 1);
+    assertMovimiento(m, VelocidadEmbestidaInicio, VelocidadEmbestidaInicio);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+}
+
+void test_rutina_lado_gira_hacia_el_lado_del_rival(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(2, -1);
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000);
+    // Pivota sobre la rueda izquierda: esa parada, la derecha empuja
+    assertMovimiento(m, 0, VelocidadPivoteInicio);
+    // Sin encontrarlo, termina al agotar su tiempo
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoMaxGiroLado);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+}
+
+void test_rutina_frente_avanza_hasta_ver_al_rival(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(3, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der);
+    // Una detección al principio no corta el avance
+    c.ejecutar({TipoAccion::CorregirIzq}, m, 1010);
+    c.ejecutar({TipoAccion::CorregirIzq}, m, 1010 + ConfirmacionDeteccion);
+    TEST_ASSERT_EQUAL_INT(3, c.rutinaActual());
+    // Confirmada tras el mínimo, sí
+    c.ejecutar({TipoAccion::CorregirIzq}, m, 1000 + TiempoMinimoAvanceInicio + ConfirmacionDeteccion);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+}
+
+void test_la_linea_cancela_la_rutina(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(3, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 1010);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    TEST_ASSERT_TRUE(m.izq <= 0 && m.der <= 0);
+}
+
+void test_sin_interruptores_la_rutina_es_la_del_round_1(void) {
+    TEST_ASSERT_EQUAL_INT(1, rutinaSegunInterruptores(0));
+    TEST_ASSERT_EQUAL_INT(2, rutinaSegunInterruptores(1));
+    TEST_ASSERT_EQUAL_INT(3, rutinaSegunInterruptores(2));
+    TEST_ASSERT_EQUAL_INT(0, rutinaSegunInterruptores(3));
+    TEST_ASSERT_EQUAL_INT(1, rutinaSegunInterruptores(4));  // DIP3 solo elige el lado
+}
+
+void test_rutina_frente_ignora_los_laterales(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(3, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    // Algo fuera del dohyo visto de lado: sigue avanzando
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoMinimoAvanceInicio);
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoMinimoAvanceInicio + 2 * ConfirmacionDeteccion);
+    TEST_ASSERT_EQUAL_INT(3, c.rutinaActual());
+    TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der);
+}
+
+void test_rutina_lado_elige_el_lado_con_el_sensor_lateral(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    // El DIP3 dice izquierda, pero el lateral derecho ve al rival: pivota a la derecha
+    c.iniciarRutina(2, -1);
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1000);
+    assertMovimiento(m, VelocidadPivoteInicio, 0);
+    // Una vez decidido, no cambia de lado aunque luego lo vea el otro lateral
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1010);
+    assertMovimiento(m, VelocidadPivoteInicio, 0);
+}
+
+void test_rutina_lado_sin_lateral_usa_el_dip3(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(2, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, VelocidadPivoteInicio, 0);
+}
+
+void test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado(void) {
+    if (!Corregir45EnPivote) {
+        return;
+    }
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.ejecutar({TipoAccion::CorregirIzq}, m, 1000);
+    assertMovimiento(m, 0, VelocidadAtaque);
+    c.ejecutar({TipoAccion::CorregirDer}, m, 1001);
+    assertMovimiento(m, VelocidadAtaque, 0);
 }
 
 int main(int, char**) {
     UNITY_BEGIN();
-    RUN_TEST(test_enemigo_espera_el_giro_completo);
-    RUN_TEST(test_blanco_al_terminar_escape_en_sitio_no_avanza);
+    RUN_TEST(test_busqueda_tras_un_sensor_sigue_hacia_el_lado_del_escape);
+    RUN_TEST(test_segundo_sensor_cambia_a_recto_sin_reiniciar_limite);
+    RUN_TEST(test_arranque_no_dispara_aunque_tres_frontales_vean_enemigo);
+    RUN_TEST(test_tres_frontales_cancelan_giro_y_pausa_pero_no_evasion);
+    RUN_TEST(test_un_sensor_retrocede_recto_y_gira_tras_separarse);
+    RUN_TEST(test_ambos_retrocede_sin_reinicios_y_blanco_interrumpe_giro);
+    RUN_TEST(test_busqueda_default_en_curvas_sin_paradas_y_borde_la_interrumpe);
+    RUN_TEST(test_linea_persistente_no_reinicia_ni_vuelve_a_avanzar);
+    RUN_TEST(test_ataque_sube_gradualmente_y_borde_lo_interrumpe);
     RUN_TEST(test_acciones_simples_velocidades_correctas);
     RUN_TEST(test_busqueda_inicial_gira_y_luego_avanza);
     RUN_TEST(test_busqueda_gira_hacia_el_ultimo_lado_del_enemigo);
     RUN_TEST(test_paro_en_seco_al_perder_al_enemigo_en_pleno_ataque);
     RUN_TEST(test_paro_se_cancela_si_vuelve_a_ver_al_enemigo);
-    RUN_TEST(test_evadir_borde_izq_frena_retrocede_gira_derecha_y_avanza_sin_bloquear);
-    RUN_TEST(test_evadir_borde_der_gira_izquierda);
-    RUN_TEST(test_frenado_proporcional_a_lo_que_hacia_cada_rueda);
-    RUN_TEST(test_quieto_no_frena_y_retrocede_directamente);
-    RUN_TEST(test_evadir_borde_ambos_gira_hacia_el_ultimo_lado_del_enemigo);
-    RUN_TEST(test_linea_girando_en_el_sitio_gira_sin_retroceder);
-    RUN_TEST(test_linea_durante_el_paro_frena_y_retrocede);
-    RUN_TEST(test_linea_al_girar_tras_asentarse_gira_sin_retroceder);
-    RUN_TEST(test_enemigo_no_aborta_el_giro_minimo_de_evasion);
-    RUN_TEST(test_enemigo_lateral_espera_fin_del_giro_de_evasion);
-    RUN_TEST(test_tras_ataque_al_final_del_escape_busqueda_empieza_girando);
     RUN_TEST(test_giro_lateral_sigue_hasta_ver_al_enemigo_de_frente);
     RUN_TEST(test_giro_lateral_termina_por_tiempo);
-    RUN_TEST(test_linea_interrumpe_el_giro_lateral);
-    RUN_TEST(test_enemigo_frontal_no_aborta_retroceso);
     RUN_TEST(test_ajuste_centra_al_enemigo_sin_dejar_de_atacar);
     RUN_TEST(test_se_acomoda_y_luego_va_con_todo);
     RUN_TEST(test_el_empuje_empieza_de_cero_tras_perder_al_enemigo);
-    RUN_TEST(test_linea_justo_tras_girar_gira_sin_retroceder_aunque_ya_avance);
     RUN_TEST(test_avance_de_busqueda_en_pulsos);
     RUN_TEST(test_cerca_del_borde_limita_tambien_el_ataque);
+    RUN_TEST(test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro);
+    RUN_TEST(test_rutina_lado_gira_hacia_el_lado_del_rival);
+    RUN_TEST(test_rutina_frente_avanza_hasta_ver_al_rival);
+    RUN_TEST(test_la_linea_cancela_la_rutina);
+    RUN_TEST(test_sin_interruptores_la_rutina_es_la_del_round_1);
+    RUN_TEST(test_giro_lateral_ignora_un_frontal_antes_del_giro_minimo);
+    RUN_TEST(test_rutina_frente_ignora_los_laterales);
+    RUN_TEST(test_rutina_lado_elige_el_lado_con_el_sensor_lateral);
+    RUN_TEST(test_rutina_lado_sin_lateral_usa_el_dip3);
+    RUN_TEST(test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado);
     return UNITY_END();
 }

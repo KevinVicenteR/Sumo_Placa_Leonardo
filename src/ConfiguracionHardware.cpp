@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "ConfiguracionHardware.H"
 #include "Pines.H"
+#include "Parametros.H"
 
 void ConfiguracionHardware::inicializarPines() const {
     // Deshabilitar los puentes antes de configurar sus entradas de dirección.
@@ -8,18 +9,31 @@ void ConfiguracionHardware::inicializarPines() const {
     digitalWrite(PWMB, LOW);
     pinMode(PWMA, OUTPUT);
     pinMode(PWMB, OUTPUT);
-    digitalWrite(LED_IZQ, LOW);
-    digitalWrite(LED_DER, LOW);
-    pinMode(LED_IZQ, OUTPUT);
-    pinMode(LED_DER, OUTPUT);
     pinMode(S_FRONT_IZQ, INPUT);
     pinMode(S_FRONT_CEN, INPUT);
     pinMode(S_FRONT_DER, INPUT);
     pinMode(S_LAT_IZQ, INPUT);
     pinMode(S_LAT_DER, INPUT);
+    pinMode(DIP_1, INPUT_PULLUP);
+    pinMode(DIP_2, INPUT_PULLUP);
+    pinMode(DIP_3, INPUT_PULLUP);
 
-    digitalWrite(DIR_IZQ, LOW);
-    digitalWrite(DIR_DER, LOW);
-    pinMode(DIR_IZQ, OUTPUT);
-    pinMode(DIR_DER, OUTPUT);
+    digitalWrite(MA1A, LOW);
+    digitalWrite(MA2A, LOW);
+    digitalWrite(MA1B, LOW);
+    digitalWrite(MA2B, LOW);
+    pinMode(MA1A, OUTPUT);
+    pinMode(MA2A, OUTPUT);
+    pinMode(MA1B, OUTPUT);
+    pinMode(MA2B, OUTPUT);
+}
+
+int ConfiguracionHardware::leerInterruptores() const {
+    const uint8_t pines[3] = {DIP_1, DIP_2, DIP_3};
+    int bits = 0;
+    for (int i = 0; i < 3; i++) {
+        const bool alto = digitalRead(pines[i]) == HIGH;
+        if (alto != DipActivoBajo) bits |= 1 << i;
+    }
+    return bits;
 }

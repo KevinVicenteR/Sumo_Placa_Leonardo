@@ -6,7 +6,7 @@
 #include "Parametros.H"
 
 // Ejecuta decisiones sin bloquear. La evasión de borde es una maniobra
-// temporizada (freno de cada rueda -> retroceso -> freno -> giro) que avanza
+// temporizada (retroceso recto -> paro -> giro lento -> paro) que avanza
 // un paso en cada llamada.
 // La búsqueda alterna un avance corto con un giro en el sitio hacia el
 // lado donde se vio al enemigo por última vez, y una pausa para asentarse.
@@ -15,8 +15,8 @@
 class ControlMovimiento: public IControlMovimiento {
 public:
     // Por defecto con los movimientos de Parametros.H; los tests del
-    // comportamiento clásico usan (0, 0, false): sin rampa, búsqueda con giro en
-    // el sitio y escape retrocediendo recto
+    // comportamiento clásico usan (0, 0, false): sin rampa y búsqueda con giro.
+    // El tercer argumento se conserva por compatibilidad; la evasión usa retroceso y giro.
     explicit ControlMovimiento(int rampaPwmPorMs = RampaPwmPorMs, int patronBusqueda = PatronBusqueda,
                                bool escapeEnArco = EscapeEnArco)
         : rampa(rampaPwmPorMs), patron(patronBusqueda), escapeArco(escapeEnArco) {}
@@ -24,9 +24,21 @@ public:
     void ejecutar(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) override;
     const EstimadorBorde& estimadorBorde() const { return estimador; }
     int limiteAvanceActual() const { return limiteEstimador; }
+    int ordenIzquierda() const { return ordenIzq; }
+    // Rutina de inicio del round (ver Parametros.H): 0 ninguna, 1 espalda con
+    // espalda, 2 lado a lado, 3 enfrentados lejos. lado: +1 derecha, -1 izquierda.
+    // Empieza en la primera llamada a ejecutar().
+    void iniciarRutina(int rutinaInicio, int ladoInicio) {
+        rutina = rutinaInicio;
+        ladoRutina = ladoInicio < 0 ? -1 : 1;
+        rutinaEnCurso = false;
+        conRutina = rutinaInicio != 0;
+    }
+    int rutinaActual() const { return rutina; }
+    int ordenDerecha() const { return ordenDer; }
 
 private:
-    enum class Fase { Libre, FrenandoRuedas, Retrocediendo, Frenando, Girando };
+    enum class Fase { Libre, Retrocediendo, Frenando, Girando, Asentando };
 
     // Envía la orden al motor y la recuerda para estimar la velocidad de las ruedas
     // urgente: sin rampa (frenar, escapar del borde, paro)
@@ -35,7 +47,7 @@ private:
     void buscarEnArcos(IMotor& motor, unsigned long ahora);
     // sentido: +1 gira a la derecha (horario), -1 a la izquierda
     void iniciarEvasion(int sentido, unsigned long duracionRetroceso,
-                        unsigned long duracionGiro, unsigned long ahora);
+                        unsigned long duracionGiro, unsigned long ahora, bool unSensor = false);
     bool continuarEvasion(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora);
     void recordarLadoEnemigo(TipoAccion tipo);
     void girarHaciaLado(IMotor& motor, int sentido);
@@ -45,11 +57,21 @@ private:
     bool continuarParo(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora);
     bool continuarGiroLateral(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora);
     bool resistirEnBorde(const DecisionMovimiento& decision, IMotor& motor);
+    bool continuarRutina(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora);
+    // true si 'detectando' lleva ConfirmacionDeteccion ms seguidos
+    static bool confirmar(bool detectando, unsigned long ahora, bool& activo, unsigned long& inicio);
     void buscar(IMotor& motor, unsigned long ahora);
     void avanzarPorPulsos(IMotor& motor, unsigned long t);
 
     Fase fase = Fase::Libre;
     unsigned long inicioFase = 0;
+    unsigned long inicioEvasion = 0;
+    unsigned long inicioNegro = 0;
+    bool negroContinuo = false;
+    bool evasionUnSensor = false;
+    bool salidaSuaveUnSensor = false;
+    unsigned long inicioSalidaSuave = 0;
+    int limiteSalidaSuave = 255;
     unsigned long duracionRetroceso = 0;
     unsigned long duracionGiro = 0;
     int sentidoGiro = 1;
@@ -64,7 +86,6 @@ private:
     bool veniaAtacando = false;
     bool enParo = false;
     unsigned long inicioParo = 0;
-    bool evasionEnSitio = false;
     bool viendoFrente = false;       // está atacando (enemigo visto por delante)
     unsigned long inicioFrente = 0;  // desde cuándo, sin interrupción
     bool empujando = false;          // ataca desde hace TiempoEmbestida o más
@@ -75,6 +96,8 @@ private:
     int pasoRampa = 255;             // lo que puede subir la orden en este ciclo
     unsigned long ultimaRampa = 0;
     bool primeraRampa = true;
+    unsigned long inicioMovimiento = 0;
+    int limiteArranque = 255;
     int limiteEstimador = 255;       // PWM máximo hacia delante según el borde previsto
     EstimadorBorde estimador;
     unsigned long ultimaPrediccion = 0;
@@ -82,6 +105,21 @@ private:
 
     int giroLateral = 0;  // sentido del giro comprometido hacia un enemigo visto de lado; 0 si no
     unsigned long inicioGiroLateral = 0;
+
+    int rutina = 0;
+    int ladoRutina = 1;
+    bool rutinaEnCurso = false;
+    bool conRutina = false;           // se eligió una rutina: sin arranque suave
+    bool embestidaInicio = false;     // la rutina encontró al rival pegado
+    bool frenandoGiroRutina = false;  // contragiro para no pasarse de largo
+    unsigned long inicioFrenoRutina = 0;
+    unsigned long finEmbestidaInicio = 0;
+    unsigned long inicioRutina = 0;
+    bool ladoDecidido = false;        // round 2: un sensor lateral ya eligió el lado
+    bool detectaRutina = false;       // confirmación de la detección que termina la rutina
+    unsigned long inicioDetectaRutina = 0;
+    bool detectaGiroLateral = false;
+    unsigned long inicioDetectaGiroLateral = 0;
 
     int sentidoBusqueda = 1;
     bool buscando = false;

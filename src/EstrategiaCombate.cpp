@@ -5,6 +5,8 @@
 DecisionMovimiento EstrategiaCombate::decidir(const LecturasSensores& lecturas) const {
     DecisionMovimiento decision = elegir(lecturas);
     decision.cercaBorde = lecturas.cercaBorde;
+    decision.ataqueDirecto = decision.tipo == TipoAccion::AtaqueFrontal &&
+                            lecturas.c45Izq && lecturas.frontal && lecturas.c45Der;
     return decision;
 }
 
@@ -17,6 +19,11 @@ DecisionMovimiento EstrategiaCombate::elegir(const LecturasSensores& lecturas) c
             return {TipoAccion::EvadirBordeDer, lecturas.frontal};
         }
         return {TipoAccion::EvadirBordeAmbos, lecturas.frontal};
+    }
+
+    // Esta detección prevalece también sobre la política del simulador.
+    if (lecturas.c45Izq && lecturas.frontal && lecturas.c45Der) {
+        return {TipoAccion::AtaqueFrontal, true};
     }
 
     if (UsarPoliticaAprendida) {

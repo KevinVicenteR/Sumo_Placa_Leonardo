@@ -9,16 +9,23 @@
 
 class Percepcion: public IPercepcion {
 public:
+    Percepcion() {
+        calibrar(pisoIzq, NegroPisoIzquierdo);
+        calibrar(pisoDer, NegroPisoDerecho);
+    }
     LecturasSensores leer() const override;
     // Debe llamarse con el robot sobre el negro del dohyo
     void calibrarPiso();
     // Averigua si los sensores de enemigo dan HIGH o LOW al detectar (ver
     // PolaridadSensoresEnemigo). Debe llamarse con el robot ya colocado.
     void calibrarSensoresEnemigo();
-    bool enemigoActivoAlto() const { return activoAlto; }
+    int negroIzquierdo() const { return pisoIzq.negro; }
+    int negroDerecho() const { return pisoDer.negro; }
+    int margenIzquierdo() const { return pisoIzq.margen; }
+    int margenDerecho() const { return pisoDer.margen; }
 
 private:
-    // Referencia fija de negro: calibrar exclusivamente antes de arrancar
+    // Referencia guardada; la calibración manual solo se usa en diagnóstico.
     struct SensorPiso {
         int negro = 0;
         int margen = UmbralLineaMinimo;
@@ -33,15 +40,16 @@ private:
     static bool detectarLinea(SensorPiso& sensor, int lectura, unsigned long ahora);
     static bool cercaDeLinea(const SensorPiso& sensor, int lectura);
 
-    bool activoAlto = PolaridadSensoresEnemigo >= 0;
+    uint8_t polaridadesAltas = MascaraEnemigosActivosHigh;
+    static uint8_t indiceEnemigo(uint8_t pin);
     mutable SensorPiso pisoIzq;
     mutable SensorPiso pisoDer;
 
-    mutable RetencionDeteccion retLatIzq{TiempoRetencionEnemigo};
-    mutable RetencionDeteccion retC45Izq{TiempoRetencionEnemigo};
-    mutable RetencionDeteccion retFrontal{TiempoRetencionEnemigo};
-    mutable RetencionDeteccion retC45Der{TiempoRetencionEnemigo};
-    mutable RetencionDeteccion retLatDer{TiempoRetencionEnemigo};
+    mutable RetencionDeteccion retLatIzq{TiempoRetencionEnemigo, ConfirmacionSensorEnemigo};
+    mutable RetencionDeteccion retC45Izq{TiempoRetencionEnemigo, ConfirmacionSensorEnemigo};
+    mutable RetencionDeteccion retFrontal{TiempoRetencionEnemigo, ConfirmacionSensorEnemigo};
+    mutable RetencionDeteccion retC45Der{TiempoRetencionEnemigo, ConfirmacionSensorEnemigo};
+    mutable RetencionDeteccion retLatDer{TiempoRetencionEnemigo, ConfirmacionSensorEnemigo};
 };
 
 #endif

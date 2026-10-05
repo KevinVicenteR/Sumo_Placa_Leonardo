@@ -56,6 +56,20 @@ struct Config {
     // Driver de motores: false = TB6612 (PWM a 0 frena), true = L298N (PWM a 0,
     // es decir enable a 0, deja el motor libre, y mientras conduce con PWM no frena)
     bool driverL298 = false;
+    // Posición de salida: 0 aleatoria, 1 espalda con espalda, 2 lado a lado
+    // (mirando en sentidos opuestos), 3 enfrentados cerca de los bordes
+    int salida = 0;
+    int ladoRival = 1;            // round 2: +1 rival a la derecha, -1 a la izquierda
+    int dip = 0;                  // interruptores DIP en ON (bit 0 = DIP1...)
+    // Pines de los DIP (XMotion: 5, 6, 7) y si ON lee LOW; deben coincidir con
+    // Pines.H y DipActivoBajo del firmware (aquí fijos para poder simular
+    // también firmwares anteriores que no los tienen)
+    uint8_t pinesDip[3] = {5, 6, 7};
+    bool dipActivoBajo = true;
+    // Detecciones fantasma (reflejos, manos, parpadeos): cada sensor de enemigo
+    // ve algo que no existe, en promedio fantasmasPorSegundo veces por segundo,
+    // durante entre 5 y 30 ms
+    double fantasmasPorSegundo = 0;
     // Enemigo
     double radioEnemigo = 0.05;   // m
     double velEnemigo = 0.25;     // m/s en modo errante
@@ -237,8 +251,26 @@ inline bool rayoVe(double rx, double ry, double ang) {
     return rayoVeEnemigo(rx, ry, ang) || rayoVePared(rx, ry, ang);
 }
 
+inline double finFantasma[5] = {0, 0, 0, 0, 0};
+inline double ultimaRevisionFantasma[5] = {0, 0, 0, 0, 0};
+
+inline bool fantasma(int sensor) {
+    if (cfg.fantasmasPorSegundo <= 0) return false;
+    const double t = tiempoUs / 1e6;
+    const double dt = t - ultimaRevisionFantasma[sensor];
+    ultimaRevisionFantasma[sensor] = t;
+    if (t >= finFantasma[sensor] && azar.uniforme() < cfg.fantasmasPorSegundo * dt) {
+        finFantasma[sensor] = t + azar.entre(0.005, 0.030);
+    }
+    return t < finFantasma[sensor];
+}
+
 inline bool sensorEnemigo(uint8_t pin) {
     const double fx = cfg.largo / 2, ly = cfg.ancho / 2;
+    const uint8_t pines[5] = {S_FRONT_CEN, S_FRONT_IZQ, S_FRONT_DER, S_LAT_IZQ, S_LAT_DER};
+    for (int i = 0; i < 5; i++) {
+        if (pin == pines[i] && fantasma(i)) return true;
+    }
     if (pin == S_FRONT_CEN) return rayoVe(fx, 0, 0);
     if (pin == S_FRONT_IZQ) return rayoVe(fx, ly * 0.6, PI / 4);
     if (pin == S_FRONT_DER) return rayoVe(fx, -ly * 0.6, -PI / 4);
@@ -249,8 +281,9 @@ inline bool sensorEnemigo(uint8_t pin) {
 
 // ---------------------------------------------------------------- física
 
-inline int comandoMotor(uint8_t direccion, uint8_t pwm) {
-    return nivelPin[direccion] == HIGH ? pwmPin[pwm] : -pwmPin[pwm];
+inline int comandoMotor(uint8_t in1, uint8_t in2, uint8_t pwm) {
+    if (nivelPin[in1] == nivelPin[in2]) return 0;
+    return nivelPin[in1] == HIGH ? pwmPin[pwm] : -pwmPin[pwm];
 }
 
 enum class Puente { Conduce, Frena, Libre };
@@ -259,8 +292,8 @@ inline Puente estadoPuente(uint8_t pwm) {
     return pwmPin[pwm] == 0 ? Puente::Libre : Puente::Conduce;
 }
 
-inline int comandoIzq() { return comandoMotor(DIR_IZQ, PWMA); }
-inline int comandoDer() { return comandoMotor(DIR_DER, PWMB); }
+inline int comandoIzq() { return comandoMotor(MA1A, MA2A, PWMA); }
+inline int comandoDer() { return comandoMotor(MA1B, MA2B, PWMB); }
 
 // Aplica una fricción de Coulomb de magnitud f a un movimiento con velocidad vel
 // y fuerza impulsora fuerza. Si está quieto y la fuerza no supera la fricción, no arranca.
@@ -444,6 +477,7 @@ inline void reiniciar(unsigned long long semilla) {
     }
     tiempoUs = 0;
     historialIni = historialN = 0;
+    for (int i = 0; i < 5; i++) finFantasma[i] = ultimaRevisionFantasma[i] = 0;
     rob = {0, 0, 0, 0, 0};
     ene = {false, 0, 0, 0};
 }
@@ -451,7 +485,38 @@ inline void reiniciar(unsigned long long semilla) {
 // Posición inicial uniforme dentro de radioInicio, con orientación aleatoria,
 // con el cuerpo entero dentro del dohyo. No se coloca con un sensor de piso
 // sobre la línea (lo prohíbe el reglamento y la calibración saldría mal).
+// Posiciones de salida de los rounds (orientación global al azar y pequeñas
+// imprecisiones al colocar los robots a mano)
+inline void colocarRound() {
+    const double phi = azar.entre(-PI, PI);
+    const double th = phi + azar.normal() * 0.14;
+    const double ux = mat::cos(th), uy = mat::sin(th);      // hacia donde mira nuestro robot
+    const double rx = mat::sin(th), ry = -mat::cos(th);     // su derecha
+    const double cx = azar.normal() * 0.015, cy = azar.normal() * 0.015;
+    const double contacto = cfg.radioChoque + cfg.radioEnemigo + 0.01;
+    double ox = 0, oy = 0;  // del centro a nuestro robot; el rival en el opuesto
+    if (cfg.salida == 1) {
+        ox = ux * contacto / 2; oy = uy * contacto / 2;
+    } else if (cfg.salida == 2) {
+        ox = -(cfg.ladoRival * rx * contacto - ux * 0.04) / 2;
+        oy = -(cfg.ladoRival * ry * contacto - uy * 0.04) / 2;
+    } else {
+        // Pegados al borde, como en el reglamento del round 3 (unos 66 cm entre centros)
+        ox = -ux * 0.33; oy = -uy * 0.33;
+    }
+    rob = {cx + ox, cy + oy, th, 0, 0};
+    ene.presente = modo != Modo::Ninguno;
+    if (ene.presente) {
+        const double thEne = th + PI + azar.normal() * 0.14;
+        ene = {true, cx - ox + azar.normal() * 0.01, cy - oy + azar.normal() * 0.01, thEne};
+    }
+}
+
 inline void colocarAleatorio() {
+    if (cfg.salida > 0) {
+        colocarRound();
+        return;
+    }
     do {
         const double rIni = mat::sqrt(azar.uniforme()) * cfg.radioInicio, aIni = azar.entre(-PI, PI);
         rob = {rIni * mat::cos(aIni), rIni * mat::sin(aIni), azar.entre(-PI, PI), 0, 0};
@@ -511,6 +576,12 @@ int analogRead(uint8_t pin) {
 
 int digitalRead(uint8_t pin) {
     sim::costoLoopUs += 4;
+    for (int i = 0; i < 3; i++) {
+        if (pin == sim::cfg.pinesDip[i]) {
+            const bool on = sim::cfg.dip >> i & 1;
+            return on != sim::cfg.dipActivoBajo ? HIGH : LOW;
+        }
+    }
     return sim::sensorEnemigo(pin) != sim::cfg.enemigoInvertido ? HIGH : LOW;
 }
 

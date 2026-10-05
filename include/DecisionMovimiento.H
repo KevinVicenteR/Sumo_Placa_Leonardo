@@ -22,6 +22,8 @@ struct DecisionMovimiento {
     bool enemigoFrente;
     // Algún sensor de piso empieza a ver la línea (ver LecturasSensores)
     bool cercaBorde;
+    // Los tres frontales ven al enemigo: ataque recto con prioridad sobre búsqueda.
+    bool ataqueDirecto;
 };
 
 #endif

@@ -51,6 +51,7 @@ extern int g_delayCallCount;
 extern unsigned long g_delayValues[16];
 extern unsigned long g_millis;
 extern int g_analogValues[256];
+extern int g_digitalValues[256];
 
 #ifdef __cplusplus
 }

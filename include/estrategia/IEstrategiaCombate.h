@@ -1,5 +1,4 @@
 // IEstrategiaCombate.h — Interfaz de una estrategia de combate
-// -----------------------------------------------------------------------------
 // Patrón Estrategia (Strategy): hay varias formas de decidir (reglas escritas
 // a mano o política aprendida) y el robot puede usar cualquiera sin cambiar el
 // resto del código.

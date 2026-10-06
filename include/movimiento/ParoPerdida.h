@@ -1,5 +1,4 @@
 // ParoPerdida.h — Frenar en seco al perder al rival en pleno ataque
-// -----------------------------------------------------------------------------
 // Si el rival desaparece mientras el robot avanza rápido, aplica un contramando
 // para no seguir de largo hacia el borde.
 #ifndef PARO_PERDIDA_H

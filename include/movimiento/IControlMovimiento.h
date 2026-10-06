@@ -1,5 +1,4 @@
 // IControlMovimiento.h — Interfaz del control de movimiento
-// -----------------------------------------------------------------------------
 // Recibe la decisión de la estrategia y mueve los motores en consecuencia.
 #ifndef ICONTROL_MOVIMIENTO_H
 #define ICONTROL_MOVIMIENTO_H

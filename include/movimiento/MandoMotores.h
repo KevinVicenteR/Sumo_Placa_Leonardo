@@ -1,5 +1,4 @@
 // MandoMotores.h — Última etapa antes de los motores
-// -----------------------------------------------------------------------------
 // Todas las órdenes de movimiento pasan por aquí. Esta clase:
 //   - limita la velocidad hacia delante (arranque suave, cerca del borde,
 //     estimador de borde...),

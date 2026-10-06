@@ -1,5 +1,4 @@
 // Percepcion.h — Todos los sensores del robot detrás de una sola clase
-// -----------------------------------------------------------------------------
 // Patrón Fachada (Facade): agrupa los 2 sensores de piso y los 5 de enemigo y
 // devuelve en una sola llamada (leer) todo lo que el robot necesita saber.
 #ifndef PERCEPCION_H

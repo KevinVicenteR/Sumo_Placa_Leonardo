@@ -1,5 +1,4 @@
 // ModuloArranque.h — Filtro de la señal del módulo de arranque (control remoto)
-// -----------------------------------------------------------------------------
 // El módulo da RUN o STOP por un pin. Esta clase filtra el ruido: arrancar
 // exige filtroArranqueMs seguidos en RUN y parar exige filtroParadaMs seguidos
 // en STOP. La parada usa un filtro más largo para que el infrarrojo del rival

@@ -1,5 +1,4 @@
 // main.cpp — Punto de entrada del firmware del robot de minisumo
-// -----------------------------------------------------------------------------
 // Aquí se crean todas las piezas del robot y se conectan entre sí (raíz de
 // composición). El modo de funcionamiento lo elige el entorno de PlatformIO:
 //   leonardo        -> combate (por defecto)

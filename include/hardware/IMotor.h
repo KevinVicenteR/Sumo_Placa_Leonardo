@@ -1,5 +1,4 @@
 // IMotor.h — Interfaz de los motores de tracción
-// -----------------------------------------------------------------------------
 // El resto del programa solo conoce esta interfaz, no los pines del puente H.
 // Así los tests pueden usar un motor falso (mock) y el código de movimiento no
 // depende del hardware (principio de inversión de dependencias).

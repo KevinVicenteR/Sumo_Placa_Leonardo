@@ -1,5 +1,4 @@
 // ModoPruebaMotores.h — Comprobar el sentido de cada rueda
-// -----------------------------------------------------------------------------
 // Se compila con: pio run -e prueba_motores -t upload -t monitor
 // Con el robot levantado (ruedas en el aire) repite una secuencia de
 // movimientos y anuncia cada uno por USB.

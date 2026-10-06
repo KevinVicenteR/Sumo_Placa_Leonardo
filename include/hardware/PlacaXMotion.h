@@ -1,5 +1,4 @@
 // PlacaXMotion.h — Configuración de la placa JSumo XMotion
-// -----------------------------------------------------------------------------
 // Prepara todos los pines al encender y lee los interruptores DIP que eligen
 // la rutina de inicio del round.
 #ifndef PLACA_XMOTION_H

@@ -1,5 +1,4 @@
 // SensorEnemigo.h — Un sensor digital que detecta al robot rival
-// -----------------------------------------------------------------------------
 // Cada lectura toma 3 muestras y se queda con la mayoría (filtra parpadeos) y
 // después pasa por un filtro de retención (RetencionDeteccion).
 // La polaridad indica si el sensor da HIGH o LOW cuando ve algo.

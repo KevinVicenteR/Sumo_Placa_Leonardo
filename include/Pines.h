@@ -1,5 +1,4 @@
 // Pines.h — Mapa de conexiones de la placa JSumo XMotion (Arduino Leonardo)
-// -----------------------------------------------------------------------------
 // Único lugar donde se dice qué está conectado a cada pin. Si se cambia un
 // cable de sitio, solo hay que tocar este archivo.
 #ifndef PINES_H

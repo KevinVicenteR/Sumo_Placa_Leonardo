@@ -1,5 +1,4 @@
 // EstimadorBorde.h — Dónde está el robot dentro del dohyo
-// -----------------------------------------------------------------------------
 // Odometría con incertidumbre: integra la velocidad de las ruedas para estimar
 // posición (x, y) y rumbo, y lleva la cuenta de cuánto puede haberse
 // equivocado. Cada vez que ve la línea corrige la estimación (el robot está

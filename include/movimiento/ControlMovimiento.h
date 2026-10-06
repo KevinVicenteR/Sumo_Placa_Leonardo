@@ -1,5 +1,4 @@
 // ControlMovimiento.h — Convierte cada decisión en órdenes de motor
-// -----------------------------------------------------------------------------
 // Coordina las maniobras (patrón Mediador): cada una vive en su propia clase y
 // esta decide, por orden de prioridad, cuál manda en cada ciclo:
 //   1. ManiobraEvasion  — alejarse del borde.

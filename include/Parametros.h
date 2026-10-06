@@ -1,5 +1,4 @@
 // Parametros.h — Todos los valores ajustables del robot
-// -----------------------------------------------------------------------------
 // Velocidades en PWM (0-255), tiempos en milisegundos y distancias en metros,
 // salvo que se indique otra cosa. Los scripts de simulacion/ cambian estos
 // valores por su nombre: si se renombra uno, hay que actualizar los scripts.
@@ -132,7 +131,6 @@ constexpr unsigned long TiempoEmbestida = 2500;
 constexpr unsigned long TiempoMaxGiroLateral = 400;
 
 // 5. Estimador de borde
-// -----------------------------------------------------------------------------
 // Calcula dónde está el robot dentro del dohyo y limita la velocidad hacia
 // delante a la que aún le deja frenar antes del borde, aunque los sensores de
 // piso tarden en ver la línea.
@@ -200,7 +198,6 @@ constexpr unsigned long TiempoArranqueSuave = 1000;
 constexpr int RampaPwmPorMs = 1;
 
 // 8. Rutinas de inicio (elegidas con los interruptores DIP)
-// -----------------------------------------------------------------------------
 //   DIP1 DIP2  rutina
 //   off  off   1: espalda con espalda -> media vuelta en el sitio
 //   ON   off   2: lado a lado -> pivota hacia el lado donde un sensor lateral

@@ -1,5 +1,4 @@
 // EstrategiaCombate.h — Base común de todas las estrategias
-// -----------------------------------------------------------------------------
 // Patrón Método Plantilla (Template Method): decidir() fija los pasos que toda
 // estrategia respeta y deja a cada subclase solo la parte que cambia:
 //   1. Si hay línea blanca, evadir el borde (siempre tiene prioridad).

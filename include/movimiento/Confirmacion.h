@@ -1,5 +1,4 @@
 // Confirmacion.h — Exige que una detección dure un poco antes de creerla
-// -----------------------------------------------------------------------------
 // Devuelve true solo cuando la detección lleva ConfirmacionDeteccion ms
 // seguidos. Evita que un reflejo o un parpadeo termine una maniobra.
 #ifndef CONFIRMACION_H

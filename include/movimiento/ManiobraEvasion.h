@@ -1,5 +1,4 @@
 // ManiobraEvasion.h — Alejarse del borde al ver la línea blanca
-// -----------------------------------------------------------------------------
 // Máquina de estados (patrón State, con un enum):
 //   Retrocediendo -> Frenando -> Girando -> Asentando -> Libre
 // - Retrocediendo: hasta ver negro un rato seguido (o agotar el tiempo máximo).

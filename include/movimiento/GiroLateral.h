@@ -1,5 +1,4 @@
 // GiroLateral.h — Girar hacia un rival visto por un sensor lateral
-// -----------------------------------------------------------------------------
 // Una vez empezado, el giro sigue aunque el sensor lateral deje de verlo, hasta
 // tener al rival de frente (o por el otro lado), o hasta TiempoMaxGiroLateral.
 #ifndef GIRO_LATERAL_H

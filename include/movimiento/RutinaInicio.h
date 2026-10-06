@@ -1,5 +1,4 @@
 // RutinaInicio.h — Primer movimiento de cada round (elegido con los DIP)
-// -----------------------------------------------------------------------------
 //   1 = espalda con espalda: media vuelta hasta ver al rival de frente.
 //   2 = lado a lado: pivota hacia el lado del rival.
 //   3 = enfrentados: avanza hacia el centro y espera al rival.

@@ -1,5 +1,4 @@
 // ModoCombate.h — Funcionamiento normal en competencia
-// -----------------------------------------------------------------------------
 // Espera la señal RUN del módulo de arranque con los motores apagados y, al
 // recibirla, calibra el piso, elige la rutina de inicio y combate. Con STOP
 // vuelve a apagar los motores.

@@ -16,9 +16,6 @@ ControladorRobot robot(percepcion, estrategia, controlMovimiento, motor);
 ConfiguracionHardware hardware;
 
 #if defined(MODO_PRUEBA_MOTORES)
-// Prueba de motores con el robot levantado (ruedas en el aire): repite una
-// secuencia de movimientos y la anuncia por USB para comprobar que cada rueda
-// gira hacia donde dice
 namespace {
 void paso(const __FlashStringHelper* texto, int izq, int der) {
   Serial.println(texto);
@@ -54,7 +51,6 @@ void loop() {
   Serial.println(F("--- repite ---"));
 }
 #elif defined(MODO_DIAGNOSTICO)
-// Motores deshabilitados durante todo el diagnóstico.
 namespace {
 void calibrarDiagnostico() {
   motor.deshabilitar();
@@ -87,6 +83,9 @@ void loop() {
   Serial.print(digitalRead(S_FRONT_CEN)); Serial.print(',');
   Serial.print(digitalRead(S_FRONT_DER)); Serial.print(',');
   Serial.print(digitalRead(S_LAT_DER));
+  if (PIN_MODULO_ARRANQUE >= 0) {
+    Serial.print(F(" | ARRANQUE=")); Serial.print(digitalRead((uint8_t)PIN_MODULO_ARRANQUE));
+  }
   Serial.print(F(" | DIP="));
   Serial.print(hardware.leerInterruptores() & 1 ? '1' : '0');
   Serial.print(hardware.leerInterruptores() & 2 ? '1' : '0');
@@ -102,17 +101,13 @@ void loop() {
 #else
 #include "ModuloArranque.H"
 
-ModuloArranque moduloArranque(FiltroModuloArranqueMs);
+ModuloArranque moduloArranque(FiltroModuloArranqueMs, FiltroParadaModuloMs);
 bool enCombate = false;
 
-// Empieza (o reempieza) un combate: el robot ya está colocado sobre el negro
 void empezarCombate() {
   motor.deshabilitar();
-  // Medir el piso sobre negro, con motores apagados y sin espera añadida.
-  // No calibrar enemigos: el rival puede estar delante al empezar.
   percepcion.calibrarPiso();
   controlMovimiento.reiniciar();
-  // Rutina de inicio del round según los interruptores DIP
   const int dip = hardware.leerInterruptores();
   controlMovimiento.iniciarRutina(rutinaSegunInterruptores(dip), (dip & 4) ? -1 : 1);
   enCombate = true;
@@ -127,7 +122,6 @@ void empezarCombate() {
 
 void setup() {
   hardware.inicializarPines();
-  // Mantener PWM=0 mientras se inicializa
   motor.deshabilitar();
 #if defined(MONITOREO_COMBATE)
   Serial.begin(115200);
@@ -149,8 +143,14 @@ void loop() {
       empezarCombate();
     }
   }
+#if defined(MONITOREO_COMBATE)
+  static unsigned long cicloMaximo = 0;
+  const unsigned long inicioCiclo = micros();
+#endif
   robot.actualizar();
 #if defined(MONITOREO_COMBATE)
+  const unsigned long ciclo = micros() - inicioCiclo;
+  if (ciclo > cicloMaximo) cicloMaximo = ciclo;
   static unsigned long ultimaTraza = 0;
   if (Serial && millis() - ultimaTraza >= 100 && Serial.availableForWrite() >= 60) {
     ultimaTraza = millis();
@@ -161,7 +161,9 @@ void loop() {
     Serial.print(F(" ENEMIGO_RAW="));
     Serial.print(digitalRead(S_FRONT_IZQ));
     Serial.print(digitalRead(S_FRONT_CEN));
-    Serial.println(digitalRead(S_FRONT_DER));
+    Serial.print(digitalRead(S_FRONT_DER));
+    Serial.print(F(" CICLO_US=")); Serial.println(cicloMaximo);
+    cicloMaximo = 0;
   }
 #endif
 }

@@ -6,7 +6,7 @@ enum class TipoAccion {
     EvadirBordeDer,
     EvadirBordeAmbos,
     AtaqueFrontal,
-    AjusteIzq,     // de frente pero algo hacia la izquierda (frontal + 45° izquierdo)
+    AjusteIzq,
     AjusteDer,
     CorregirIzq,
     CorregirDer,
@@ -17,12 +17,8 @@ enum class TipoAccion {
 
 struct DecisionMovimiento {
     TipoAccion tipo;
-    // El sensor frontal ve al enemigo (se informa también al evadir el borde).
-    // Sin valor por defecto para seguir siendo agregado en C++11: {tipo} lo deja en false
     bool enemigoFrente;
-    // Algún sensor de piso empieza a ver la línea (ver LecturasSensores)
     bool cercaBorde;
-    // Los tres frontales ven al enemigo: ataque recto con prioridad sobre búsqueda.
     bool ataqueDirecto;
 };
 

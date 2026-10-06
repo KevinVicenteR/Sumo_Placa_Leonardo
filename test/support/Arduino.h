@@ -19,6 +19,10 @@
 #define OUTPUT 0x1
 #endif
 
+#ifndef A0
+#define A0 14
+#endif
+
 #ifndef A1
 #define A1 15
 #endif

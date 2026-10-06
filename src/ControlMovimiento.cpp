@@ -9,7 +9,6 @@ bool esBorde(TipoAccion tipo) {
            tipo == TipoAccion::EvadirBordeAmbos;
 }
 
-// El sensor frontal ve al enemigo (las decisiones de ataque frontal lo implican)
 bool veDeFrente(const DecisionMovimiento& decision) {
     return decision.enemigoFrente || decision.tipo == TipoAccion::AtaqueFrontal ||
            decision.tipo == TipoAccion::AjusteIzq || decision.tipo == TipoAccion::AjusteDer;
@@ -22,8 +21,6 @@ bool esAtaque(TipoAccion tipo) {
 }
 }
 
-// Sube la orden como mucho pasoRampa; bajarla o pararla es inmediato, y al
-// cambiar de sentido pasa por cero y vuelve a subir con la rampa
 int ControlMovimiento::conRampa(int actual, int objetivo) const {
     const long producto = (long)actual * objetivo;
     if (objetivo == 0 || (producto > 0 && magnitud(objetivo) <= magnitud(actual))) {
@@ -37,8 +34,6 @@ int ControlMovimiento::conRampa(int actual, int objetivo) const {
 }
 
 void ControlMovimiento::mover(IMotor& motor, int izq, int der, bool urgente) {
-    // Hacia delante (incluido pivotar sobre una rueda) se limita la velocidad:
-    // cerca del borde visto y según el borde previsto por el estimador
     const int mayor = izq > der ? izq : der;
     if (izq >= 0 && der >= 0 && mayor > 0) {
         int limite = limiteArranque;
@@ -61,8 +56,6 @@ void ControlMovimiento::mover(IMotor& motor, int izq, int der, bool urgente) {
     motor.mover(izq, der);
 }
 
-// Velocidad estimada de cada rueda (en unidades de PWM): sigue a la orden con la
-// inercia del robot, como un filtro de primer orden con constante TauRuedas
 void ControlMovimiento::estimarVelocidad(unsigned long ahora) {
     const unsigned long dt = ahora - ultimaEstimacion;
     if (dt == 0) {
@@ -74,9 +67,6 @@ void ControlMovimiento::estimarVelocidad(unsigned long ahora) {
     estDer += ((long)ordenDer * 256 - estDer) * paso / 256;
 }
 
-// Freno de cada rueda en proporción a su velocidad estimada: la más rápida a
-// tope en sentido contrario, durante más tiempo cuanto más rápido iba.
-// Devuelve false si el robot apenas se movía.
 bool ControlMovimiento::calcularFreno(unsigned long duracionMaxima) {
     const long izq = estIzq / 256, der = estDer / 256;
     const long mayor = magnitud(izq) > magnitud(der) ? magnitud(izq) : magnitud(der);
@@ -91,9 +81,7 @@ bool ControlMovimiento::calcularFreno(unsigned long duracionMaxima) {
 
 void ControlMovimiento::iniciarEvasion(int sentido, unsigned long duracionRet,
                                        unsigned long duracionGir, unsigned long ahora, bool unSensor) {
-    // No reiniciar el presupuesto de recuperación por lecturas repetidas.
     if (fase != Fase::Libre) {
-        // Si aparece el segundo sensor, recuperar recto sin reiniciar el límite.
         if (evasionUnSensor && !unSensor) {
             evasionUnSensor = false;
             duracionGiro = duracionGir;
@@ -121,7 +109,6 @@ void ControlMovimiento::iniciarEvasion(int sentido, unsigned long duracionRet,
 }
 
 bool ControlMovimiento::continuarEvasion(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
-    // Recuperar también si la pausa o el giro vuelven a dejar un sensor en blanco.
     if (fase != Fase::Libre && fase != Fase::Retrocediendo && esBorde(decision.tipo) &&
         ahora - inicioEvasion < TiempoMaximoRecuperacionBorde) {
         fase = Fase::Retrocediendo;
@@ -150,8 +137,6 @@ bool ControlMovimiento::continuarEvasion(const DecisionMovimiento& decision, IMo
     }
 
     if (fase == Fase::Frenando) {
-        // No pivotar con un sensor aún fuera. Tampoco retroceder sin límite:
-        // el robot no tiene sensores traseros.
         if (esBorde(decision.tipo) || ahora - inicioFase < TiempoFrenado) {
             mover(motor, 0, 0, true);
             return true;
@@ -161,7 +146,6 @@ bool ControlMovimiento::continuarEvasion(const DecisionMovimiento& decision, IMo
     }
 
     if (fase == Fase::Girando) {
-        // Si el giro vuelve a tocar blanco, pararlo inmediatamente.
         if (!esBorde(decision.tipo) && ahora - inicioFase < duracionGiro) {
             mover(motor, sentidoGiro * VelocidadGiroEvasion,
                   -sentidoGiro * VelocidadGiroEvasion, true);
@@ -172,13 +156,10 @@ bool ControlMovimiento::continuarEvasion(const DecisionMovimiento& decision, IMo
     }
 
     if (fase == Fase::Asentando) {
-        // No volver a avanzar mientras las ruedas aún conservan el giro.
         if (esBorde(decision.tipo) || ahora - inicioFase < TiempoAsentamientoEvasion) {
             mover(motor, 0, 0, true);
             return true;
         }
-        // La búsqueda debe continuar hacia el interior, no hacia el último
-        // enemigo que pudo haberse visto fuera del borde.
         if (evasionUnSensor) {
             sentidoBusqueda = sentidoGiro;
             salidaSuaveUnSensor = true;
@@ -209,8 +190,6 @@ void ControlMovimiento::recordarLadoEnemigo(TipoAccion tipo) {
     }
 }
 
-// Búsqueda en arcos suaves: avanza sin pararse curvando hacia donde se vio al
-// enemigo por última vez y cambia el lado de la curva cada TiempoArcoBusqueda
 void ControlMovimiento::buscarEnArcos(IMotor& motor, unsigned long ahora) {
     if (!buscando) {
         buscando = true;
@@ -221,7 +200,6 @@ void ControlMovimiento::buscarEnArcos(IMotor& motor, unsigned long ahora) {
     const unsigned long tramo = transcurrido / TiempoArcoBusqueda;
     const unsigned long progreso = transcurrido % TiempoArcoBusqueda;
     const int interior = VelocidadAvance * PorcentajeArcoBusqueda / 100;
-    // Interpolar entre curvas: no intercambiar de golpe las velocidades.
     const int cambio = (long)(VelocidadAvance - interior) * progreso / TiempoArcoBusqueda;
     int izq = tramo % 2 == 0 ? VelocidadAvance - cambio : interior + cambio;
     int der = tramo % 2 == 0 ? interior + cambio : VelocidadAvance - cambio;
@@ -230,7 +208,6 @@ void ControlMovimiento::buscarEnArcos(IMotor& motor, unsigned long ahora) {
         izq = der;
         der = temporal;
     }
-    // Sin pulso inicial: subir desde cero al entrar en búsqueda.
     if (TiempoArranqueBusqueda > 0 && transcurrido < TiempoArranqueBusqueda) {
         izq = (long)izq * transcurrido / TiempoArranqueBusqueda;
         der = (long)der * transcurrido / TiempoArranqueBusqueda;
@@ -245,17 +222,9 @@ void ControlMovimiento::buscar(IMotor& motor, unsigned long ahora) {
     }
     if (!buscando) {
         buscando = true;
-        // Solo se empieza avanzando si una evasión completa dejó al robot mirando
-        // hacia el centro; si no, podría estar de frente al borde y se gira primero
         inicioBusqueda = evasionCompleta ? ahora : ahora - TiempoAvanceBusqueda - TiempoPausaBusqueda;
         evasionCompleta = false;
     }
-    // Ciclo: avance corto -> pausa -> giro en el sitio -> pausa. Las pausas frenan
-    // el robot entre un movimiento y otro: al girar en el sitio las ruedas patinan
-    // en sentidos opuestos y no frenan el avance que traía, así que sin la primera
-    // el robot se desliza hacia delante durante todo el giro y puede acabar de
-    // lado sobre la línea, donde los sensores de piso no la ven. Sin la segunda
-    // empieza a avanzar aún girando por la inercia y sale en curva.
     const unsigned long finAvance = TiempoAvanceBusqueda;
     const unsigned long inicioGiro = finAvance + TiempoPausaBusqueda;
     const unsigned long finGiro = inicioGiro + TiempoGiroBusqueda;
@@ -269,16 +238,11 @@ void ControlMovimiento::buscar(IMotor& motor, unsigned long ahora) {
     }
 }
 
-// Avance de búsqueda en pulsos: empuja TiempoPulsoAvance y frena
-// TiempoPausaPulso, así el robot nunca llega a coger velocidad y, si un sensor
-// ve la línea, para casi en el sitio. Con TiempoPulsoAvance = 0 avanza seguido.
 void ControlMovimiento::avanzarPorPulsos(IMotor& motor, unsigned long t) {
     if (TiempoPulsoAvance > 0 && t % (TiempoPulsoAvance + TiempoPausaPulso) >= TiempoPulsoAvance) {
         mover(motor, 0, 0);
         return;
     }
-    // Zigzag: arcos alternos hacia uno y otro lado, para barrer con los sensores
-    // delanteros sin parar a girar (PorcentajeArcoZigzag = 100 avanza recto)
     const int interior = VelocidadAvance * PorcentajeArcoZigzag / 100;
     const bool haciaIzq = TiempoArcoZigzag > 0 && (t / TiempoArcoZigzag) % 2 == 0;
     if (haciaIzq) {
@@ -288,8 +252,6 @@ void ControlMovimiento::avanzarPorPulsos(IMotor& motor, unsigned long t) {
     }
 }
 
-// Enemigo de lado: gira hacia él frenando la rueda de ese lado, que hace de
-// pivote, mientras la otra empuja (o girando en el sitio, según GiroLateralEnRueda)
 void ControlMovimiento::girarHaciaLado(IMotor& motor, int sentido) {
     if (GiroLateralEnRueda) {
         mover(motor, sentido > 0 ? VelocidadRuedaPivote : 0, sentido > 0 ? 0 : VelocidadRuedaPivote);
@@ -298,8 +260,6 @@ void ControlMovimiento::girarHaciaLado(IMotor& motor, int sentido) {
     }
 }
 
-// Un sensor lateral vio al enemigo: el giro sigue hasta que lo vea el sensor
-// frontal, aunque al girar pase por el hueco entre el lateral y el de 45°
 bool ControlMovimiento::continuarGiroLateral(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     if (decision.tipo == TipoAccion::DefensaIzq || decision.tipo == TipoAccion::DefensaDer) {
         const int sentido = decision.tipo == TipoAccion::DefensaIzq ? -1 : 1;
@@ -314,8 +274,6 @@ bool ControlMovimiento::continuarGiroLateral(const DecisionMovimiento& decision,
     }
     const bool otroLado = (giroLateral < 0 && decision.tipo == TipoAccion::CorregirDer) ||
                           (giroLateral > 0 && decision.tipo == TipoAccion::CorregirIzq);
-    // Termina al tener al enemigo de frente (o pasado al otro lado), confirmado y
-    // tras el giro mínimo; una lectura suelta no lo corta
     const bool confirmado = confirmar(veDeFrente(decision) || otroLado, ahora, detectaGiroLateral,
                                       inicioDetectaGiroLateral);
     if ((confirmado && ahora - inicioGiroLateral >= TiempoMinimoGiroLateral) ||
@@ -327,8 +285,6 @@ bool ControlMovimiento::continuarGiroLateral(const DecisionMovimiento& decision,
     return true;
 }
 
-// Si iba atacando y el enemigo desaparece (lo esquivó), frena en seco en vez de
-// seguir lanzado: a toda velocidad el robot no alcanzaría a parar al ver la línea
 bool ControlMovimiento::continuarParo(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     const bool atacando = esAtaque(decision.tipo);
     if (decision.tipo == TipoAccion::Busqueda && veniaAtacando && calcularFreno(TiempoParoPerdida)) {
@@ -347,11 +303,7 @@ bool ControlMovimiento::continuarParo(const DecisionMovimiento& decision, IMotor
     return true;
 }
 
-// Predicción de la posición con lo que hacen las ruedas y corrección al ver la
-// línea (ver EstimadorBorde)
 void ControlMovimiento::actualizarEstimador(const DecisionMovimiento& decision, unsigned long ahora) {
-    // Como mucho una vez por milisegundo: en el ATmega cada actualización cuesta
-    // varias funciones trigonométricas en coma flotante
     const unsigned long dtMs = ahora - ultimaPrediccion;
     bool cambio = dtMs > 0;
     if (dtMs > 0) {
@@ -364,7 +316,6 @@ void ControlMovimiento::actualizarEstimador(const DecisionMovimiento& decision, 
         } else if (decision.tipo == TipoAccion::DefensaIzq || decision.tipo == TipoAccion::DefensaDer) {
             empujon = EmpujonLateral;
         }
-        // La primera llamada (dtMs enorme) solo fija el instante inicial
         if (dtMs < 1000) {
             estimador.predecir(ordenIzq, ordenDer, dtMs / 1000.0f, empujon);
         }
@@ -394,8 +345,6 @@ bool ControlMovimiento::confirmar(bool detectando, unsigned long ahora, bool& ac
     return ahora - inicio >= ConfirmacionDeteccion;
 }
 
-// Rutina de inicio del round. Los giros siguen hasta tener al rival de frente
-// (o su tiempo máximo); el avance, hasta ver al rival con cualquier sensor.
 bool ControlMovimiento::continuarRutina(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     if (rutina == 0) {
         return false;
@@ -405,13 +354,11 @@ bool ControlMovimiento::continuarRutina(const DecisionMovimiento& decision, IMot
         inicioRutina = ahora;
         detectaRutina = false;
         ladoDecidido = false;
-        // Al acabar, la búsqueda sigue girando hacia el mismo lado
         sentidoBusqueda = ladoRutina;
     }
     const unsigned long t = ahora - inicioRutina;
     bool sigue = false;
     if (frenandoGiroRutina) {
-        // Contragiro proporcional a lo que giraba: la inercia lo pasaría de largo
         sigue = ahora - inicioFrenoRutina < duracionFreno;
         if (sigue) {
             mover(motor, frenoIzq, frenoDer, true);
@@ -422,14 +369,11 @@ bool ControlMovimiento::continuarRutina(const DecisionMovimiento& decision, IMot
         return sigue;
     }
     if (rutina == 1 || rutina == 2) {
-        // Una detección no termina el giro antes de su mínimo ni sin confirmarse
         const unsigned long maximo = rutina == 1 ? TiempoMaxGiroEspalda : TiempoMaxGiroLado;
         const unsigned long minimo = rutina == 1 ? TiempoMinimoGiroEspalda : TiempoMinimoGiroLado;
         const bool confirmado = confirmar(veDeFrente(decision), ahora, detectaRutina, inicioDetectaRutina);
         const bool encontrado = confirmado && t >= minimo;
         sigue = !encontrado && t < maximo;
-        // Round 2: el primer sensor lateral que ve al rival decide el lado (el DIP3
-        // solo vale mientras ninguno lo ve)
         if (rutina == 2 && !ladoDecidido &&
             (decision.tipo == TipoAccion::DefensaIzq || decision.tipo == TipoAccion::DefensaDer)) {
             ladoRutina = decision.tipo == TipoAccion::DefensaIzq ? -1 : 1;
@@ -448,19 +392,14 @@ bool ControlMovimiento::continuarRutina(const DecisionMovimiento& decision, IMot
             }
         }
         if (sigue && rutina == 2 && PivoteRound2) {
-            // Pivota sobre la rueda del lado del rival: esa queda parada y la otra empuja
             mover(motor, ladoRutina > 0 ? VelocidadPivoteInicio : 0, ladoRutina > 0 ? 0 : VelocidadPivoteInicio, true);
         } else if (sigue) {
             mover(motor, ladoRutina * VelocidadGiroInicio, -ladoRutina * VelocidadGiroInicio, true);
         }
     } else if (rutina == 3) {
-        // Sale pegado al borde mirando al centro: el rival solo puede aparecer por
-        // delante (frontal o 45°). Los laterales apuntan fuera del dohyo, donde
-        // hay gente y objetos, así que no cortan el avance.
         const bool porDelante = veDeFrente(decision) || decision.tipo == TipoAccion::CorregirIzq ||
                                 decision.tipo == TipoAccion::CorregirDer;
         const bool esperando = EsperarRound3 && t >= TiempoAvanceInicio;
-        // Ya cerca del centro, los laterales apuntan dentro del dohyo: valen todos
         const bool visto = esperando ? decision.tipo != TipoAccion::Busqueda : porDelante;
         const bool confirmado = confirmar(visto, ahora, detectaRutina, inicioDetectaRutina);
         const unsigned long fin = TiempoAvanceInicio + (EsperarRound3 ? TiempoEsperaRound3 : 0);
@@ -477,9 +416,6 @@ bool ControlMovimiento::continuarRutina(const DecisionMovimiento& decision, IMot
     return sigue;
 }
 
-// Enemigo pegado de frente mientras el robot está en la línea: si lo está
-// empujando o lo empujan a él, frenar o retroceder solo ayudaría al enemigo a
-// sacarlo. Sigue empujando a fondo hasta que lo pierda de vista.
 bool ControlMovimiento::resistirEnBorde(const DecisionMovimiento& decision, IMotor& motor) {
     if (!ResistirEnBorde || !esBorde(decision.tipo) || !empujando || fase != Fase::Libre) {
         return false;
@@ -509,22 +445,19 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
     estimarVelocidad(ahora);
     recordarLadoEnemigo(decision.tipo);
 
-    // El ataque aumenta progresivamente mientras se mantiene alineado.
-    // Perder al enemigo o iniciar una evasión reinicia la progresión.
     const bool atacando = esAtaque(decision.tipo) || (esBorde(decision.tipo) && decision.enemigoFrente);
     if (!atacando || fase != Fase::Libre) {
         viendoFrente = false;
         empujando = false;
     } else if (!empujando) {
         if (!veDeFrente(decision)) {
-            viendoFrente = false;  // solo a 45°: aún no está alineado
+            viendoFrente = false;
         } else if (!viendoFrente) {
             viendoFrente = true;
             inicioFrente = ahora;
         }
         empujando = viendoFrente && ahora - inicioFrente >= TiempoEmbestida;
     }
-    // El aviso de borde también limita el ataque: un objeto fuera puede activarlo.
     limitarAvance = decision.cercaBorde;
     if (UsarEstimadorBorde) {
         actualizarEstimador(decision, ahora);
@@ -542,14 +475,12 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         iniciarEvasion(-1, TiempoRetrocesoUnSensor, TiempoGiroEvasion, ahora, true);
         break;
     case TipoAccion::EvadirBordeAmbos:
-        // Separarse del borde antes del giro lento hacia el último lado del enemigo
         iniciarEvasion(sentidoBusqueda, TiempoRetrocesoAmbos, TiempoGiroEvasionAmbos, ahora);
         break;
     default:
         break;
     }
 
-    // El borde cancela la rutina de inicio
     if (rutina != 0 && (esBorde(decision.tipo) || fase != Fase::Libre)) {
         rutina = 0;
     }
@@ -563,8 +494,6 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         return;
     }
 
-    // No dejar pausas o giros de búsqueda pendientes cuando los tres frontales
-    // confirman el objetivo. Una evasión ya iniciada se completa antes de atacar.
     if (decision.ataqueDirecto && decision.tipo == TipoAccion::AtaqueFrontal) {
         enParo = false;
         giroLateral = 0;
@@ -585,7 +514,6 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         return;
     }
 
-    // La embestida de la rutina dura mientras siga atacando y no se acabe su tiempo
     if (embestidaInicio && (!esAtaque(decision.tipo) || (long)(ahora - finEmbestidaInicio) >= 0)) {
         embestidaInicio = false;
     }
@@ -603,7 +531,6 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
                                       ? transcurrido : TiempoEmbestida;
         ataque += (long)(VelocidadEmpuje - VelocidadAtaque) * progreso / TiempoEmbestida;
     }
-    // Rounds 1 y 2: tras la embestida de la rutina, la velocidad de siempre
     if (ataqueDeRutina && !embestidaInicio && ataque > VelocidadAtaqueRound12) {
         ataque = VelocidadAtaqueRound12;
     }
@@ -618,7 +545,6 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         mover(motor, ataque, ataque * PorcentajeAjuste / 100);
         break;
     case TipoAccion::CorregirIzq:
-        // Pivota sobre la rueda izquierda (o curva, según Corregir45EnPivote)
         mover(motor, Corregir45EnPivote ? 0 : VelocidadCurva * ataque / VelocidadAtaque, ataque);
         break;
     case TipoAccion::CorregirDer:

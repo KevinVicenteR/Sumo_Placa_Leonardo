@@ -3,12 +3,13 @@
 
 class ModuloArranque {
 public:
-    explicit ModuloArranque(unsigned long filtroMs): filtroMs(filtroMs) {}
+    ModuloArranque(unsigned long filtroArranqueMs, unsigned long filtroParadaMs)
+        : filtroArranqueMs(filtroArranqueMs), filtroParadaMs(filtroParadaMs) {}
 
     bool enMarcha(bool activo, unsigned long ahora) {
         if (activo == estable) {
             cambioDesde = ahora;
-        } else if (ahora - cambioDesde >= filtroMs) {
+        } else if (ahora - cambioDesde >= (estable ? filtroParadaMs : filtroArranqueMs)) {
             estable = activo;
             cambioDesde = ahora;
         }
@@ -16,7 +17,8 @@ public:
     }
 
 private:
-    unsigned long filtroMs;
+    unsigned long filtroArranqueMs;
+    unsigned long filtroParadaMs;
     unsigned long cambioDesde = 0;
     bool estable = false;
 };

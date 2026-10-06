@@ -33,7 +33,6 @@ int accionManual(int e) {
 }
 
 #ifdef ENTRENAMIENTO_POLITICA
-// La define el simulador de entrenamiento
 int elegirAccionEntrenamiento(int estado, int accionTabla);
 
 int elegirAccion(int estado) {
@@ -45,4 +44,4 @@ int elegirAccion(int estado) {
 }
 #endif
 
-}  // namespace politica
+}

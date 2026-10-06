@@ -3,7 +3,6 @@
 #include "Percepcion.H"
 #include "Pines.H"
 
-// El pin está en HIGH en al menos 2 de 3 lecturas (filtra parpadeos)
 bool Percepcion::mayoriaAlta(uint8_t pin) {
     uint8_t altos = 0;
     altos += (digitalRead(pin) == HIGH) ? 1 : 0;
@@ -29,7 +28,6 @@ void Percepcion::calibrarSensoresEnemigo() {
     if (PolaridadSensoresEnemigo != 0) {
         polaridadesAltas = PolaridadSensoresEnemigo > 0 ? 31 : 0;
     } else {
-        // Medir cada sensor SIN objeto: detectar equivale a cambiar de nivel.
         const uint8_t pines[] = {S_LAT_IZQ, S_FRONT_IZQ, S_FRONT_CEN, S_FRONT_DER, S_LAT_DER};
         polaridadesAltas = 0;
         for (uint8_t i = 0; i < 5; ++i) {
@@ -69,19 +67,13 @@ void Percepcion::calibrarPiso() {
     calibrar(pisoDer, promedioAnalogico(S_PISO_DER, MuestrasCalibracionPiso));
 }
 
-// Línea = lectura claramente distinta del negro calibrado, sin importar si el
-// sensor da valores más altos o más bajos sobre el blanco
 bool Percepcion::detectarLinea(SensorPiso& sensor, int lectura, unsigned long) {
-    // Histeresis: entrar inmediatamente y salir solo al volver claramente al negro.
-    // Nunca recalibrar en marcha: blanco persistente sigue siendo borde.
     const int salida = sensor.margen * 70 / 100;
     const int diferencia = abs(lectura - sensor.negro);
     sensor.enLinea = diferencia > (sensor.enLinea ? salida : sensor.margen);
     return sensor.enLinea;
 }
 
-// La lectura ya se aleja del negro una fracción del margen de línea: el sensor
-// empieza a tener blanco debajo (o el robot asoma por el borde)
 bool Percepcion::cercaDeLinea(const SensorPiso& sensor, int lectura) {
     return (long)abs(lectura - sensor.negro) * 100 > (long)sensor.margen * PorcentajeCercaBorde;
 }

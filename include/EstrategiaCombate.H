@@ -13,7 +13,7 @@ private:
     DecisionMovimiento elegir(const LecturasSensores& lecturas) const;
     DecisionMovimiento elegirConPolitica(const LecturasSensores& lecturas) const;
 
-    mutable int ladoUltimo = 0;  // 0 izquierda, 1 derecha: dónde se vio al enemigo por última vez
+    mutable int ladoUltimo = 0;
 };
 
 #endif

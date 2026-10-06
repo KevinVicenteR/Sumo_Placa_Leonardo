@@ -21,7 +21,6 @@ DecisionMovimiento EstrategiaCombate::elegir(const LecturasSensores& lecturas) c
         return {TipoAccion::EvadirBordeAmbos, lecturas.frontal};
     }
 
-    // Esta detección prevalece también sobre la política del simulador.
     if (lecturas.c45Izq && lecturas.frontal && lecturas.c45Der) {
         return {TipoAccion::AtaqueFrontal, true};
     }
@@ -31,8 +30,6 @@ DecisionMovimiento EstrategiaCombate::elegir(const LecturasSensores& lecturas) c
     }
 
     if (lecturas.frontal) {
-        // Con un solo sensor de 45° también activo, el enemigo está algo hacia
-        // ese lado: se ataca corrigiendo un poco para pegarle de frente
         if (lecturas.c45Izq && !lecturas.c45Der) {
             return {TipoAccion::AjusteIzq, true};
         }
@@ -61,7 +58,6 @@ DecisionMovimiento EstrategiaCombate::elegir(const LecturasSensores& lecturas) c
     return {TipoAccion::Busqueda};
 }
 
-// Sin línea, la maniobra la decide la tabla aprendida en el simulador
 DecisionMovimiento EstrategiaCombate::elegirConPolitica(const LecturasSensores& lecturas) const {
     const int estado = politica::codificarEstado(lecturas, ladoUltimo);
     if (lecturas.c45Izq || lecturas.latIzq) {

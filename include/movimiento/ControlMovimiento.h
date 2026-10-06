@@ -1,4 +1,3 @@
-// =============================================================================
 // ControlMovimiento.h — Convierte cada decisión en órdenes de motor
 // -----------------------------------------------------------------------------
 // Coordina las maniobras (patrón Mediador): cada una vive en su propia clase y
@@ -10,7 +9,6 @@
 //   5. Acción normal    — atacar (ControlAtaque) o buscar (BusquedaRival).
 // Todas mueven los motores a través de MandoMotores, que aplica los límites
 // de velocidad y la rampa.
-// =============================================================================
 #ifndef CONTROL_MOVIMIENTO_H
 #define CONTROL_MOVIMIENTO_H
 

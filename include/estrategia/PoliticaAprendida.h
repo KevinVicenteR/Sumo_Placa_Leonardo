@@ -1,9 +1,7 @@
-// =============================================================================
 // PoliticaAprendida.h — Tabla estado -> acción de la estrategia aprendida
 // -----------------------------------------------------------------------------
 // Estado = 6 bits: cinco sensores de enemigo + último lado visto (64 estados).
 // Acción = índice en Acciones (8 acciones posibles).
-// =============================================================================
 #ifndef POLITICA_APRENDIDA_H
 #define POLITICA_APRENDIDA_H
 

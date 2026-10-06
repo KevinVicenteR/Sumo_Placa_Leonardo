@@ -1,4 +1,3 @@
-// =============================================================================
 // ManiobraEvasion.h — Alejarse del borde al ver la línea blanca
 // -----------------------------------------------------------------------------
 // Máquina de estados (patrón State, con un enum):
@@ -8,7 +7,6 @@
 // - Girando: se aparta del borde girando en el sitio.
 // - Asentando: otra pausa antes de seguir combatiendo.
 // Si vuelve a ver la línea a mitad de maniobra, vuelve a retroceder.
-// =============================================================================
 #ifndef MANIOBRA_EVASION_H
 #define MANIOBRA_EVASION_H
 

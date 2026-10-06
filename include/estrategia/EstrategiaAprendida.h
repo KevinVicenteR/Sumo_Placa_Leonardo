@@ -1,9 +1,7 @@
-// =============================================================================
 // EstrategiaAprendida.h — Estrategia aprendida por refuerzo en el simulador
 // -----------------------------------------------------------------------------
 // Convierte las lecturas en un número de estado y busca en TablaPolitica.h la
 // acción que mejor funcionó en la simulación. Se activa con UsarPoliticaAprendida.
-// =============================================================================
 #ifndef ESTRATEGIA_APRENDIDA_H
 #define ESTRATEGIA_APRENDIDA_H
 

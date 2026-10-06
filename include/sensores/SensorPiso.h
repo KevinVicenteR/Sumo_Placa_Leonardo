@@ -1,10 +1,8 @@
-// =============================================================================
 // SensorPiso.h — Un sensor de piso (detecta la línea blanca del borde)
 // -----------------------------------------------------------------------------
 // Aprende cuánto lee sobre el negro del dohyo y considera "línea" cualquier
 // lectura claramente distinta, sin importar si el sensor da valores más altos
 // o más bajos sobre el blanco.
-// =============================================================================
 #ifndef SENSOR_PISO_H
 #define SENSOR_PISO_H
 

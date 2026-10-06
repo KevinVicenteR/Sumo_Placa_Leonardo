@@ -1,4 +1,3 @@
-// =============================================================================
 // main.cpp — Punto de entrada del firmware del robot de minisumo
 // -----------------------------------------------------------------------------
 // Aquí se crean todas las piezas del robot y se conectan entre sí (raíz de
@@ -15,7 +14,6 @@
 //   movimiento/  cómo moverse para hacerlo (maniobras y límites de velocidad)
 //   robot/       ciclo percibir -> decidir -> actuar
 //   modos/       combate, diagnóstico y prueba de motores
-// =============================================================================
 #include <Arduino.h>
 #include "hardware/DriverMotores.h"
 #include "hardware/PlacaXMotion.h"

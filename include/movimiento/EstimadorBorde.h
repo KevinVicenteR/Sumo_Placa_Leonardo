@@ -1,4 +1,3 @@
-// =============================================================================
 // EstimadorBorde.h — Dónde está el robot dentro del dohyo
 // -----------------------------------------------------------------------------
 // Odometría con incertidumbre: integra la velocidad de las ruedas para estimar
@@ -7,7 +6,6 @@
 // sobre el borde). Con eso calcula a qué velocidad puede avanzar y aún frenar
 // antes del borde en el peor caso.
 // Coordenadas: origen en el centro del dohyo, metros y radianes.
-// =============================================================================
 #ifndef ESTIMADOR_BORDE_H
 #define ESTIMADOR_BORDE_H
 

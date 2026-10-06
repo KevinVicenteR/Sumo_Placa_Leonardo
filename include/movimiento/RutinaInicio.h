@@ -1,4 +1,3 @@
-// =============================================================================
 // RutinaInicio.h — Primer movimiento de cada round (elegido con los DIP)
 // -----------------------------------------------------------------------------
 //   1 = espalda con espalda: media vuelta hasta ver al rival de frente.
@@ -7,7 +6,6 @@
 //   0 = sin rutina.
 // Al encontrar al rival (rondas 1 y 2) frena el giro y empieza la embestida.
 // Ver la línea cancela la rutina (lo hace ControlMovimiento).
-// =============================================================================
 #ifndef RUTINA_INICIO_H
 #define RUTINA_INICIO_H
 

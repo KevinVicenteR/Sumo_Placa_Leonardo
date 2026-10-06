@@ -1,9 +1,7 @@
-// =============================================================================
 // ControladorRobot.h — El ciclo principal: percibir -> decidir -> actuar
 // -----------------------------------------------------------------------------
 // No sabe nada del hardware ni de la estrategia concreta: recibe sus piezas
 // por el constructor (inyección de dependencias) y solo las encadena.
-// =============================================================================
 #ifndef CONTROLADOR_ROBOT_H
 #define CONTROLADOR_ROBOT_H
 

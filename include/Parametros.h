@@ -1,16 +1,12 @@
-// =============================================================================
 // Parametros.h — Todos los valores ajustables del robot
 // -----------------------------------------------------------------------------
 // Velocidades en PWM (0-255), tiempos en milisegundos y distancias en metros,
 // salvo que se indique otra cosa. Los scripts de simulacion/ cambian estos
 // valores por su nombre: si se renombra uno, hay que actualizar los scripts.
-// =============================================================================
 #ifndef PARAMETROS_H
 #define PARAMETROS_H
 
-// =============================================================================
 // 1. Velocidades de movimiento
-// =============================================================================
 
 // Límite absoluto que se manda a cada motor.
 constexpr int VelocidadMaxima = 255;
@@ -48,9 +44,7 @@ constexpr int VelocidadGiroEvasion = 75;
 constexpr int VelocidadAvance = 32;
 constexpr int VelocidadGiroBusqueda = 75;
 
-// =============================================================================
 // 2. Sensores de enemigo
-// =============================================================================
 
 // Polaridad: 0 = se aprende en modo diagnóstico midiendo sin objetos delante;
 // 1 = detectan en HIGH; -1 = detectan en LOW.
@@ -64,9 +58,7 @@ constexpr unsigned long TiempoRetencionEnemigo = 40;
 // Una detección nueva solo cuenta tras verse estos ms seguidos (0 = al instante).
 constexpr unsigned long ConfirmacionSensorEnemigo = 0;
 
-// =============================================================================
 // 3. Sensores de piso
-// =============================================================================
 
 // El negro se mide al empezar el combate. Se considera línea blanca cuando la
 // lectura se aleja del negro más de este porcentaje (y como mínimo
@@ -82,9 +74,7 @@ constexpr int NegroPisoDerecho = 972;
 constexpr int PorcentajeCercaBorde = 70;
 constexpr int VelocidadCercaBorde = 45;
 
-// =============================================================================
 // 4. Tiempos generales
-// =============================================================================
 
 // Espera inicial del modo diagnóstico (el de combate usa el módulo de arranque).
 constexpr unsigned long TiempoInicioReglamentario = 5000;
@@ -141,13 +131,11 @@ constexpr unsigned long TiempoEmbestida = 2500;
 // Giro hacia un rival visto de lado: sigue hasta verlo de frente o este tiempo.
 constexpr unsigned long TiempoMaxGiroLateral = 400;
 
-// =============================================================================
 // 5. Estimador de borde
 // -----------------------------------------------------------------------------
 // Calcula dónde está el robot dentro del dohyo y limita la velocidad hacia
 // delante a la que aún le deja frenar antes del borde, aunque los sensores de
 // piso tarden en ver la línea.
-// =============================================================================
 constexpr bool UsarEstimadorBorde = true;
 // true = también limita la embestida si prevé el borde cerca.
 constexpr bool EstimadorLimitaEmbestida = true;
@@ -190,17 +178,13 @@ constexpr int VelocidadMinimaEstimador = 70;
 constexpr float IncertPosicionConfiable = 0.08f;
 constexpr float IncertRumboConfiable = 0.8f;
 
-// =============================================================================
 // 6. Estrategia
-// =============================================================================
 
 // true = usa la política aprendida en el simulador (TablaPolitica.h) en vez de
 // las reglas escritas a mano.
 constexpr bool UsarPoliticaAprendida = false;
 
-// =============================================================================
 // 7. Suavidad de los movimientos
-// =============================================================================
 
 // Búsqueda: 0 = avance y giro en el sitio; 1 = arcos suaves que cambian de
 // lado cada TiempoArcoBusqueda (rueda interior a PorcentajeArcoBusqueda).
@@ -215,7 +199,6 @@ constexpr unsigned long TiempoArranqueSuave = 1000;
 // Bajar la velocidad, frenar y escapar del borde son siempre inmediatos.
 constexpr int RampaPwmPorMs = 1;
 
-// =============================================================================
 // 8. Rutinas de inicio (elegidas con los interruptores DIP)
 // -----------------------------------------------------------------------------
 //   DIP1 DIP2  rutina
@@ -227,7 +210,6 @@ constexpr int RampaPwmPorMs = 1;
 //   DIP3: lado del giro (off = derecha, ON = izquierda)
 // Los giros terminan al ver al rival de frente (o al agotar su tiempo) y el
 // avance al verlo con cualquier sensor. Ver la línea cancela la rutina.
-// =============================================================================
 // true = un interruptor en ON lee LOW (contra GND, con pull-up).
 constexpr bool DipActivoBajo = true;
 // Rondas 1 y 2: giro inicial.
@@ -257,9 +239,7 @@ constexpr unsigned long TiempoMinimoGiroLado = 60;
 constexpr unsigned long TiempoMinimoAvanceInicio = 150;
 constexpr unsigned long TiempoMinimoGiroLateral = 60;
 
-// =============================================================================
 // 9. Módulo de arranque
-// =============================================================================
 constexpr bool ModuloArranqueActivoAlto = true;
 // RUN debe mantenerse estos ms seguidos para arrancar.
 constexpr unsigned long FiltroModuloArranqueMs = 5;

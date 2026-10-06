@@ -1,4 +1,3 @@
-// =============================================================================
 // MandoMotores.h — Última etapa antes de los motores
 // -----------------------------------------------------------------------------
 // Todas las órdenes de movimiento pasan por aquí. Esta clase:
@@ -7,7 +6,6 @@
 //   - aplica la rampa (sube la velocidad poco a poco para no patinar),
 //   - recuerda la última orden y estima la velocidad real de cada rueda,
 //   - calcula el contramando para frenar en seco.
-// =============================================================================
 #ifndef MANDO_MOTORES_H
 #define MANDO_MOTORES_H
 

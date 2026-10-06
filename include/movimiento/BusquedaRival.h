@@ -1,11 +1,9 @@
-// =============================================================================
 // BusquedaRival.h — Movimiento cuando no se ve al rival
 // -----------------------------------------------------------------------------
 // Dos patrones (PatronBusqueda):
 //   1 = arcos suaves que cambian de lado cada TiempoArcoBusqueda.
 //   0 = avanzar, parar, girar en el sitio, parar... (en ciclo).
 // Recuerda el último lado donde se vio al rival para girar hacia ahí.
-// =============================================================================
 #ifndef BUSQUEDA_RIVAL_H
 #define BUSQUEDA_RIVAL_H
 

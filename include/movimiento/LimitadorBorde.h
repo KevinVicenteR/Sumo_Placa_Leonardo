@@ -1,9 +1,7 @@
-// =============================================================================
 // LimitadorBorde.h — Limita la velocidad según el estimador de borde
 // -----------------------------------------------------------------------------
 // Alimenta a EstimadorBorde con las órdenes de motor de cada ciclo y con cada
 // línea vista, y traduce su predicción en una velocidad máxima de avance.
-// =============================================================================
 #ifndef LIMITADOR_BORDE_H
 #define LIMITADOR_BORDE_H
 

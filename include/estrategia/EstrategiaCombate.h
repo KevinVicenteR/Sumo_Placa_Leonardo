@@ -1,4 +1,3 @@
-// =============================================================================
 // EstrategiaCombate.h — Base común de todas las estrategias
 // -----------------------------------------------------------------------------
 // Patrón Método Plantilla (Template Method): decidir() fija los pasos que toda
@@ -6,7 +5,6 @@
 //   1. Si hay línea blanca, evadir el borde (siempre tiene prioridad).
 //   2. Si los tres sensores delanteros ven al rival, atacar de frente.
 //   3. Si no, la subclase decide qué hacer con el rival (elegirContraEnemigo).
-// =============================================================================
 #ifndef ESTRATEGIA_COMBATE_H
 #define ESTRATEGIA_COMBATE_H
 

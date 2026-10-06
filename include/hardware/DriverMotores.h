@@ -1,9 +1,7 @@
-// =============================================================================
 // DriverMotores.h — Control del puente H de las dos ruedas
 // -----------------------------------------------------------------------------
 // Implementación real de IMotor: traduce una velocidad con signo a los pines de
 // sentido (MAx1/MAx2) y de potencia (PWMx) de cada motor.
-// =============================================================================
 #ifndef DRIVER_MOTORES_H
 #define DRIVER_MOTORES_H
 

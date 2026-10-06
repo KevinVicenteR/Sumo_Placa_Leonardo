@@ -1,11 +1,9 @@
-// =============================================================================
 // RetencionDeteccion.h — Filtro de un sensor de enemigo
 // -----------------------------------------------------------------------------
 // - Una detección nueva solo se acepta si dura confirmacionMs seguidos
 //   (descarta reflejos y lecturas sueltas).
 // - Una vez aceptada, se mantiene duracionMs después de perderla (tolera los
 //   parpadeos del sensor).
-// =============================================================================
 #ifndef RETENCION_DETECCION_H
 #define RETENCION_DETECCION_H
 

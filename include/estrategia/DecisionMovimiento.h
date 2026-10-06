@@ -1,9 +1,7 @@
-// =============================================================================
 // DecisionMovimiento.h — Qué ha decidido hacer la estrategia
 // -----------------------------------------------------------------------------
 // La estrategia elige un tipo de acción; el control de movimiento lo convierte
 // en velocidades de motor.
-// =============================================================================
 #ifndef DECISION_MOVIMIENTO_H
 #define DECISION_MOVIMIENTO_H
 

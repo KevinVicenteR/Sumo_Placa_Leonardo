@@ -1,9 +1,7 @@
-// =============================================================================
 // LecturasSensores.h — Foto de todos los sensores en un instante
 // -----------------------------------------------------------------------------
 // Percepcion la rellena en cada ciclo y la estrategia decide a partir de ella.
 // Todos los valores ya vienen filtrados: true = hay detección.
-// =============================================================================
 #ifndef LECTURAS_SENSORES_H
 #define LECTURAS_SENSORES_H
 

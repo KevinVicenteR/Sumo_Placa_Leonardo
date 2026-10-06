@@ -8,7 +8,7 @@ enemigo, -1 si se cae, 0 si se acaba el tiempo) descontada por el tiempo que
 faltaba, y Q(estado, acción) es la media de esos retornos. La tabla parte de
 la estrategia escrita a mano.
 
-Al acabar escribe include/TablaPolitica.H (la mejor acción de cada estado) y
+Al acabar escribe include/estrategia/TablaPolitica.h (la mejor acción de cada estado) y
 simulacion/politica_q.txt (la tabla Q, para seguir entrenando con --continuar).
 
   python3 simulacion/entrenar_politica.py --rondas 12 --n 40
@@ -86,7 +86,7 @@ def guardar_tabla(Q, N, margen=0.0, visitas_min=0):
         mejor.append(b if Q[e][b] - Q[e][m] >= margen and N[e][b] >= visitas_min else m)
     filas = "\n".join("    " + ", ".join(str(v) for v in mejor[i:i + 8]) + "," for i in range(0, NE, 8))
     cambios = sum(1 for e in range(NE) if mejor[e] != accion_manual(e))
-    (RAIZ / "include" / "TablaPolitica.H").write_text(f"""#ifndef TABLA_POLITICA_H
+    (RAIZ / "include" / "estrategia" / "TablaPolitica.h").write_text(f"""#ifndef TABLA_POLITICA_H
 #define TABLA_POLITICA_H
 
 #include <stdint.h>

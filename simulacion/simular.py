@@ -22,12 +22,12 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 BUILD = RAIZ / "simulacion" / "build"
-FUENTES = sorted((RAIZ / "src").glob("*.cpp")) + [RAIZ / "simulacion" / "sim.cpp"]
+FUENTES = sorted((RAIZ / "src").rglob("*.cpp")) + [RAIZ / "simulacion" / "sim.cpp"]
 MODOS = ["ninguno", "estatico", "errante", "agresivo"]
 
 
 def compilar(params: dict, banderas: tuple = ()) -> Path:
-    """Copia include/ aplicando los cambios a Parametros.H y compila."""
+    """Copia include/ aplicando los cambios a Parametros.h y compila."""
     clave = hashlib.sha1(repr((sorted(params.items()), banderas)).encode()).hexdigest()[:10]
     inc = BUILD / f"include_{clave}"
     binario = BUILD / f"sim_{clave}"
@@ -35,7 +35,7 @@ def compilar(params: dict, banderas: tuple = ()) -> Path:
         shutil.rmtree(inc)
     shutil.copytree(RAIZ / "include", inc)
 
-    ruta = inc / "Parametros.H"
+    ruta = inc / "Parametros.h"
     texto = ruta.read_text()
     for nombre, valor in params.items():
         texto, n = re.subn(rf"(\b{nombre}\s*=\s*)[^;]+;", rf"\g<1>{valor};", texto)
@@ -111,7 +111,7 @@ def main():
     ap.add_argument("--masa", type=float, default=0.3, help="kg")
     ap.add_argument("--par", type=float, default=0.6, help="par de bloqueo por motor en kg·cm")
     ap.add_argument("--modos", default=",".join(MODOS))
-    ap.add_argument("--param", action="append", default=[], help="Nombre=valor de Parametros.H")
+    ap.add_argument("--param", action="append", default=[], help="Nombre=valor de Parametros.h")
     ap.add_argument("--tray", type=Path, help="carpeta donde guardar trayectorias de ejemplo")
     a, otros = ap.parse_known_args()
 

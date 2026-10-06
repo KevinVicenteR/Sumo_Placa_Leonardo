@@ -1,7 +1,7 @@
 #include <unity.h>
-#include "EstrategiaCombate.H"
-#include "PoliticaAprendida.H"
-#include "TablaPolitica.H"
+#include "estrategia/EstrategiaReglas.h"
+#include "estrategia/PoliticaAprendida.h"
+#include "estrategia/TablaPolitica.h"
 
 static LecturasSensores L(
     bool lineaIzq,
@@ -24,21 +24,21 @@ static LecturasSensores L(
 }
 
 void test_prioriza_borde_sobre_todo(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     DecisionMovimiento d = e.decidir(L(true, false, true, true, true, true, true));
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeIzq, (int)d.tipo);
     TEST_ASSERT_FALSE(d.ataqueDirecto);
 }
 
 void test_frontal_sobre_45_y_laterales(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     DecisionMovimiento d = e.decidir(L(false, false, true, true, true, true, true));
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::AtaqueFrontal, (int)d.tipo);
     TEST_ASSERT_TRUE(d.ataqueDirecto);
 }
 
 void test_frontal_y_un_45_ajusta_hacia_ese_lado(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     DecisionMovimiento d = e.decidir(L(false, false, false, true, true, false, false));
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::AjusteIzq, (int)d.tipo);
     TEST_ASSERT_TRUE(d.enemigoFrente);
@@ -47,13 +47,13 @@ void test_frontal_y_un_45_ajusta_hacia_ese_lado(void) {
 }
 
 void test_borde_informa_si_ve_al_enemigo_de_frente(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     TEST_ASSERT_TRUE(e.decidir(L(true, false, false, false, true, false, false)).enemigoFrente);
     TEST_ASSERT_FALSE(e.decidir(L(true, false, false, true, false, false, false)).enemigoFrente);
 }
 
 void test_cerca_del_borde_se_informa_en_la_decision(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     LecturasSensores s = L(false, false, false, false, true, false, false);
     s.cercaBorde = true;
     TEST_ASSERT_TRUE(e.decidir(s).cercaBorde);
@@ -62,7 +62,7 @@ void test_cerca_del_borde_se_informa_en_la_decision(void) {
 
 // La política en tabla, sin entrenar, decide igual que la estrategia escrita a mano
 void test_politica_manual_coincide_con_la_estrategia(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     for (int bits = 0; bits < 32; bits++) {
         LecturasSensores s = L(false, false, bits & 8, bits & 2, bits & 1, bits & 4, bits & 16);
         const int estado = politica::codificarEstado(s, 0);
@@ -77,31 +77,31 @@ void test_tabla_de_politica_con_acciones_validas(void) {
 }
 
 void test_45_izq_sobre_45_der_y_laterales(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     DecisionMovimiento d = e.decidir(L(false, false, true, true, false, true, true));
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::CorregirIzq, (int)d.tipo);
 }
 
 void test_borde_der_y_ambos(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeDer, (int)e.decidir(L(false, true, false, false, true, false, false)).tipo);
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeAmbos, (int)e.decidir(L(true, true, false, false, true, false, false)).tipo);
 }
 
 void test_45_der_sobre_laterales(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     DecisionMovimiento d = e.decidir(L(false, false, true, false, false, true, true));
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::CorregirDer, (int)d.tipo);
 }
 
 void test_laterales(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::DefensaIzq, (int)e.decidir(L(false, false, true, false, false, false, true)).tipo);
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::DefensaDer, (int)e.decidir(L(false, false, false, false, false, false, true)).tipo);
 }
 
 void test_busqueda_si_no_hay_deteccion(void) {
-    EstrategiaCombate e;
+    EstrategiaReglas e;
     DecisionMovimiento d = e.decidir(L(false, false, false, false, false, false, false));
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::Busqueda, (int)d.tipo);
 }

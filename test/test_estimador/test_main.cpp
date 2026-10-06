@@ -1,6 +1,6 @@
 #include <unity.h>
-#include "EstimadorBorde.H"
-#include "Parametros.H"
+#include "movimiento/EstimadorBorde.h"
+#include "Parametros.h"
 
 void test_al_arrancar_no_se_fia_de_la_prediccion(void) {
     EstimadorBorde e;

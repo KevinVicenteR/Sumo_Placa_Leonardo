@@ -1,6 +1,6 @@
 // Simulador de combate en dohyo circular (consola).
 //
-// Compila el firmware real (main.cpp y todo src/) contra un Arduino simulado
+// Compila el firmware real (main.cpp y todo src/, con sus subcarpetas) contra un Arduino simulado
 // (fisica.h): los pines de motores se traducen a velocidades de rueda y los
 // pines de sensores se calculan a partir de la geometría del dohyo y del enemigo.
 //
@@ -16,7 +16,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include "fisica.h"
-#include "ControlMovimiento.H"
+#include "movimiento/ControlMovimiento.h"
 
 extern ControlMovimiento controlMovimiento;
 
@@ -42,7 +42,7 @@ bool leerOdometria(float& avance, float& giro) {
 // mantiene cada decisión al menos 50 ms (si no, el robot temblaría) y se anotan
 // las visitas para repartir la recompensa al acabar el combate.
 #include <vector>
-#include "PoliticaAprendida.H"
+#include "estrategia/PoliticaAprendida.h"
 
 namespace entrenamiento {
 double Q[politica::NumEstados][politica::NumAcciones];

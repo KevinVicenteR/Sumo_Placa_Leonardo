@@ -10,7 +10,8 @@
 
 #include <Arduino.h>
 #include "matematica.h"
-#include "Pines.H"
+#include "Pines.h"
+#include "Parametros.h"
 
 void setup();
 void loop();
@@ -62,7 +63,7 @@ struct Config {
     int ladoRival = 1;            // round 2: +1 rival a la derecha, -1 a la izquierda
     int dip = 0;                  // interruptores DIP en ON (bit 0 = DIP1...)
     // Pines de los DIP (XMotion: 5, 6, 7) y si ON lee LOW; deben coincidir con
-    // Pines.H y DipActivoBajo del firmware (aquí fijos para poder simular
+    // Pines.h y DipActivoBajo del firmware (aquí fijos para poder simular
     // también firmwares anteriores que no los tienen)
     uint8_t pinesDip[3] = {5, 6, 7};
     bool dipActivoBajo = true;
@@ -576,6 +577,8 @@ int analogRead(uint8_t pin) {
 
 int digitalRead(uint8_t pin) {
     sim::costoLoopUs += 4;
+    // Módulo de arranque: el start ya está dado desde el principio del combate
+    if ((int)pin == PIN_MODULO_ARRANQUE) return ModuloArranqueActivoAlto ? HIGH : LOW;
     for (int i = 0; i < 3; i++) {
         if (pin == sim::cfg.pinesDip[i]) {
             const bool on = sim::cfg.dip >> i & 1;

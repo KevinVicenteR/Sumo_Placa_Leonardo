@@ -20,7 +20,7 @@ import simular
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("params", nargs="*", help="Nombre=valor de Parametros.H")
+    ap.add_argument("params", nargs="*", help="Nombre=valor de Parametros.h")
     ap.add_argument("--n", type=int, default=100, help="combates por escenario y entorno")
     ap.add_argument("--extra", default="", help="opciones del simulador añadidas a todos los entornos")
     ap.add_argument("--banderas", default="", help="opciones del compilador (p. ej. -DODOMETRIA_SIMULADA)")

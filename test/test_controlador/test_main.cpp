@@ -1,5 +1,5 @@
 #include <unity.h>
-#include "ControladorRobot.H"
+#include "robot/ControladorRobot.h"
 #include "Arduino.h"
 
 class MotorDummy : public IMotor {
@@ -10,10 +10,10 @@ public:
 
 class PercepcionMock : public IPercepcion {
 public:
-    mutable int calls = 0;
+    int calls = 0;
     LecturasSensores next{};
 
-    LecturasSensores leer() const override {
+    LecturasSensores leer() override {
         calls++;
         return next;
     }
@@ -21,11 +21,11 @@ public:
 
 class EstrategiaMock : public IEstrategiaCombate {
 public:
-    mutable int calls = 0;
-    mutable LecturasSensores recibido{};
+    int calls = 0;
+    LecturasSensores recibido{};
     DecisionMovimiento salida{TipoAccion::Busqueda};
 
-    DecisionMovimiento decidir(const LecturasSensores& lecturas) const override {
+    DecisionMovimiento decidir(const LecturasSensores& lecturas) override {
         calls++;
         recibido = lecturas;
         return salida;

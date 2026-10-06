@@ -1,10 +1,10 @@
 #include <unity.h>
-#include "ControlMovimiento.H"
-#include "Parametros.H"
+#include "movimiento/ControlMovimiento.h"
+#include "Parametros.h"
 #include "Arduino.h"
 
-// Comportamiento clásico: sin rampa, búsqueda con giro en el sitio, escape recto
-#define CLASICO 0, 0, false
+// Comportamiento clásico: sin rampa y búsqueda con giro en el sitio
+#define CLASICO 0, 0
 
 class MotorMock : public IMotor {
 public:

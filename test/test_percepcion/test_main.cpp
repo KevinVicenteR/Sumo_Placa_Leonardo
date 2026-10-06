@@ -1,6 +1,6 @@
 #include <unity.h>
-#include "Percepcion.H"
-#include "Pines.H"
+#include "sensores/Percepcion.h"
+#include "Pines.h"
 #include "Arduino.h"
 
 void test_piso_arranca_con_referencias_guardadas_sin_calibracion() {

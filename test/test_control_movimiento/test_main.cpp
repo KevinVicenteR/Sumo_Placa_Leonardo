@@ -134,7 +134,8 @@ void test_paro_en_seco_al_perder_al_enemigo_en_pleno_ataque(void) {
 
     const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
     c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
-    assertMovimiento(m, -VelocidadFreno, -VelocidadFreno);
+    const int freno = FrenoActivo ? -VelocidadFreno : 0;
+    assertMovimiento(m, freno, freno);
 
     c.ejecutar({TipoAccion::Busqueda}, m, t + 1 + TiempoParoPerdida);
     assertGiroBusqueda(m, 1);
@@ -453,7 +454,11 @@ void test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro(void) {
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto);
     assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion);
-    TEST_ASSERT_TRUE(m.izq < 0 && m.der > 0);
+    if (FrenoActivo) {
+        TEST_ASSERT_TRUE(m.izq < 0 && m.der > 0);
+    } else {
+        assertMovimiento(m, 0, 0);
+    }
     // Tras el freno, embiste
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion + TiempoFrenadoRuedas + 1);
     assertMovimiento(m, VelocidadEmbestidaInicio, VelocidadEmbestidaInicio);

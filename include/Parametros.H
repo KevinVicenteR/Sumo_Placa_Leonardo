@@ -1,9 +1,14 @@
 #ifndef PARAMETROS_H
 #define PARAMETROS_H
 
-// Ajuste conservador para verificar la evasión en el robot real de 750 rpm.
+// Ajuste conservador para verificar la evasión en el robot real de 400 rpm.
 // Velocidades y tiempos pendientes de validar sobre el dohyo; la simulación
 // no sustituye medir la respuesta del driver y el sentido de cada rueda.
+
+// Sentido de giro de cada motor: true invierte el cableado (velocidad positiva
+// = avanzar). Ajustado en la prueba física con los motores de 400 rpm.
+constexpr bool InvertirMotorIzq = true;
+constexpr bool InvertirMotorDer = true;
 
 // Parada con PWM=0; sin la orden de freno a PWM máximo.
 constexpr bool FrenoActivo = false;
@@ -78,21 +83,22 @@ constexpr int VelocidadMinimaFreno = 20;
 constexpr unsigned long TiempoRetroceso = 180;
 // Paro en seco cuando el enemigo desaparece en pleno ataque (ms)
 constexpr unsigned long TiempoParoPerdida = 250;
-constexpr unsigned long TiempoRetrocesoAmbos = 200;
+constexpr unsigned long TiempoRetrocesoAmbos = 375;
 // Negro continuo antes del giro; límite de recuperación sin sensores traseros.
-constexpr unsigned long TiempoSeparacionBorde = 90;
-constexpr unsigned long TiempoSeparacionUnSensor = 72;
-constexpr unsigned long TiempoRetrocesoUnSensor = 90;
+// Tiempos del escape escalados ×1,9 (750 → 400 rpm) para recorrer y girar lo mismo.
+constexpr unsigned long TiempoSeparacionBorde = 170;
+constexpr unsigned long TiempoSeparacionUnSensor = 135;
+constexpr unsigned long TiempoRetrocesoUnSensor = 170;
 constexpr int VelocidadRetrocesoUnSensor = 118;
 constexpr unsigned long TiempoRectoBordeUnSensor = 80;
 constexpr int PorcentajeRetrocesoUnSensor = 60;
-constexpr unsigned long TiempoMaximoRecuperacionBorde = 700;
+constexpr unsigned long TiempoMaximoRecuperacionBorde = 1300;
 constexpr unsigned long TiempoFrenado = 80;
 constexpr unsigned long TiempoAsentamientoEvasion = 100;
-constexpr unsigned long TiempoGiroEvasion = 240;
+constexpr unsigned long TiempoGiroEvasion = 450;
 constexpr unsigned long TiempoSalidaSuaveUnSensor = 500;
 constexpr int VelocidadSalidaUnSensor = 60;
-constexpr unsigned long TiempoGiroEvasionAmbos = 220;
+constexpr unsigned long TiempoGiroEvasionAmbos = 410;
 constexpr unsigned long TiempoGiroEvasionEnSitio = 100;
 // Referencia histórica del simulador; el control completa TiempoGiroEvasion.
 constexpr unsigned long TiempoMinimoGiroEvasion = 60;
@@ -133,10 +139,11 @@ constexpr float DistanciaSensorPiso = 0.045f;     // m por delante del eje de ru
 constexpr float SeparacionSensoresPiso = 0.04f;   // m a cada lado del centro
 constexpr float TrochaRuedas = 0.085f;            // m entre ruedas
 // Modelo de movimiento identificado en la simulación (750 rpm, ruedas de 3 cm,
-// 300 g): cada rueda va a VelocidadRuedaMaxima a PWM 255, no se mueve por debajo
+// 300 g) y escalado a 400 rpm (1,0 m/s × 400/750): cada rueda va a
+// VelocidadRuedaMaxima a PWM 255, no se mueve por debajo
 // de ZonaMuertaPwm, entre medias en proporción, y llega con constante de tiempo
 // TauRuedaEstimador. En el robot real: medir cuánto avanza en 1 s a PWM 255.
-constexpr float VelocidadRuedaMaxima = 1.0f;
+constexpr float VelocidadRuedaMaxima = 0.53f;
 constexpr int ZonaMuertaPwm = 40;
 constexpr float TauRuedaEstimador = 0.06f;
 // Al arrancar: a qué distancia del centro puede estar (el rumbo es desconocido)
@@ -212,7 +219,8 @@ constexpr int RampaPwmPorMs = 1;
 // DipActivoBajo: true si un interruptor en ON lee LOW (contra GND, con pull-up)
 constexpr bool DipActivoBajo = true;
 constexpr int VelocidadGiroInicio = 180;
-constexpr unsigned long TiempoMaxGiroEspalda = 500;
+// Media vuelta del round 1: ×1,9 respecto a los 500 ms de los motores de 750 rpm
+constexpr unsigned long TiempoMaxGiroEspalda = 950;
 constexpr unsigned long TiempoMaxGiroLado = 500;
 // Round 2: true = pivota sobre la rueda del lado del rival; false = gira en el sitio
 constexpr bool PivoteRound2 = true;

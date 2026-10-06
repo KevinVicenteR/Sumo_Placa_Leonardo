@@ -83,8 +83,9 @@ bool ControlMovimiento::calcularFreno(unsigned long duracionMaxima) {
     if (mayor < VelocidadMinimaFreno) {
         return false;
     }
-    frenoIzq = -izq * VelocidadFreno / mayor;
-    frenoDer = -der * VelocidadFreno / mayor;
+    // Sin FrenoActivo la parada es con PWM=0: nada de marcha atrás tras un choque
+    frenoIzq = FrenoActivo ? -izq * VelocidadFreno / mayor : 0;
+    frenoDer = FrenoActivo ? -der * VelocidadFreno / mayor : 0;
     duracionFreno = duracionMaxima * mayor / VelocidadMaxima;
     return true;
 }

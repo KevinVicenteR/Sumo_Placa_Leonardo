@@ -13,8 +13,8 @@ void controlarMotor(uint8_t in1, uint8_t in2, uint8_t pwm, int velocidad) {
 }
 
 void Motor::mover(int velIzq, int velDer) {
-    controlarMotor(MA1A, MA2A, PWMA, velIzq);
-    controlarMotor(MA1B, MA2B, PWMB, velDer);
+    controlarMotor(MA1A, MA2A, PWMA, InvertirMotorIzq ? -velIzq : velIzq);
+    controlarMotor(MA1B, MA2B, PWMB, InvertirMotorDer ? -velDer : velDer);
 }
 
 void Motor::detener() { deshabilitar(); }

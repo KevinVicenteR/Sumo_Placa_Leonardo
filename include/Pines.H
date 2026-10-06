@@ -16,15 +16,16 @@ constexpr uint8_t S_LAT_IZQ   = 1;
 constexpr uint8_t S_LAT_DER   = A4;
 
 // Configuración que mueve ambos motores según la prueba física del usuario.
-// D10 y D11 admiten PWM en Arduino Leonardo.
+// D10 y D11 admiten PWM en Arduino Leonardo. Los pines de dirección D8/D12 son
+// del motor de D10 y D9/D13 del de D11: cruzados, al pivotar sobre una rueda la
+// otra tomaba el sentido de la parada y el robot retrocedía.
 constexpr uint8_t PWMA = 10;
-constexpr uint8_t MA1A = 9;
+constexpr uint8_t MA1A = 8;
+constexpr uint8_t MA2A = 12;
 
-constexpr uint8_t MA2A = 13;
 constexpr uint8_t PWMB = 11;
-
-constexpr uint8_t MA1B = 8;
-constexpr uint8_t MA2B = 12;
+constexpr uint8_t MA1B = 9;
+constexpr uint8_t MA2B = 13;
 // D8/D9 participan en el control: no usarlos para parpadeo independiente.
 
 // Señal del módulo de arranque (control remoto); -1 = sin módulo, arranca al encender

@@ -36,7 +36,10 @@ int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long a
 
     int ataque = VelocidadAtaque;
     if (embestidaInicio) {
-        ataque = VelocidadEmbestidaInicio;
+        // Subida proporcional al tiempo que lleva embistiendo
+        const unsigned long transcurrido = ahora - (finEmbestidaInicio - TiempoEmbestidaInicio);
+        ataque = VelocidadEmbestidaInicio +
+                 (long)(VelocidadEmbestidaMaxima - VelocidadEmbestidaInicio) * transcurrido / TiempoEmbestidaInicio;
     } else if (empujandoRival || (viendoFrente && TiempoEmbestida == 0)) {
         ataque = VelocidadEmpuje;
     } else if (viendoFrente) {
@@ -44,6 +47,10 @@ int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long a
         const unsigned long transcurrido = ahora - inicioFrente;
         const unsigned long progreso = transcurrido < TiempoEmbestida ? transcurrido : TiempoEmbestida;
         ataque += (long)(VelocidadEmpuje - VelocidadAtaque) * progreso / TiempoEmbestida;
+    }
+    // Rival centrado en los tres sensores: a fondo sin esperar a la subida gradual
+    if (decision.ataqueDirecto && ataque < VelocidadAtaqueDirecto) {
+        ataque = VelocidadAtaqueDirecto;
     }
     // Rondas 1 y 2: tras la embestida conserva su velocidad propia
     if (ataqueDeRutina && !embestidaInicio && ataque > VelocidadAtaqueRound12) {

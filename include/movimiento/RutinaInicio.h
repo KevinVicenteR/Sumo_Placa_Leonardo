@@ -1,6 +1,6 @@
 // RutinaInicio.h — Primer movimiento de cada round (elegido con los DIP)
 //   1 = espalda con espalda: media vuelta hasta ver al rival de frente.
-//   2 = lado a lado: pivota hacia el lado del rival.
+//   2 = lado a lado: (opcional) avanza para esquivar y gira hacia el rival.
 //   3 = enfrentados: avanza hacia el centro y espera al rival.
 //   0 = sin rutina.
 // Al encontrar al rival (rondas 1 y 2) frena el giro y empieza la embestida.

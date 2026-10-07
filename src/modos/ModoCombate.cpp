@@ -29,7 +29,9 @@ void ModoCombate::empezarCombate() {
     // Rutina de inicio según los DIP (DIP3 elige el lado del giro)
     const int dip = placa.leerInterruptores();
     controlMovimiento.iniciarRutina(rutinaSegunInterruptores(dip), (dip & 4) ? -1 : 1);
+    cajaNegra.empezar(dip, percepcion.negroIzquierdo(), percepcion.negroDerecho(), millis());
     enCombate = true;
+    combateEmpezado = true;
 #if defined(MONITOREO_COMBATE)
     Serial.print(F("DIP=")); Serial.print(dip); Serial.print(' ');
     Serial.print(F("INICIO negroIzq=")); Serial.print(percepcion.negroIzquierdo());
@@ -45,11 +47,28 @@ void ModoCombate::actualizar() {
         const bool alto = digitalRead((uint8_t)PIN_MODULO_ARRANQUE) == HIGH;
         if (!moduloArranque.enMarcha(alto == ModuloArranqueActivoAlto, millis())) {
             motores.deshabilitar();
+            if (enCombate) {
+                inicioParada = millis();
+                // Con los motores ya parados se puede escribir en la EEPROM
+                cajaNegra.guardar();
+            }
+            if (combateEmpezado) {
+                // Sigue leyendo los sensores: si el robot se desliza hasta la
+                // línea durante una parada corta, al reanudar lo sabrá (la
+                // detección de línea se mantiene aunque el morro quede fuera)
+                percepcion.leer();
+            }
             enCombate = false;
             return;
         }
         if (!enCombate) {
-            empezarCombate();
+            if (combateEmpezado && millis() - inicioParada < TiempoReanudarCombate) {
+                // Parada corta (interferencia): sigue el mismo combate
+                enCombate = true;
+                cajaNegra.anotarInterrupcion();
+            } else {
+                empezarCombate();
+            }
         }
     }
 
@@ -58,6 +77,7 @@ void ModoCombate::actualizar() {
     const unsigned long inicioCiclo = micros();
 #endif
     robot.actualizar();
+    cajaNegra.observar(robot.ultimasLecturas(), controlMovimiento.evasiones(), millis());
 #if defined(MONITOREO_COMBATE)
     const unsigned long ciclo = micros() - inicioCiclo;
     if (ciclo > cicloMaximo) cicloMaximo = ciclo;

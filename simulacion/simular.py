@@ -108,8 +108,9 @@ def main():
     ap.add_argument("--rango", type=float, default=0.40)
     ap.add_argument("--rpm", type=float, default=750, help="rpm en vacío (0 = modelo simple con --vmax)")
     ap.add_argument("--diam", type=float, default=0.03, help="diámetro de rueda en m")
-    ap.add_argument("--masa", type=float, default=0.3, help="kg")
+    ap.add_argument("--masa", type=float, default=0.34, help="kg (robot real: 340 g)")
     ap.add_argument("--par", type=float, default=0.6, help="par de bloqueo por motor en kg·cm")
+    ap.add_argument("--bateria", type=float, default=1.23, help="tensión batería / motor (LiPo 2S con motores de 6 V)")
     ap.add_argument("--modos", default=",".join(MODOS))
     ap.add_argument("--param", action="append", default=[], help="Nombre=valor de Parametros.h")
     ap.add_argument("--tray", type=Path, help="carpeta donde guardar trayectorias de ejemplo")
@@ -118,7 +119,7 @@ def main():
     params = dict(p.split("=", 1) for p in a.param)
     BUILD.mkdir(parents=True, exist_ok=True)
     binario = compilar(params)
-    extra = ["--dur", str(a.dur), "--vmax", str(a.vmax), "--mu", str(a.mu),
+    extra = ["--dur", str(a.dur), "--vmax", str(a.vmax), "--mu", str(a.mu), "--bateria", str(a.bateria),
              "--tau", str(a.tau), "--rango", str(a.rango)]
     # Opciones de realismo (--bateria, --pared, --adc-*, --friccion-*...) pasan tal cual al simulador
     extra += [x for o in otros for x in o.split("=", 1)]

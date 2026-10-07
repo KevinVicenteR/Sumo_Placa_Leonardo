@@ -71,6 +71,19 @@ struct Config {
     // ve algo que no existe, en promedio fantasmasPorSegundo veces por segundo,
     // durante entre 5 y 30 ms
     double fantasmasPorSegundo = 0;
+    // Saturación por el infrarrojo del rival: cada sensor de enemigo se queda
+    // fijo en "detecta", en promedio saturacionesPorSegundo veces por segundo,
+    // durante entre 0,5 y 2 s
+    double saturacionesPorSegundo = 0;
+    // Cortes en la señal del módulo de arranque (interferencias): la señal pasa a
+    // STOP cortesArranquePorSegundo veces por segundo, durante entre 5 ms y
+    // corteArranqueMaxMs
+    double cortesArranquePorSegundo = 0;
+    double corteArranqueMaxMs = 300;
+    // Desgaste de cada llanta (0 = nueva, 1 = gastada del todo): pierde agarre
+    // en esa proporción y hasta un 10 % de diámetro
+    double desgasteIzq = 0;
+    double desgasteDer = 0;
     // Enemigo
     double radioEnemigo = 0.05;   // m
     double velEnemigo = 0.25;     // m/s en modo errante
@@ -79,6 +92,12 @@ struct Config {
     // Choque con el enemigo (0 en masaEnemigo = fantasma, el robot lo atraviesa)
     double masaEnemigo = 0.3;     // kg
     double agarreEnemigo = 0.8;   // su resistencia a ser empujado (μ de sus ruedas)
+    // Pala delantera de nuestro robot (base biselada que roza el piso): si el
+    // rival choca por delante (dentro de ±35°), la pala se mete debajo, lo
+    // levanta un poco y pierde esta fracción de su agarre (0 = sin pala)
+    double pala = 0;
+    // Pala del rival: si nos choca por su frente, perdemos esta fracción de agarre
+    double palaRival = 0;
     double radioChoque = 0.055;   // m, radio de choque de nuestro robot
     double rigidezChoque = 3000;  // N/m del contacto entre robots (unos mm de solape)
     double amortiguaChoque = 25;  // N·s/m
@@ -89,7 +108,8 @@ struct Config {
     double sobrecostoLoopUs = 20; // µs de loop() además de las lecturas
 };
 
-enum class Modo { Ninguno, Estatico, Errante, Agresivo };
+// Flanqueo: como Agresivo, pero primero rodea a nuestro robot para golpearlo de lado
+enum class Modo { Ninguno, Estatico, Errante, Agresivo, Flanqueo };
 
 struct Robot {
     double x, y, th;  // posición del eje de ruedas y orientación (rad, antihorario)
@@ -145,6 +165,13 @@ inline Config cfg;
 inline Modo modo = Modo::Ninguno;
 inline Robot rob;
 inline Enemigo ene;
+
+// Nuestra pala está debajo del rival en este paso (ver Config::pala)
+inline bool palaDebajo = false;
+// La pala del rival está debajo de nuestro robot (ver Config::palaRival)
+inline bool palaRivalDebajo = false;
+inline double agarrePropio() { return palaRivalDebajo ? 1 - cfg.palaRival : 1; }
+
 inline Aleatorio azar;
 
 inline double tiempoUs = 0;
@@ -266,11 +293,40 @@ inline bool fantasma(int sensor) {
     return t < finFantasma[sensor];
 }
 
+inline double finCorteArranque = 0;
+inline double ultimaRevisionCorte = 0;
+
+// La señal del módulo de arranque está cortada (lee STOP aunque el árbitro dio START)
+inline bool corteArranque() {
+    if (cfg.cortesArranquePorSegundo <= 0) return false;
+    const double t = tiempoUs / 1e6;
+    const double dt = t - ultimaRevisionCorte;
+    ultimaRevisionCorte = t;
+    if (t >= finCorteArranque && azar.uniforme() < cfg.cortesArranquePorSegundo * dt) {
+        finCorteArranque = t + azar.entre(0.005, cfg.corteArranqueMaxMs / 1000);
+    }
+    return t < finCorteArranque;
+}
+
+inline double finSaturacion[5] = {0, 0, 0, 0, 0};
+inline double ultimaRevisionSaturacion[5] = {0, 0, 0, 0, 0};
+
+inline bool saturado(int sensor) {
+    if (cfg.saturacionesPorSegundo <= 0) return false;
+    const double t = tiempoUs / 1e6;
+    const double dt = t - ultimaRevisionSaturacion[sensor];
+    ultimaRevisionSaturacion[sensor] = t;
+    if (t >= finSaturacion[sensor] && azar.uniforme() < cfg.saturacionesPorSegundo * dt) {
+        finSaturacion[sensor] = t + azar.entre(0.5, 2.0);
+    }
+    return t < finSaturacion[sensor];
+}
+
 inline bool sensorEnemigo(uint8_t pin) {
     const double fx = cfg.largo / 2, ly = cfg.ancho / 2;
     const uint8_t pines[5] = {S_FRONT_CEN, S_FRONT_IZQ, S_FRONT_DER, S_LAT_IZQ, S_LAT_DER};
     for (int i = 0; i < 5; i++) {
-        if (pin == pines[i] && fantasma(i)) return true;
+        if (pin == pines[i] && (fantasma(i) || saturado(i))) return true;
     }
     if (pin == S_FRONT_CEN) return rayoVe(fx, 0, 0);
     if (pin == S_FRONT_IZQ) return rayoVe(fx, ly * 0.6, PI / 4);
@@ -307,18 +363,19 @@ inline double conFriccion(double fuerza, double vel, double f) {
 }
 
 // Motor DC: F = Fb·(u·batería − v/v0), menos la fricción de la reductora,
-// limitada por la adherencia de cada rueda.
-inline double fuerzaRueda(int comando, double vRueda, Puente puente = Puente::Conduce) {
+// limitada por la adherencia de cada rueda. desgaste = el de esa llanta.
+inline double fuerzaRueda(int comando, double vRueda, Puente puente = Puente::Conduce, double desgaste = 0) {
     const double u = (puente == Puente::Conduce ? comando : 0) / 255.0 * cfg.bateria;
-    const double v0 = cfg.rpm / 60.0 * PI * cfg.diametro;
-    const double fuerzaBloqueo = cfg.parBloqueo * 0.0981 / (cfg.diametro / 2);
+    const double diametro = cfg.diametro * (1 - 0.1 * desgaste);
+    const double v0 = cfg.rpm / 60.0 * PI * diametro;
+    const double fuerzaBloqueo = cfg.parBloqueo * 0.0981 / (diametro / 2);
     double motor = fuerzaBloqueo * (u - vRueda / v0);
     // Libre: el motor no hace fuerza. L298N conduciendo con PWM: en la parte baja
     // del PWM el motor queda libre y no puede frenar, solo empujar
     if (puente == Puente::Libre) motor = 0;
     if (puente == Puente::Conduce && cfg.driverL298 && motor * u < 0) motor = 0;
     double f = conFriccion(motor, vRueda, cfg.friccionCaja * fuerzaBloqueo);
-    const double adherencia = cfg.mu * cfg.masa / 2 * 9.81;
+    const double adherencia = cfg.mu * (1 - desgaste) * agarrePropio() * cfg.masa / 2 * 9.81;
     return constrain(f, -adherencia, adherencia);
 }
 
@@ -327,8 +384,8 @@ inline void avanzarCuerpoDC(int cmdIzq, int cmdDer, double dt) {
     const double b = cfg.trocha / 2;
     double v = (rob.vl + rob.vr) / 2;
     double w = (rob.vr - rob.vl) / cfg.trocha;
-    const double fi = fuerzaRueda(cmdIzq, rob.vl, estadoPuente(PWMA));
-    const double fd = fuerzaRueda(cmdDer, rob.vr, estadoPuente(PWMB));
+    const double fi = fuerzaRueda(cmdIzq, rob.vl, estadoPuente(PWMA), cfg.desgasteIzq);
+    const double fd = fuerzaRueda(cmdDer, rob.vr, estadoPuente(PWMB), cfg.desgasteDer);
     const double peso = cfg.masa * 9.81;
     const double inercia = cfg.masa * (cfg.largo * cfg.largo + cfg.ancho * cfg.ancho) / 12;
     const double fuerza = conFriccion(fi + fd + rob.fExt, v, cfg.rodadura * peso);
@@ -342,10 +399,10 @@ inline void avanzarCuerpoDC(int cmdIzq, int cmdDer, double dt) {
     rob.vr = vNueva + wNueva * b;
 }
 
-inline void avanzarRueda(double& v, int comando, double dt) {
-    const double objetivo = comando / 255.0 * cfg.vmax;
+inline void avanzarRueda(double& v, int comando, double dt, double desgaste = 0) {
+    const double objetivo = comando / 255.0 * cfg.vmax * (1 - 0.1 * desgaste);
     double dv = (objetivo - v) * dt / cfg.tau;
-    const double maxDv = cfg.mu * 9.81 * dt;
+    const double maxDv = cfg.mu * (1 - desgaste) * 9.81 * dt;
     dv = constrain(dv, -maxDv, maxDv);
     v += dv;
 }
@@ -354,8 +411,8 @@ inline void avanzarRobot(double dt) {
     if (cfg.rpm > 0) {
         avanzarCuerpoDC(comandoIzq(), comandoDer(), dt);
     } else {
-        avanzarRueda(rob.vl, comandoIzq(), dt);
-        avanzarRueda(rob.vr, comandoDer(), dt);
+        avanzarRueda(rob.vl, comandoIzq(), dt, cfg.desgasteIzq);
+        avanzarRueda(rob.vr, comandoDer(), dt, cfg.desgasteDer);
         rob.vl += rob.fExt / cfg.masa * dt;
         rob.vr += rob.fExt / cfg.masa * dt;
     }
@@ -384,10 +441,18 @@ inline void avanzarEnemigo(double dt) {
         }
         vdx = cfg.velEnemigo * mat::cos(ene.th);
         vdy = cfg.velEnemigo * mat::sin(ene.th);
-    } else if (modo == Modo::Agresivo) {
+    } else if (modo == Modo::Agresivo || modo == Modo::Flanqueo) {
         // Se orienta hacia nosotros con giro limitado y embiste; cerca del borde,
         // si no nos está empujando, frena y gira hacia el centro como un robot real
-        const double haciaRobot = mat::atan2(rob.y - ene.y, rob.x - ene.x);
+        double objetivoX = rob.x, objetivoY = rob.y;
+        if (modo == Modo::Flanqueo && mat::hypot(rob.x - ene.x, rob.y - ene.y) > 0.18) {
+            // Lejos: apunta a 12 cm del costado de nuestro robot que tiene más cerca
+            const double izqX = -mat::sin(rob.th), izqY = mat::cos(rob.th);
+            const double lado = (ene.x - rob.x) * izqX + (ene.y - rob.y) * izqY >= 0 ? 1.0 : -1.0;
+            objetivoX += lado * 0.12 * izqX;
+            objetivoY += lado * 0.12 * izqY;
+        }
+        const double haciaRobot = mat::atan2(objetivoY - ene.y, objetivoX - ene.x);
         double diff = mat::remainder(haciaRobot - ene.th, 2 * PI);
         const double maxGiro = cfg.giroAgresivo * dt;
         ene.th += diff > maxGiro ? maxGiro : diff < -maxGiro ? -maxGiro : diff;
@@ -409,7 +474,8 @@ inline void avanzarEnemigo(double dt) {
     } else {
         const double dvx = vdx - ene.vx, dvy = vdy - ene.vy;
         const double dv = mat::hypot(dvx, dvy);
-        const double maxDv = cfg.agarreEnemigo * 9.81 * dt;
+        const double agarre = cfg.agarreEnemigo * (palaDebajo ? 1 - cfg.pala : 1);
+        const double maxDv = agarre * 9.81 * dt;
         const double f = dv > maxDv ? maxDv / dv : 1.0;
         ene.vx += dvx * f;
         ene.vy += dvy * f;
@@ -426,6 +492,8 @@ inline void avanzarEnemigo(double dt) {
 inline void resolverChoque(double dt) {
     rob.fExt = 0;
     double fLat = 0;
+    palaDebajo = false;
+    palaRivalDebajo = false;
     if (ene.presente && cfg.masaEnemigo > 0) {
         const double dx = ene.x - rob.x, dy = ene.y - rob.y;
         const double d = mat::hypot(dx, dy);
@@ -438,6 +506,11 @@ inline void resolverChoque(double dt) {
             const double acercamiento = (vrx - ene.vx) * nx + (vry - ene.vy) * ny;
             double f = cfg.rigidezChoque * (minima - d) + cfg.amortiguaChoque * acercamiento;
             if (f < 0) f = 0;  // solo empuja, no tira
+            // El rival está por delante de nuestro robot: la pala va debajo
+            palaDebajo = cfg.pala > 0 && f > 0 && nx * c + ny * s > 0.82;
+            // Nosotros estamos por delante del rival: su pala va debajo
+            palaRivalDebajo = cfg.palaRival > 0 && f > 0 &&
+                              -(nx * mat::cos(ene.th) + ny * mat::sin(ene.th)) > 0.82;
             ene.vx += f * nx / cfg.masaEnemigo * dt;
             ene.vy += f * ny / cfg.masaEnemigo * dt;
             rob.fExt = -f * (nx * c + ny * s);
@@ -445,7 +518,7 @@ inline void resolverChoque(double dt) {
         }
     }
     // Deslizamiento lateral con fricción de Coulomb de todas las ruedas
-    const double agarre = cfg.mu * cfg.masa * 9.81;
+    const double agarre = cfg.mu * agarrePropio() * cfg.masa * 9.81;
     const double neta = conFriccion(fLat, rob.vlat, agarre);
     const double nueva = rob.vlat + neta / cfg.masa * dt;
     rob.vlat = (rob.vlat != 0 && nueva * rob.vlat < 0) ? 0 : nueva;
@@ -502,8 +575,9 @@ inline void colocarRound() {
         ox = -(cfg.ladoRival * rx * contacto - ux * 0.04) / 2;
         oy = -(cfg.ladoRival * ry * contacto - uy * 0.04) / 2;
     } else {
-        // Pegados al borde, como en el reglamento del round 3 (unos 66 cm entre centros)
-        ox = -ux * 0.33; oy = -uy * 0.33;
+        // Pegados al borde, como en el reglamento del round 3 (centro del robot a
+        // 5,5 cm del borde exterior: 33 cm del centro en un dohyo de 77 cm)
+        ox = -ux * (cfg.radio - 0.055); oy = -uy * (cfg.radio - 0.055);
     }
     rob = {cx + ox, cy + oy, th, 0, 0};
     ene.presente = modo != Modo::Ninguno;
@@ -578,7 +652,10 @@ int analogRead(uint8_t pin) {
 int digitalRead(uint8_t pin) {
     sim::costoLoopUs += 4;
     // Módulo de arranque: el start ya está dado desde el principio del combate
-    if ((int)pin == PIN_MODULO_ARRANQUE) return ModuloArranqueActivoAlto ? HIGH : LOW;
+    if ((int)pin == PIN_MODULO_ARRANQUE) {
+        const bool enMarcha = !sim::corteArranque();
+        return enMarcha == ModuloArranqueActivoAlto ? HIGH : LOW;
+    }
     for (int i = 0; i < 3; i++) {
         if (pin == sim::cfg.pinesDip[i]) {
             const bool on = sim::cfg.dip >> i & 1;

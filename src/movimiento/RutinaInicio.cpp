@@ -35,8 +35,16 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
 
     const unsigned long t = ahora - inicio;
     bool sigue = false;
+    // Rondas 1 y 2: primero se aparta de la embestida avanzando recto
+    const unsigned long esquiva = rutina == 1 ? TiempoEsquivaRound1 : rutina == 2 ? TiempoEsquivaRound2 : 0;
+    if (t < esquiva) {
+        mando.mover(motor, VelocidadEsquiva, VelocidadEsquiva, true);
+        return true;
+    }
     if (rutina == 1 || rutina == 2) {
-        sigue = girar(decision, mando, motor, ahora, t, busqueda, ataque);
+        // El giro cuenta su tiempo desde que termina la esquiva
+        const unsigned long tGiro = t - esquiva;
+        sigue = girar(decision, mando, motor, ahora, tGiro, busqueda, ataque);
     } else if (rutina == 3) {
         sigue = avanzarAlCentro(decision, mando, motor, ahora, t);
     }

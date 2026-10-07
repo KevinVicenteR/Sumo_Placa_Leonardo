@@ -1,6 +1,7 @@
 #!/bin/sh
 # Genera simulacion/web/dohyo.html: la página interactiva con el firmware actual
-# y, para comparar, el de un commit anterior (por defecto el original, c2d950b).
+# y, para comparar, el de un commit anterior (por defecto 10e7a1c, el que se
+# llevó al torneo).
 #
 # El firmware se compila a WebAssembly y wasm2js lo traduce a JavaScript, para
 # que la página funcione aunque el navegador no permita WebAssembly.
@@ -10,7 +11,7 @@
 # Requiere: brew install llvm lld binaryen
 set -e
 cd "$(dirname "$0")"
-ANTERIOR=${1:-c2d950b}
+ANTERIOR=${1:-10e7a1c}
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 

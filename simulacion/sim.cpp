@@ -135,6 +135,7 @@ const char* nombreModo(Modo m) {
     case Modo::Estatico: return "estatico";
     case Modo::Errante: return "errante";
     case Modo::Agresivo: return "agresivo";
+    case Modo::Flanqueo: return "flanqueo";
     default: return "ninguno";
     }
 }
@@ -219,7 +220,7 @@ Resultado correr(int semilla, FILE* trayectoria) {
 
 void uso() {
     std::fprintf(stderr,
-                 "uso: sim [--modo ninguno|estatico|errante|agresivo] [--n N] [--semilla S]\n"
+                 "uso: sim [--modo ninguno|estatico|errante|agresivo|flanqueo] [--n N] [--semilla S]\n"
                  "         [--dur s] [--vmax m/s] [--mu μ] [--tau s] [--rango m]\n"
                  "         [--rpm rpm --diam m --masa kg --par kg·cm]  (modelo de motor DC)\n"
                  "         [--bateria Vbat/Vmotor] [--friccion-caja f] [--friccion-giro f]\n"
@@ -228,6 +229,11 @@ void uso() {
                  "         [--salida espalda|lado|frente] [--rival-lado der|izq] [--dip N]\n"
                  "                  (posición de salida de cada round; DIP: bit0=DIP1, bit1=DIP2, bit2=DIP3)\n"
                  "         [--fantasmas n]  (detecciones falsas por segundo y sensor)\n"
+                 "         [--saturacion n] (veces por segundo y sensor que queda cegado 0,5-2 s)\n"
+                 "         [--cortes-arranque n --corte-max ms]  (cortes de la señal de START)\n"
+                 "         [--desgaste-izq f --desgaste-der f]  (0 = llanta nueva, 1 = gastada)\n"
+                 "         [--pala f]  (agarre que pierde el rival con nuestra pala debajo, 0-1)\n"
+                 "         [--pala-rival f]  (agarre que perdemos con la pala del rival debajo)\n"
                  "         [--driver tb6612|l298n]  (con L298N, PWM a 0 deja el motor libre)\n"
                  "         [--enemigo-invertido 1]  (sensores de enemigo que dan LOW al detectar)\n"
                  "         [--radio m --borde m]  (por defecto 0.385 y 0.025: minisumo reglamentario)\n"
@@ -248,7 +254,7 @@ int main(int argc, char** argv) {
         if (a == "--modo") {
             const std::string m = v;
             modo = m == "estatico" ? Modo::Estatico : m == "errante" ? Modo::Errante
-                 : m == "agresivo" ? Modo::Agresivo : Modo::Ninguno;
+                 : m == "agresivo" ? Modo::Agresivo : m == "flanqueo" ? Modo::Flanqueo : Modo::Ninguno;
         } else if (a == "--n") n = std::atoi(v);
         else if (a == "--semilla") semilla = std::atoi(v);
         else if (a == "--dur") cfg.duracion = std::atof(v);
@@ -284,6 +290,13 @@ int main(int argc, char** argv) {
         else if (a == "--rival-lado") cfg.ladoRival = std::string(v) == "izq" ? -1 : 1;
         else if (a == "--dip") cfg.dip = std::atoi(v);
         else if (a == "--fantasmas") cfg.fantasmasPorSegundo = std::atof(v);
+        else if (a == "--saturacion") cfg.saturacionesPorSegundo = std::atof(v);
+        else if (a == "--cortes-arranque") cfg.cortesArranquePorSegundo = std::atof(v);
+        else if (a == "--corte-max") cfg.corteArranqueMaxMs = std::atof(v);
+        else if (a == "--desgaste-izq") cfg.desgasteIzq = std::atof(v);
+        else if (a == "--pala") cfg.pala = std::atof(v);
+        else if (a == "--pala-rival") cfg.palaRival = std::atof(v);
+        else if (a == "--desgaste-der") cfg.desgasteDer = std::atof(v);
         else if (a == "--borde") cfg.borde = std::atof(v);
         else if (a == "--tray") rutaTray = v;
 #ifdef ENTRENAMIENTO_POLITICA

@@ -66,24 +66,31 @@ void ControlMovimiento::actualizarLimites(const DecisionMovimiento& decision) {
 }
 
 void ControlMovimiento::empezarEvasionSiHayBorde(const DecisionMovimiento& decision, unsigned long ahora) {
+    // Retroceder solo si venía avanzando hacia la línea (ver AvanceMinimoParaRetroceder)
+    const int velocidad = mando.velocidadAvanceEstimada();
+    const bool avanzaba = velocidad >= AvanceMinimoParaRetroceder;
+    // Cuanto más rápido llega, más retrocede (ver RetrocesoExtraAVelocidadMaxima)
+    const unsigned long extra = velocidad > 0 ? RetrocesoExtraAVelocidadMaxima * velocidad / 255 : 0;
     bool empezo = false;
     switch (decision.tipo) {
     case TipoAccion::EvadirBordeIzq:
         // Línea a la izquierda: retroceso corto y giro a la derecha
-        empezo = evasion.iniciar(1, TiempoRetrocesoUnSensor, TiempoGiroEvasion, ahora, true);
+        empezo = evasion.iniciar(1, TiempoRetrocesoUnSensor + extra, TiempoGiroEvasion, ahora, true, avanzaba);
         break;
     case TipoAccion::EvadirBordeDer:
-        empezo = evasion.iniciar(-1, TiempoRetrocesoUnSensor, TiempoGiroEvasion, ahora, true);
+        empezo = evasion.iniciar(-1, TiempoRetrocesoUnSensor + extra, TiempoGiroEvasion, ahora, true, avanzaba);
         break;
     case TipoAccion::EvadirBordeAmbos:
         // Línea de frente: gira hacia el último lado donde se vio al rival
-        empezo = evasion.iniciar(busqueda.sentido(), TiempoRetrocesoAmbos, TiempoGiroEvasionAmbos, ahora, false);
+        empezo = evasion.iniciar(busqueda.sentido(), TiempoRetrocesoAmbos + extra, TiempoGiroEvasionAmbos, ahora,
+                                 false, avanzaba);
         break;
     default:
         break;
     }
     // Una evasión nueva interrumpe todo lo demás
     if (empezo) {
+        numEvasiones++;
         paro.olvidar();
         busqueda.cancelar();
         giroLateral.cancelar();
@@ -145,4 +152,5 @@ void ControlMovimiento::reiniciar() {
     paro = ParoPerdida();
     ataque = ControlAtaque();
     limitadorBorde = LimitadorBorde();
+    numEvasiones = 0;
 }

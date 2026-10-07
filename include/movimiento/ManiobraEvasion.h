@@ -1,7 +1,9 @@
 // ManiobraEvasion.h — Alejarse del borde al ver la línea blanca
 // Máquina de estados (patrón State, con un enum):
 //   Retrocediendo -> Frenando -> Girando -> Asentando -> Libre
+//   GirandoSalida -> Girando -> Asentando -> Libre   (si no venía avanzando)
 // - Retrocediendo: hasta ver negro un rato seguido (o agotar el tiempo máximo).
+// - GirandoSalida: lo mismo pero girando en el sitio, sin moverse hacia atrás.
 // - Frenando: motores parados un momento.
 // - Girando: se aparta del borde girando en el sitio.
 // - Asentando: otra pausa antes de seguir combatiendo.
@@ -20,8 +22,9 @@ public:
 
     // Empieza una evasión. Devuelve false si ya había una en marcha (en ese
     // caso solo la actualiza si ahora la línea la ven los dos sensores).
+    // veniaAvanzando = false: sale girando en el sitio en vez de retroceder.
     bool iniciar(int sentido, unsigned long duracionRetroceso, unsigned long duracionGiro,
-                 unsigned long ahora, bool unSensor);
+                 unsigned long ahora, bool unSensor, bool veniaAvanzando = true);
 
     // Un ciclo de la maniobra. Devuelve true mientras siga en marcha.
     bool continuar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
@@ -33,7 +36,10 @@ public:
     int limiteSalidaSuave() const { return limiteSalida; }
 
 private:
-    enum class Fase { Libre, Retrocediendo, Frenando, Girando, Asentando };
+    enum class Fase { Libre, Retrocediendo, GirandoSalida, Frenando, Girando, Asentando };
+
+    // Se separa de la línea (retrocediendo o girando). Devuelve true mientras siga.
+    bool separarse(bool linea, MandoMotores& mando, IMotor& motor, unsigned long ahora);
 
     Fase fase = Fase::Libre;
     unsigned long inicioFase = 0;
@@ -43,6 +49,8 @@ private:
     unsigned long inicioNegro = 0;
     // La línea la vio un solo sensor (maniobra más corta y suave)
     bool unSensor = false;
+    // Sale girando en el sitio en vez de retroceder
+    bool sinRetroceso = false;
     unsigned long duracionRetroceso = 0;
     unsigned long duracionGiro = 0;
     int sentidoGiro = 1;

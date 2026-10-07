@@ -43,6 +43,8 @@ public:
 
     // Las ruedas se mueven hacia delante (según la velocidad estimada)
     bool avanzando() const { return estIzq + estDer > 0; }
+    // Velocidad media hacia delante estimada, en PWM (negativa = hacia atrás)
+    int velocidadAvanceEstimada() const { return (estIzq + estDer) / 512; }
     int ordenIzquierda() const { return ordenIzq; }
     int ordenDerecha() const { return ordenDer; }
 

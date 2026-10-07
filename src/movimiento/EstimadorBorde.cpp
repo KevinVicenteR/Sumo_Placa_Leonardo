@@ -34,6 +34,15 @@ float minf(float a, float b) { return a < b ? a : b; }
 EstimadorBorde::EstimadorBorde()
     : px(0), py(0), th(0), vIzq(0), vDer(0), sigPos(RadioSalidaEstimado), sigTh(Pi) {}
 
+void EstimadorBorde::colocar(float radio, float sigmaPos, bool mirandoAlCentro, float sigmaRumbo) {
+    // Sistema de coordenadas propio: el robot sobre el eje x
+    px = radio;
+    py = 0;
+    th = mirandoAlCentro ? Pi : 0;
+    sigPos = sigmaPos;
+    sigTh = mirandoAlCentro ? sigmaRumbo : Pi;
+}
+
 float EstimadorBorde::velocidadRegimen(int pwm) {
     const int magnitud = pwm < 0 ? -pwm : pwm;
     if (magnitud <= ZonaMuertaPwm) return 0;

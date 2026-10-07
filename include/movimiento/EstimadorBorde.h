@@ -12,6 +12,10 @@ class EstimadorBorde {
 public:
     EstimadorBorde();
 
+    // Posición de salida conocida: a "radio" del centro con incertidumbre
+    // sigmaPos; mirandoAlCentro = el rumbo apunta al centro (con sigmaRumbo)
+    void colocar(float radio, float sigmaPos, bool mirandoAlCentro, float sigmaRumbo);
+
     // Avanza la estimación dt segundos con estas órdenes de motor.
     // empujon = desplazamiento desconocido (m/s) por contacto con el rival
     void predecir(int pwmIzq, int pwmDer, float dt, float empujon);

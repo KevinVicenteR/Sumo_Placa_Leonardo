@@ -1,4 +1,6 @@
 // Parametros.h — Todos los valores ajustables del robot
+// Valores elegidos con simulacion/optimizar.py (batería de combates con todos los
+// rounds, rivales y factores externos). Hay que comprobarlos en el robot real.
 // Velocidades en PWM (0-255), tiempos en milisegundos y distancias en metros,
 // salvo que se indique otra cosa. Los scripts de simulacion/ cambian estos
 // valores por su nombre: si se renombra uno, hay que actualizar los scripts.
@@ -15,8 +17,11 @@ constexpr int VelocidadFreno = 140;
 // --- Ataque ---
 // Velocidad al empezar a atacar; sube poco a poco hasta VelocidadEmpuje
 // durante TiempoEmbestida mientras tenga al rival de frente.
-constexpr int VelocidadAtaque = 100;
+constexpr int VelocidadAtaque = 130;
 constexpr int VelocidadEmpuje = 255;
+// Rival en los tres sensores delanteros a la vez: es un robot cercano (un reflejo
+// no ocupa tres sensores), así que ataca ya a esta velocidad (0 = sin efecto).
+constexpr int VelocidadAtaqueDirecto = 0;
 // Rival de frente y también en un sensor de 45°: la rueda de ese lado va a
 // este porcentaje de la otra para centrarlo sin dejar de empujar.
 constexpr int PorcentajeAjuste = 85;
@@ -25,22 +30,22 @@ constexpr int PorcentajeAjuste = 85;
 constexpr bool Corregir45EnPivote = true;
 constexpr int VelocidadCurva = 85;
 // true = al llegar a la línea empujando al rival, sigue empujando en vez de
-// retroceder. En la simulación sale peor (si el rival se aparta, se cae).
+// retroceder (solo tras TiempoEmbestida empujándolo de frente).
 constexpr bool ResistirEnBorde = false;
 
 // --- Rival visto por un sensor lateral ---
 // true = la rueda de ese lado se frena y la otra gira a VelocidadRuedaPivote;
 // false = giro en el sitio a VelocidadPivoteLateral.
-constexpr bool GiroLateralEnRueda = true;
-constexpr int VelocidadRuedaPivote = 100;
-constexpr int VelocidadPivoteLateral = 100;
+constexpr bool GiroLateralEnRueda = false;
+constexpr int VelocidadRuedaPivote = 180;
+constexpr int VelocidadPivoteLateral = 180;
 
 // --- Evasión del borde ---
-constexpr int VelocidadRetroceso = 195;
+constexpr int VelocidadRetroceso = 255;
 constexpr int VelocidadGiroEvasion = 75;
 
 // --- Búsqueda del rival ---
-constexpr int VelocidadAvance = 32;
+constexpr int VelocidadAvance = 80;
 constexpr int VelocidadGiroBusqueda = 75;
 
 // 2. Sensores de enemigo
@@ -71,7 +76,7 @@ constexpr int NegroPisoDerecho = 972;
 // Aviso de "cerca del borde": la lectura se aleja del negro este porcentaje del
 // margen de línea. Mientras dura, el avance se limita a VelocidadCercaBorde.
 constexpr int PorcentajeCercaBorde = 70;
-constexpr int VelocidadCercaBorde = 45;
+constexpr int VelocidadCercaBorde = 100;
 
 // 4. Tiempos generales
 
@@ -85,7 +90,7 @@ constexpr unsigned long TiempoFrenadoRuedas = 80;
 constexpr unsigned long TauRuedas = 80;
 constexpr int VelocidadMinimaFreno = 20;
 // Duración máxima del frenado cuando el rival desaparece en pleno ataque.
-constexpr unsigned long TiempoParoPerdida = 250;
+constexpr unsigned long TiempoParoPerdida = 150;
 
 // --- Evasión del borde ---
 // Solo la usan los tests y la simulación como referencia.
@@ -96,7 +101,7 @@ constexpr unsigned long TiempoRetrocesoUnSensor = 90;
 constexpr int VelocidadRetrocesoUnSensor = 118;
 // Tiempo viendo negro seguido antes de dejar de retroceder.
 constexpr unsigned long TiempoSeparacionBorde = 90;
-constexpr unsigned long TiempoSeparacionUnSensor = 72;
+constexpr unsigned long TiempoSeparacionUnSensor = 50;
 // Tope de toda la maniobra (no hay sensores traseros que avisen).
 constexpr unsigned long TiempoMaximoRecuperacionBorde = 700;
 // Pausa con motores parados entre retroceso y giro, y después del giro.
@@ -104,10 +109,19 @@ constexpr unsigned long TiempoFrenado = 80;
 constexpr unsigned long TiempoAsentamientoEvasion = 100;
 // Duración del giro con un sensor / con los dos sensores en blanco.
 constexpr unsigned long TiempoGiroEvasion = 240;
-constexpr unsigned long TiempoGiroEvasionAmbos = 220;
+constexpr unsigned long TiempoGiroEvasionAmbos = 300;
+// Retroceder solo es seguro si el robot venía avanzando (el borde queda delante).
+// Si ve la línea girando o parado (por ejemplo, pegado al borde al empezar el
+// round 3), detrás también puede estar el borde: entonces gira en el sitio para
+// salir, que no mueve su centro. Umbral: velocidad media estimada en PWM.
+constexpr int AvanceMinimoParaRetroceder = 50;
+// Retroceso extra (ms) si llega a la línea a velocidad máxima (proporcional a la
+// velocidad). Con poco agarre el robot sigue deslizando hacia fuera al frenar y,
+// con el morro fuera del dohyo, los sensores de piso pueden leer "negro".
+constexpr unsigned long RetrocesoExtraAVelocidadMaxima = 300;
 // Tras evadir con un solo sensor, sale despacio durante este tiempo.
 constexpr unsigned long TiempoSalidaSuaveUnSensor = 500;
-constexpr int VelocidadSalidaUnSensor = 60;
+constexpr int VelocidadSalidaUnSensor = 90;
 
 // --- Búsqueda en el sitio (PatronBusqueda = 0) ---
 // Ciclo: avanza, pausa, gira, pausa.
@@ -137,8 +151,8 @@ constexpr unsigned long TiempoMaxGiroLateral = 400;
 constexpr bool UsarEstimadorBorde = true;
 // true = también limita la embestida si prevé el borde cerca.
 constexpr bool EstimadorLimitaEmbestida = true;
-// Geometría (minisumo reglamentario: 77 cm de diámetro, línea de 2,5 cm).
-constexpr float RadioDohyo = 0.385f;
+// Geometría: dohyo de 70 cm de diámetro (el reglamentario mide 77 cm) y línea de 2,5 cm.
+constexpr float RadioDohyo = 0.35f;
 constexpr float AnchoLineaBorde = 0.025f;
 constexpr float DistanciaSensorPiso = 0.045f;     // por delante del eje de ruedas
 constexpr float SeparacionSensoresPiso = 0.04f;   // a cada lado del centro
@@ -150,6 +164,13 @@ constexpr int ZonaMuertaPwm = 40;
 constexpr float TauRuedaEstimador = 0.06f;
 // Al arrancar puede estar hasta a esta distancia del centro, con rumbo desconocido.
 constexpr float RadioSalidaEstimado = 0.15f;
+// Con rutina de inicio se sabe dónde empieza: rounds 1 y 2 junto al centro (a lo
+// sumo a IncertSalidaCentro), round 3 a RadioSalidaRound3 del centro mirándolo
+// (con IncertSalidaRound3 de error y IncertRumboRound3 rad de rumbo).
+constexpr float IncertSalidaCentro = 0.06f;
+constexpr float RadioSalidaRound3 = 0.295f;
+constexpr float IncertSalidaRound3 = 0.03f;
+constexpr float IncertRumboRound3 = 0.3f;
 // Cuánto crece la incertidumbre: fracción de lo recorrido, de lo girado y
 // deriva del rumbo (rad) por metro.
 constexpr float ErrorDistancia = 0.3f;
@@ -165,13 +186,13 @@ constexpr float AnguloLineaLado = 0.6f;
 constexpr float IncertAnguloLinea = 0.5f;
 constexpr float IncertPosicionLinea = 0.02f;
 // Peor caso: desviaciones típicas que se cubren y distancia mínima al borde.
-constexpr float SigmasSeguridad = 1.5f;
-constexpr float MargenBorde = 0.06f;
+constexpr float SigmasSeguridad = 1.0f;
+constexpr float MargenBorde = 0.09f;
 // Frenada: desaceleración (m/s²) y retardo hasta empezar a frenar (s).
 constexpr float DesaceleracionFreno = 4.0f;
 constexpr float RetardoReaccion = 0.04f;
 // Nunca limita por debajo de esto (si no, podría quedarse quieto).
-constexpr int VelocidadMinimaEstimador = 70;
+constexpr int VelocidadMinimaEstimador = 100;
 // Solo se fía de la predicción con incertidumbres menores que estas.
 constexpr float IncertPosicionConfiable = 0.08f;
 constexpr float IncertRumboConfiable = 0.8f;
@@ -187,7 +208,7 @@ constexpr bool UsarPoliticaAprendida = false;
 // Búsqueda: 0 = avance y giro en el sitio; 1 = arcos suaves que cambian de
 // lado cada TiempoArcoBusqueda (rueda interior a PorcentajeArcoBusqueda).
 constexpr int PatronBusqueda = 1;
-constexpr int PorcentajeArcoBusqueda = 75;
+constexpr int PorcentajeArcoBusqueda = 90;
 constexpr unsigned long TiempoArcoBusqueda = 900;
 // La búsqueda arranca acelerando poco a poco durante este tiempo.
 constexpr unsigned long TiempoArranqueBusqueda = 400;
@@ -210,22 +231,31 @@ constexpr int RampaPwmPorMs = 1;
 // true = un interruptor en ON lee LOW (contra GND, con pull-up).
 constexpr bool DipActivoBajo = true;
 // Rondas 1 y 2: giro inicial.
-constexpr int VelocidadGiroInicio = 180;
+constexpr int VelocidadGiroInicio = 150;
 constexpr unsigned long TiempoMaxGiroEspalda = 500;
 constexpr unsigned long TiempoMaxGiroLado = 500;
+// Rondas 1 y 2: antes de girar hacia el rival, avanza recto este tiempo a
+// VelocidadEsquiva para apartarse de su embestida y atacarlo de lado
+// (0 = gira enseguida). En la simulación, contra rivales que embisten, la
+// esquiva del round 2 sube las victorias del 22 % al 95 %.
+constexpr unsigned long TiempoEsquivaRound1 = 0;
+constexpr unsigned long TiempoEsquivaRound2 = 150;
+constexpr int VelocidadEsquiva = 160;
 // Ronda 2: true = pivota sobre una rueda; false = gira en el sitio.
-constexpr bool PivoteRound2 = true;
-constexpr int VelocidadPivoteInicio = 255;
+constexpr bool PivoteRound2 = false;
+constexpr int VelocidadPivoteInicio = 180;
 // Ronda 3: avance hacia el centro y, después, espera quieto al rival.
-constexpr int VelocidadAvanceInicio = 33;
+constexpr int VelocidadAvanceInicio = 130;
 constexpr unsigned long TiempoAvanceInicio = 4000;
 constexpr bool EsperarRound3 = true;
 constexpr unsigned long TiempoEsperaRound3 = 3000;
-// Rondas 1 y 2: al encontrar al rival embiste a esta velocidad durante
-// TiempoEmbestidaInicio; después mantiene VelocidadAtaqueRound12.
-constexpr int VelocidadEmbestidaInicio = 255;
-constexpr int VelocidadAtaqueRound12 = 255;
-constexpr unsigned long TiempoEmbestidaInicio = 1500;
+// Rondas 1 y 2: al encontrar al rival embiste durante TiempoEmbestidaInicio,
+// subiendo poco a poco de VelocidadEmbestidaInicio a VelocidadEmbestidaMaxima
+// mientras lo tenga delante; después mantiene VelocidadAtaqueRound12.
+constexpr int VelocidadEmbestidaInicio = 160;
+constexpr int VelocidadEmbestidaMaxima = 160;
+constexpr int VelocidadAtaqueRound12 = 160;
+constexpr unsigned long TiempoEmbestidaInicio = 800;
 
 // --- Protección contra detecciones falsas ---
 // Una detección solo termina una acción si dura ConfirmacionDeteccion ms y
@@ -243,6 +273,12 @@ constexpr unsigned long FiltroModuloArranqueMs = 5;
 // STOP debe mantenerse estos ms seguidos para parar: más largo para que el
 // infrarrojo del rival no detenga (y reinicie) el combate.
 constexpr unsigned long FiltroParadaModuloMs = 150;
+
+// Una parada más corta que esto no es del árbitro (para reiniciar hay que volver a
+// colocar los robots) sino una interferencia: al volver RUN, el robot sigue el
+// mismo combate sin recalibrar el piso (recalibrar sobre la línea blanca le
+// haría ver borde en todas partes).
+constexpr unsigned long TiempoReanudarCombate = 2000;
 
 // Rutina (1 espalda, 2 lado, 3 frente, 0 ninguna) según DIP1 (bit 0) y DIP2 (bit 1).
 constexpr int rutinaSegunInterruptores(int dip) {

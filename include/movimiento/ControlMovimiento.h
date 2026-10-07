@@ -32,12 +32,18 @@ public:
     // Vuelve al estado inicial (antes de un combate nuevo)
     void reiniciar();
     // Rutina del round (ver RutinaInicio) y lado del giro (1 der, -1 izq)
-    void iniciarRutina(int rutinaInicio, int ladoInicio) { rutina.iniciar(rutinaInicio, ladoInicio); }
+    void iniciarRutina(int rutinaInicio, int ladoInicio) {
+        rutina.iniciar(rutinaInicio, ladoInicio);
+        limitadorBorde.colocarSalida(rutinaInicio);
+    }
 
     // --- Consultas (telemetría, tests y simulador) ---
     int rutinaActual() const { return rutina.actual(); }
     int ordenIzquierda() const { return mando.ordenIzquierda(); }
     int ordenDerecha() const { return mando.ordenDerecha(); }
+    int velocidadAvanceEstimada() const { return mando.velocidadAvanceEstimada(); }
+    // Evasiones del borde desde el último reiniciar() (para la caja negra)
+    unsigned int evasiones() const { return numEvasiones; }
     const EstimadorBorde& estimadorBorde() const { return limitadorBorde.estimador(); }
     int limiteAvanceActual() const { return limitadorBorde.limite(); }
 
@@ -62,6 +68,7 @@ private:
     ParoPerdida paro;
     ControlAtaque ataque;
     LimitadorBorde limitadorBorde;
+    unsigned int numEvasiones = 0;
 };
 
 #endif

@@ -10,7 +10,30 @@ void ModoDiagnostico::iniciar() {
     motores.deshabilitar();
     Serial.begin(115200);
     delay(TiempoInicioReglamentario);
+    imprimirCajaNegra();
     calibrar();
+}
+
+void ModoDiagnostico::imprimirCajaNegra() {
+    Serial.println(F("=== CAJA NEGRA (combates mas recientes primero) ==="));
+    Serial.println(F("num dip dur(s) evasiones interrupciones negroIzq negroDer | max enemigo continuo (s): latI 45I cen 45D latD"));
+    RegistroCombate r;
+    for (uint8_t i = 0; cajaNegra.leer(i, r); i++) {
+        Serial.print(r.numero); Serial.print(' ');
+        Serial.print(r.dip); Serial.print(' ');
+        Serial.print(r.duracionDecimas / 10.0, 1); Serial.print(' ');
+        Serial.print(r.evasiones); Serial.print(' ');
+        Serial.print(r.interrupciones); Serial.print(' ');
+        Serial.print(r.negroIzq); Serial.print(' ');
+        Serial.print(r.negroDer); Serial.print(F(" |"));
+        for (uint8_t s = 0; s < 5; s++) {
+            Serial.print(' ');
+            Serial.print(r.maxEnemigo[s] / 10.0, 1);
+        }
+        Serial.println();
+    }
+    Serial.println(F("(un sensor de enemigo en 1 varios segundos seguidos = probablemente cegado;"));
+    Serial.println(F(" un negro calibrado parecido al blanco = calibro sobre la linea)"));
 }
 
 void ModoDiagnostico::calibrar() {
@@ -24,7 +47,16 @@ void ModoDiagnostico::calibrar() {
 }
 
 void ModoDiagnostico::actualizar() {
-    if (Serial.available() && (Serial.read() == 'c')) calibrar();
+    // Órdenes por el monitor serie
+    if (Serial.available()) {
+        const char orden = Serial.read();
+        if (orden == 'c') calibrar();
+        if (orden == 'r') imprimirCajaNegra();
+        if (orden == 'b') {
+            cajaNegra.borrar();
+            Serial.println(F("Caja negra borrada"));
+        }
+    }
     const LecturasSensores l = percepcion.leer();
     const int dip = placa.leerInterruptores();
 

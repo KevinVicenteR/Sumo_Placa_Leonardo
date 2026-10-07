@@ -12,6 +12,8 @@ class LimitadorBorde {
 public:
     void actualizar(const DecisionMovimiento& decision, const MandoMotores& mando, bool empujando,
                     unsigned long ahora);
+    // Le dice al estimador dónde empieza el robot según la rutina del round
+    void colocarSalida(int rutina);
 
     // Velocidad máxima de avance (255 = sin límite)
     int limite() const { return limiteAvance; }

@@ -2,7 +2,9 @@
 // - Con el rival de frente, la velocidad sube de VelocidadAtaque a
 //   VelocidadEmpuje durante TiempoEmbestida; al completarse, está "empujando".
 // - Tras encontrar al rival con la rutina de inicio de las rondas 1 y 2,
-//   embiste a VelocidadEmbestidaInicio durante TiempoEmbestidaInicio.
+//   embiste durante TiempoEmbestidaInicio, subiendo de VelocidadEmbestidaInicio
+//   a VelocidadEmbestidaMaxima.
+// - Con el rival en los tres sensores delanteros, VelocidadAtaqueDirecto.
 #ifndef CONTROL_ATAQUE_H
 #define CONTROL_ATAQUE_H
 

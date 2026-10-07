@@ -29,7 +29,9 @@ RAIZ = simular.RAIZ
 NE, NA = 64, 8
 ACCIONES = ["AtaqueFrontal", "AjusteIzq", "AjusteDer", "CorregirIzq", "CorregirDer",
             "DefensaIzq", "DefensaDer", "Busqueda"]
-ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.3"]
+# El mismo robot y dohyo que la batería de combates (bateria.py)
+ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.34", "--par", "0.6", "--bateria", "1.23",
+         "--pala", "0.3", "--pala-rival", "0.3", "--radio", "0.35"]
 ENTORNOS = [
     "",
     "--bateria 1.3 --friccion-caja 0.08 --friccion-giro 0.3",
@@ -38,7 +40,7 @@ ENTORNOS = [
     "--retardo-piso 40 --mancha 0.006",
     "--pared 0.5 --bateria 1.15",
 ]
-MODOS = ["estatico", "errante", "agresivo"]
+MODOS = ["estatico", "errante", "agresivo", "flanqueo"]
 PESO_INICIAL = 5  # la estrategia a mano cuenta como 5 visitas con retorno BONO_MANUAL
 BONO_MANUAL = 0.05
 

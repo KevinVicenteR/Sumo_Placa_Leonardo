@@ -1,6 +1,16 @@
 #include "movimiento/LimitadorBorde.h"
 #include "Parametros.h"
 
+void LimitadorBorde::colocarSalida(int rutina) {
+    if (rutina == 1 || rutina == 2) {
+        // Espalda con espalda o lado a lado: junto al centro, rumbo cualquiera
+        estimadorBorde.colocar(0, IncertSalidaCentro, false, 0);
+    } else if (rutina == 3) {
+        // Enfrentados: junto al borde, mirando al centro
+        estimadorBorde.colocar(RadioSalidaRound3, IncertSalidaRound3, true, IncertRumboRound3);
+    }
+}
+
 void LimitadorBorde::actualizar(const DecisionMovimiento& decision, const MandoMotores& mando,
                                 bool empujando, unsigned long ahora) {
     // 1. Predecir el movimiento desde el último ciclo con las órdenes enviadas

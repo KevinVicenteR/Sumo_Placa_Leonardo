@@ -15,12 +15,15 @@ public:
                      IControlMovimiento& controlMovimiento, IMotor& motor);
     // Un ciclo completo de combate
     void actualizar();
+    // Lo que vieron los sensores en el último ciclo
+    const LecturasSensores& ultimasLecturas() const { return lecturas; }
 
 private:
     IPercepcion& percepcion;
     IEstrategiaCombate& estrategia;
     IControlMovimiento& controlMovimiento;
     IMotor& motor;
+    LecturasSensores lecturas{};
 };
 
 #endif

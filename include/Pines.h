@@ -22,14 +22,16 @@ constexpr uint8_t S_LAT_DER   = A4;
 // --- Puente H de los motores ---
 // Motor A = rueda izquierda, motor B = rueda derecha.
 // PWMx fija la velocidad (D10 y D11 admiten PWM en el Leonardo) y MAx1/MAx2 el
-// sentido de giro.
+// sentido de giro. Sumo X3: los pines de dirección D8/D12 son del motor de D10
+// y D9/D13 del de D11 (cruzados, al pivotar sobre una rueda la otra tomaba el
+// sentido de la parada y el robot retrocedía).
 constexpr uint8_t PWMA = 10;
-constexpr uint8_t MA1A = 9;
-constexpr uint8_t MA2A = 13;
+constexpr uint8_t MA1A = 8;
+constexpr uint8_t MA2A = 12;
 
 constexpr uint8_t PWMB = 11;
-constexpr uint8_t MA1B = 8;
-constexpr uint8_t MA2B = 12;
+constexpr uint8_t MA1B = 9;
+constexpr uint8_t MA2B = 13;
 
 // --- Módulo de arranque (control remoto del árbitro) ---
 // -1 = robot sin módulo: el combate empieza nada más encender.

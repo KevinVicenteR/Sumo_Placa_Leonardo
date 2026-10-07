@@ -1,4 +1,4 @@
-// Parametros.h — Todos los valores ajustables del robot
+// Parametros.h — Todos los valores ajustables del robot (sumo X3, motores de 400 rpm)
 // Valores elegidos con simulacion/optimizar.py (batería de combates con todos los
 // rounds, rivales y factores externos). Hay que comprobarlos en el robot real.
 // Velocidades en PWM (0-255), tiempos en milisegundos y distancias en metros,
@@ -8,6 +8,14 @@
 #define PARAMETROS_H
 
 // 1. Velocidades de movimiento
+
+// Sentido de giro de cada motor: true invierte el cableado (velocidad positiva
+// = avanzar). Ajustado en la prueba física con los motores de 400 rpm del X3.
+constexpr bool InvertirMotorIzq = true;
+constexpr bool InvertirMotorDer = true;
+// false = para frenar pone PWM 0 en vez de dar contramando (marcha atrás).
+// En el X3, el contramando tras un choque lo hacía retroceder.
+constexpr bool FrenoActivo = false;
 
 // Límite absoluto que se manda a cada motor.
 constexpr int VelocidadMaxima = 255;
@@ -159,7 +167,7 @@ constexpr float SeparacionSensoresPiso = 0.04f;   // a cada lado del centro
 constexpr float TrochaRuedas = 0.085f;            // distancia entre ruedas
 // Modelo de las ruedas: VelocidadRuedaMaxima (m/s) a PWM 255, parada por
 // debajo de ZonaMuertaPwm y constante de tiempo TauRuedaEstimador (s).
-constexpr float VelocidadRuedaMaxima = 1.0f;
+constexpr float VelocidadRuedaMaxima = 0.53f;  // X3: 400 rpm (1,0 m/s × 400/750)
 constexpr int ZonaMuertaPwm = 40;
 constexpr float TauRuedaEstimador = 0.06f;
 // Al arrancar puede estar hasta a esta distancia del centro, con rumbo desconocido.

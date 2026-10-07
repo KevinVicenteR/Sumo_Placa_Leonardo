@@ -21,10 +21,11 @@ namespace {
 double inicioCombateUs = 0;
 }
 
-// Robot real: 750 rpm, ruedas JSUMO de 3 cm, 340 g y pala delantera; el rival
+// Sumo X3: 400 rpm, ruedas JSUMO de 3 cm, 340 g y pala delantera; el rival
 // también lleva pala. Dohyo de 70 cm con línea de 2,5 cm.
 EXPORTAR("sim_reiniciar") void sim_reiniciar(double semilla) {
-    sim::cfg.rpm = 750;
+    sim::cfg.rpm = 400;
+    sim::cfg.parBloqueo = 0.8;
     sim::cfg.diametro = 0.03;
     sim::cfg.masa = 0.34;
     sim::cfg.mu = 0.9;

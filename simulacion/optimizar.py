@@ -29,28 +29,29 @@ PESO_PROPIA = 30
 # Punto de partida: los valores actuales de Parametros.h
 INICIO = {}
 CANDIDATOS = {
-    # Seguridad: estimador de borde (cuándo se fía y qué frenada supone)
-    "IncertPosicionConfiable": [0.08, 0.12, 0.16, 0.2],
-    "DesaceleracionFreno": [2.0, 2.5, 3.0, 4.0],
-    "MargenBorde": [0.04, 0.06, 0.09],
-    "VelocidadMinimaEstimador": [60, 80, 100],
-    "EstimadorLimitaEmbestida": ["true", "false"],
-    "RetrocesoExtraAVelocidadMaxima": [200, 300, 450],
-    "VelocidadCercaBorde": [70, 100, 140],
-    # Ataque
+    # Tiempos de giro y evasión (con motores de 400 rpm giran más despacio)
+    "TiempoGiroEvasion": [240, 350, 450, 550],
+    "TiempoGiroEvasionAmbos": [300, 410, 500],
+    "TiempoRetrocesoAmbos": [200, 300, 375],
+    "TiempoRetrocesoUnSensor": [90, 130, 170],
+    "TiempoSeparacionBorde": [90, 130, 170],
+    "TiempoMaximoRecuperacionBorde": [700, 1000, 1300],
+    "TiempoMaxGiroEspalda": [500, 700, 950],
+    "TiempoMaxGiroLado": [500, 700, 900],
+    "TiempoMaxGiroLateral": [400, 600, 800],
+    "TiempoEsquivaRound2": [0, 150, 250, 350],
+    "VelocidadEsquiva": [160, 200, 255],
+    # Velocidades
     "VelocidadAtaque": [130, 160, 200, 255],
-    "VelocidadAtaqueDirecto": [0, 200, 255],
-    "TiempoEmbestida": [0, 500, 1200, 2500],
-    "RampaPwmPorMs": [1, 2, 4],
-    "PorcentajeAjuste": [70, 85],
-    "VelocidadEmbestidaInicio": [130, 160, 200],
+    "VelocidadEmbestidaInicio": [160, 200, 255],
     "VelocidadAtaqueRound12": [160, 200, 255],
-    "TiempoEmbestidaInicio": [400, 800, 1500],
-    "ResistirEnBorde": ["true", "false"],
-    # Giros y búsqueda
-    "VelocidadGiroInicio": [150, 180, 220],
-    "VelocidadPivoteLateral": [140, 180, 220],
-    "VelocidadAvance": [80, 130],
+    "VelocidadGiroInicio": [150, 200, 255],
+    "VelocidadPivoteLateral": [140, 180, 255],
+    "VelocidadGiroEvasion": [75, 120, 180],
+    "VelocidadAvance": [80, 130, 180],
+    # Seguridad
+    "RetrocesoExtraAVelocidadMaxima": [150, 300, 450],
+    "VelocidadCercaBorde": [70, 100, 140],
 }
 # Factores con los que se optimiza: todos, también el peor caso combinado
 FACTORES = list(B.FACTORES)

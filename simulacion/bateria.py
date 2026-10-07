@@ -20,12 +20,13 @@ from concurrent.futures import ThreadPoolExecutor
 sys.path.insert(0, os.path.dirname(__file__))
 import simular
 
-# Robot real: motores y ruedas JSumo (750 rpm, 3 cm), 340 g con la base de metal,
+# Sumo X3: motores JSumo de 400 rpm (par supuesto 0,8 kg·cm, menos potentes que
+# los de 750 rpm del otro sumo) y lo demás como el otro: ruedas de 3 cm, 340 g,
 # LiPo 2S (7,4 V) con motores de 6 V (batería 1,23) y pala delantera que le
 # quita al rival un 30 % de agarre (valor supuesto: no se ha medido). Dohyo negro
 # con borde blanco; fuera del dohyo (elevado) el sensor de piso no ve nada y lee
 # oscuro, como el negro: el caso más difícil. El dohyo mide 70 cm de diámetro.
-ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.34", "--par", "0.6", "--mu", "0.9",
+ROBOT = ["--rpm", "400", "--diam", "0.03", "--masa", "0.34", "--par", "0.8", "--mu", "0.9",
          "--bateria", "1.23", "--pala", "0.3", "--radio", "0.35"]
 # Los rivales que atacan también llevan pala (como el del video)
 PALA_RIVAL = ["--pala-rival", "0.3"]

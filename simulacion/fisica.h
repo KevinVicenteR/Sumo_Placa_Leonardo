@@ -349,8 +349,10 @@ inline Puente estadoPuente(uint8_t pwm) {
     return pwmPin[pwm] == 0 ? Puente::Libre : Puente::Conduce;
 }
 
-inline int comandoIzq() { return comandoMotor(MA1A, MA2A, PWMA); }
-inline int comandoDer() { return comandoMotor(MA1B, MA2B, PWMB); }
+// Motores cableados al revés (InvertirMotor* del firmware): la rueda gira al
+// contrario de lo que indican los pines, y el firmware lo compensa
+inline int comandoIzq() { return (InvertirMotorIzq ? -1 : 1) * comandoMotor(MA1A, MA2A, PWMA); }
+inline int comandoDer() { return (InvertirMotorDer ? -1 : 1) * comandoMotor(MA1B, MA2B, PWMB); }
 
 // Aplica una fricción de Coulomb de magnitud f a un movimiento con velocidad vel
 // y fuerza impulsora fuerza. Si está quieto y la fuerza no supera la fricción, no arranca.

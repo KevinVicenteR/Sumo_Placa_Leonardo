@@ -27,10 +27,10 @@ void ModoPruebaMotores::actualizar() {
     paso(F("DERECHA sola: PWM D11=160"), 0, 160);
     paso(F("DERECHA sola: PWM D11=220"), 0, 220);
     // Cada rueda en los dos sentidos
-    paso(F("IZQUIERDA adelante: PWM D10=180, D9=HIGH, D13=LOW"), 180, 0);
-    paso(F("IZQUIERDA atras: PWM D10=180, D9=LOW, D13=HIGH"), -180, 0);
-    paso(F("DERECHA adelante: PWM D11=180, D8=HIGH, D12=LOW"), 0, 180);
-    paso(F("DERECHA atras: PWM D11=180, D8=LOW, D12=HIGH"), 0, -180);
+    paso(F("IZQUIERDA adelante: PWM D10=180, D8/D12"), 180, 0);
+    paso(F("IZQUIERDA atras: PWM D10=180, D8/D12"), -180, 0);
+    paso(F("DERECHA adelante: PWM D11=180, D9/D13"), 0, 180);
+    paso(F("DERECHA atras: PWM D11=180, D9/D13"), 0, -180);
     // Las dos juntas
     paso(F("Las dos hacia DELANTE"), 120, 120);
     paso(F("Las dos hacia ATRAS"), -120, -120);

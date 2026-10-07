@@ -1,7 +1,7 @@
 #!/bin/sh
 # Genera simulacion/web/dohyo.html: la página interactiva con el firmware actual
-# y, para comparar, el de un commit anterior (por defecto 10e7a1c, el que se
-# llevó al torneo).
+# y, para comparar, el de un commit anterior (por defecto ec76e53, la versión
+# anterior del sumo X3, rama Placa_Leo_nueva_X3).
 #
 # El firmware se compila a WebAssembly y wasm2js lo traduce a JavaScript, para
 # que la página funcione aunque el navegador no permita WebAssembly.
@@ -11,7 +11,7 @@
 # Requiere: brew install llvm lld binaryen
 set -e
 cd "$(dirname "$0")"
-ANTERIOR=${1:-10e7a1c}
+ANTERIOR=${1:-ec76e53}
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 

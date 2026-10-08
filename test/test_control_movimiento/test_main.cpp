@@ -606,7 +606,7 @@ void test_sin_interruptores_la_rutina_es_la_del_round_1(void) {
     TEST_ASSERT_EQUAL_INT(1, rutinaSegunInterruptores(0));
     TEST_ASSERT_EQUAL_INT(2, rutinaSegunInterruptores(1));
     TEST_ASSERT_EQUAL_INT(3, rutinaSegunInterruptores(2));
-    TEST_ASSERT_EQUAL_INT(0, rutinaSegunInterruptores(3));
+    TEST_ASSERT_EQUAL_INT(4, rutinaSegunInterruptores(3));
     TEST_ASSERT_EQUAL_INT(1, rutinaSegunInterruptores(4));  // DIP3 solo elige el lado
 }
 
@@ -620,6 +620,30 @@ void test_rutina_frente_reacciona_a_los_laterales(void) {
     c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoMinimoAvanceInicio + 2 * ConfirmacionDeteccion);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
     TEST_ASSERT_TRUE(m.izq < m.der);
+}
+
+void test_rutina_libre_gira_hasta_ver_al_rival(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(4, -1);
+    // Sin ver nada: gira en el sitio hacia el lado de DIP3
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, -VelocidadGiroRound4, VelocidadGiroRound4);
+    TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
+    // Un lateral lo ve: termina la rutina y gira hacia él
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1100);
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1100 + 2 * ConfirmacionDeteccion);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    TEST_ASSERT_TRUE(m.izq > m.der);
+}
+
+void test_rutina_libre_termina_al_agotar_su_tiempo(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(4, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoMaxGiroRound4 + 1);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
 }
 
 void test_rutina_lado_elige_el_lado_con_el_sensor_lateral(void) {
@@ -762,6 +786,8 @@ int main(int, char**) {
     RUN_TEST(test_sin_interruptores_la_rutina_es_la_del_round_1);
     RUN_TEST(test_giro_lateral_ignora_un_frontal_antes_del_giro_minimo);
     RUN_TEST(test_rutina_frente_reacciona_a_los_laterales);
+    RUN_TEST(test_rutina_libre_gira_hasta_ver_al_rival);
+    RUN_TEST(test_rutina_libre_termina_al_agotar_su_tiempo);
     RUN_TEST(test_rutina_lado_elige_el_lado_con_el_sensor_lateral);
     RUN_TEST(test_rutina_lado_sin_lateral_usa_el_dip3);
     RUN_TEST(test_rutina_lado_recuerda_el_lado_visto_durante_la_esquiva);

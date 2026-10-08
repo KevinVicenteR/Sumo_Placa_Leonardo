@@ -53,6 +53,8 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
         sigue = girar(decision, mando, motor, ahora, tGiro, busqueda, ataque);
     } else if (rutina == 3) {
         sigue = avanzarAlCentro(decision, mando, motor, ahora, t);
+    } else if (rutina == 4) {
+        sigue = explorar(decision, mando, motor, ahora, t);
     }
     if (!sigue) {
         rutina = 0;
@@ -108,6 +110,19 @@ bool RutinaInicio::avanzarAlCentro(const DecisionMovimiento& decision, MandoMoto
         mando.mover(motor, 0, 0, true);
     } else if (sigue) {
         mando.mover(motor, VelocidadAvanceInicio, VelocidadAvanceInicio);
+    }
+    return sigue;
+}
+
+// Ronda 4 (salida libre, en cualquier parte del dohyo y con cualquier rumbo):
+// girar en el sitio buscando al rival. Cualquier sensor que lo vea termina la
+// rutina: el control normal gira hacia él (laterales) o lo ataca (frontales).
+bool RutinaInicio::explorar(const DecisionMovimiento& decision, MandoMotores& mando,
+                            IMotor& motor, unsigned long ahora, unsigned long t) {
+    const bool confirmado = rivalVisto.actualizar(decision.tipo != TipoAccion::Busqueda, ahora);
+    const bool sigue = !confirmado && t < TiempoMaxGiroRound4;
+    if (sigue) {
+        mando.mover(motor, lado * VelocidadGiroRound4, -lado * VelocidadGiroRound4, true);
     }
     return sigue;
 }

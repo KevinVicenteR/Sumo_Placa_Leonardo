@@ -231,12 +231,19 @@ constexpr int RampaPwmPorMs = 1;
 //   ON   off   2: lado a lado -> pivota hacia el lado donde un sensor lateral
 //              ve al rival (DIP3 si no lo ve ninguno)
 //   off  ON    3: enfrentados en los bordes -> avanza hacia el centro
-//   ON   ON    ninguna: estrategia normal desde el principio
+//   ON   ON    4: salida libre (en cualquier parte del dohyo, sin posición
+//              fija) -> gira en el sitio buscando al rival con todos los sensores
 //   DIP3: lado del giro (off = derecha, ON = izquierda)
 // Los giros terminan al ver al rival de frente (o al agotar su tiempo) y el
 // avance al verlo con cualquier sensor. Ver la línea cancela la rutina.
 // true = un interruptor en ON lee LOW (contra GND, con pull-up).
 constexpr bool DipActivoBajo = true;
+// Ronda 4 (salida libre): gira en el sitio hacia el lado de DIP3 a esta velocidad
+// hasta que cualquier sensor vea al rival (entonces gira hacia él y ataca) o
+// hasta TiempoMaxGiroRound4 (algo más de una vuelta); después busca como siempre.
+// Despacio para no pasar de largo al rival entre dos lecturas de los sensores.
+constexpr int VelocidadGiroRound4 = 120;
+constexpr unsigned long TiempoMaxGiroRound4 = 1000;
 // Rondas 1 y 2: giro inicial.
 // Ronda 1 (como en la rama con_control): media vuelta en el sitio a esta velocidad.
 constexpr int VelocidadGiroInicio = 180;
@@ -307,13 +314,13 @@ constexpr bool ReiniciarTrasParada = true;
 // START que se pulsa después debe empezar un combate nuevo, con su rutina.
 constexpr unsigned long TiempoMinimoParaReanudar = 1000;
 
-// Rutina (1 espalda, 2 lado, 3 frente, 0 ninguna) según DIP1 (bit 0) y DIP2 (bit 1).
+// Rutina (1 espalda, 2 lado, 3 frente, 4 salida libre) según DIP1 (bit 0) y DIP2 (bit 1).
 constexpr int rutinaSegunInterruptores(int dip) {
-    return (dip & 3) == 0 ? 1 : (dip & 3) == 1 ? 2 : (dip & 3) == 2 ? 3 : 0;
+    return (dip & 3) == 0 ? 1 : (dip & 3) == 1 ? 2 : (dip & 3) == 2 ? 3 : 4;
 }
 
 // Para probar sin depender de los DIP: -1 = la rutina la eligen los DIP (normal);
-// 0, 1, 2 o 3 = siempre esa rutina. LadoForzado: 0 = lo elige DIP3; 1 = derecha;
+// 0 (ninguna), 1, 2, 3 o 4 = siempre esa rutina. LadoForzado: 0 = lo elige DIP3; 1 = derecha;
 // -1 = izquierda.
 constexpr int RutinaForzada = -1;
 constexpr int LadoForzado = 0;

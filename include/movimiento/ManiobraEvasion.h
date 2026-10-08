@@ -7,7 +7,9 @@
 // - Frenando: motores parados un momento.
 // - Girando: se aparta del borde girando en el sitio.
 // - Asentando: otra pausa antes de seguir combatiendo.
-// Si vuelve a ver la línea a mitad de maniobra, vuelve a retroceder.
+// Si vuelve a ver la línea a mitad de maniobra, vuelve a retroceder. Si se
+// queda parado sobre la línea (TiempoMaxParadoEnLinea), lo intenta de nuevo
+// girando en el sitio.
 #ifndef MANIOBRA_EVASION_H
 #define MANIOBRA_EVASION_H
 
@@ -40,6 +42,9 @@ private:
 
     // Se separa de la línea (retrocediendo o girando). Devuelve true mientras siga.
     bool separarse(bool linea, MandoMotores& mando, IMotor& motor, unsigned long ahora);
+    // En una pausa: si lleva demasiado tiempo parado sobre la línea, vuelve a
+    // intentar salir girando en el sitio. Devuelve true si lo hace.
+    bool reintentarSiAtascado(bool linea, MandoMotores& mando, IMotor& motor, unsigned long ahora);
 
     Fase fase = Fase::Libre;
     unsigned long inicioFase = 0;

@@ -112,6 +112,10 @@ constexpr unsigned long TiempoSeparacionBorde = 90;
 constexpr unsigned long TiempoSeparacionUnSensor = 50;
 // Tope de toda la maniobra (no hay sensores traseros que avisen).
 constexpr unsigned long TiempoMaximoRecuperacionBorde = 700;
+// Si sigue viendo la línea parado más de este tiempo (por ejemplo, al agotar
+// TiempoMaximoRecuperacionBorde), vuelve a intentar salir girando en el sitio
+// (cada vez hacia el otro lado): nunca se queda quieto sobre la línea.
+constexpr unsigned long TiempoMaxParadoEnLinea = 300;
 // Pausa con motores parados entre retroceso y giro, y después del giro.
 constexpr unsigned long TiempoFrenado = 80;
 constexpr unsigned long TiempoAsentamientoEvasion = 100;

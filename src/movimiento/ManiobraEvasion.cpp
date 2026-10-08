@@ -59,6 +59,9 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
 
     // --- Fase 2: pausa con los motores parados ---
     if (fase == Fase::Frenando) {
+        if (reintentarSiAtascado(linea, mando, motor, ahora)) {
+            return true;
+        }
         if (linea || ahora - inicioFase < TiempoFrenado) {
             mando.mover(motor, 0, 0, true);
             return true;
@@ -80,6 +83,9 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
 
     // --- Fase 4: otra pausa y fin ---
     if (fase == Fase::Asentando) {
+        if (reintentarSiAtascado(linea, mando, motor, ahora)) {
+            return true;
+        }
         if (linea || ahora - inicioFase < TiempoAsentamientoEvasion) {
             mando.mover(motor, 0, 0, true);
             return true;
@@ -120,5 +126,22 @@ bool ManiobraEvasion::separarse(bool linea, MandoMotores& mando, IMotor& motor, 
         const int velocidad = unSensor ? VelocidadRetrocesoUnSensor : VelocidadRetroceso;
         mando.mover(motor, -velocidad, -velocidad, true);
     }
+    return true;
+}
+
+bool ManiobraEvasion::reintentarSiAtascado(bool linea, MandoMotores& mando, IMotor& motor, unsigned long ahora) {
+    if (!linea || ahora - inicioFase < TiempoMaxParadoEnLinea) {
+        return false;
+    }
+    // Otro intento girando en el sitio (el centro no se mueve: no puede caerse),
+    // hacia el otro lado y con el tiempo máximo desde cero
+    sinRetroceso = true;
+    sentidoGiro = -sentidoGiro;
+    fase = Fase::GirandoSalida;
+    inicioFase = ahora;
+    inicioEvasion = ahora;
+    duracionRetroceso = 0;
+    negroContinuo = false;
+    separarse(linea, mando, motor, ahora);
     return true;
 }

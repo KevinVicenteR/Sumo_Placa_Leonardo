@@ -433,17 +433,30 @@ void test_busqueda_default_en_curvas_sin_paradas_y_borde_la_interrumpe() {
     c.ejecutar({TipoAccion::EvadirBordeIzq}, m, 1001 + TiempoArcoBusqueda);
     assertNoAvanza(m);
 }
-void test_linea_persistente_no_reinicia_ni_vuelve_a_avanzar() {
+// Mucho tiempo sobre la línea: nunca avanza hacia ella y nunca se queda quieto
+// más de TiempoMaxParadoEnLinea (vuelve a intentar salir girando o retrocediendo)
+void test_linea_persistente_no_se_queda_parado_ni_avanza() {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     venirAvanzando(c, m, 1000);
     c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1000);
     c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1000 + TiempoRetroceso);
     TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
-    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1000 + TiempoMaximoRecuperacionBorde);
-    assertMovimiento(m, 0, 0);
-    c.ejecutar({TipoAccion::EvadirBordeDer}, m, 5000);
-    assertMovimiento(m, 0, 0);
+    unsigned long paradoDesde = 0;
+    bool parado = false;
+    bool volvioAMoverse = false;
+    for (unsigned long t = 1000 + TiempoRetroceso; t < 8000; t += 10) {
+        c.ejecutar({TipoAccion::EvadirBordeDer}, m, t);
+        assertNoAvanza(m);
+        if (m.izq == 0 && m.der == 0) {
+            if (!parado) { parado = true; paradoDesde = t; }
+            TEST_ASSERT_TRUE(t - paradoDesde <= TiempoMaxParadoEnLinea + 10);
+        } else {
+            if (parado) volvioAMoverse = true;
+            parado = false;
+        }
+    }
+    TEST_ASSERT_TRUE(volvioAMoverse);
 }
 
 void test_tres_frontales_cancelan_giro_y_pausa_pero_no_evasion() {
@@ -694,7 +707,7 @@ int main(int, char**) {
     RUN_TEST(test_un_sensor_retrocede_recto_y_gira_tras_separarse);
     RUN_TEST(test_ambos_retrocede_sin_reinicios_y_blanco_interrumpe_giro);
     RUN_TEST(test_busqueda_default_en_curvas_sin_paradas_y_borde_la_interrumpe);
-    RUN_TEST(test_linea_persistente_no_reinicia_ni_vuelve_a_avanzar);
+    RUN_TEST(test_linea_persistente_no_se_queda_parado_ni_avanza);
     RUN_TEST(test_ataque_sube_gradualmente_y_borde_lo_interrumpe);
     RUN_TEST(test_acciones_simples_velocidades_correctas);
     RUN_TEST(test_busqueda_inicial_gira_y_luego_avanza);

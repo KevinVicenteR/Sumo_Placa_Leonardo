@@ -255,10 +255,12 @@ constexpr int VelocidadEsquiva = 160;
 // Ronda 2: true = pivota sobre una rueda; false = gira en el sitio.
 constexpr bool PivoteRound2 = false;
 constexpr int VelocidadPivoteInicio = 180;
-// Ronda 3: avance hacia el centro y, después, espera quieto al rival.
-constexpr int VelocidadAvanceInicio = 80;
+// Ronda 3: avanza despacio y recto hacia delante hasta que cualquier sensor
+// (también los laterales) vea al rival (con
+// EsperarRound3, tras TiempoAvanceInicio se queda quieto esperándolo).
+constexpr int VelocidadAvanceInicio = 60;
 constexpr unsigned long TiempoAvanceInicio = 4000;
-constexpr bool EsperarRound3 = true;
+constexpr bool EsperarRound3 = false;
 constexpr unsigned long TiempoEsperaRound3 = 3000;
 // Rondas 1 y 2: al encontrar al rival embiste durante TiempoEmbestidaInicio,
 // subiendo poco a poco de VelocidadEmbestidaInicio a VelocidadEmbestidaMaxima
@@ -293,6 +295,11 @@ constexpr unsigned long FiltroParadaModuloMs = 150;
 // Debe ser corto: con el control remoto (STOP, RESTART y START) un START antes
 // de este tiempo se tomaría como la misma pelea y se saltaría la rutina del round.
 constexpr unsigned long TiempoReanudarCombate = 500;
+// true = una parada más larga que TiempoReanudarCombate (STOP o PROG del control)
+// reinicia la placa entera, como apagarla y encenderla: no queda nada del combate
+// anterior y el siguiente START lee los DIP y hace la rutina del modo elegido.
+// La caja negra (EEPROM) se guarda antes y no se pierde.
+constexpr bool ReiniciarTrasParada = true;
 // Solo se reanuda un combate que llevaba al menos este tiempo en marcha. Al
 // pulsar PROG el módulo da pulsos breves de RUN (mientras parpadea su LED): el
 // START que se pulsa después debe empezar un combate nuevo, con su rutina.
@@ -306,7 +313,7 @@ constexpr int rutinaSegunInterruptores(int dip) {
 // Para probar sin depender de los DIP: -1 = la rutina la eligen los DIP (normal);
 // 0, 1, 2 o 3 = siempre esa rutina. LadoForzado: 0 = lo elige DIP3; 1 = derecha;
 // -1 = izquierda.
-constexpr int RutinaForzada = 1;
+constexpr int RutinaForzada = -1;
 constexpr int LadoForzado = 0;
 
 // Si la curva fuera más rápida que el ataque, al corregir hacia un rival visto

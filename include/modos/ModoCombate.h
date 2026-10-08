@@ -26,6 +26,8 @@ private:
     // Empieza un combate nuevo con el robot ya colocado sobre el negro: lo
     // reinicia todo (como recién encendido) y hace la rutina de los DIP
     void empezarCombate();
+    // Reinicia el microcontrolador (como apagar y encender) tras una parada larga
+    void reiniciarPlaca();
     void enviarTelemetria();
 
     PlacaXMotion& placa;

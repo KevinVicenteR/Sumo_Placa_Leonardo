@@ -97,11 +97,10 @@ bool RutinaInicio::girar(const DecisionMovimiento& decision, MandoMotores& mando
 // Ronda 3: avanzar hacia el centro y después esperar quieto al rival
 bool RutinaInicio::avanzarAlCentro(const DecisionMovimiento& decision, MandoMotores& mando,
                                    IMotor& motor, unsigned long ahora, unsigned long t) {
-    const bool porDelante = veDeFrente(decision) || decision.tipo == TipoAccion::CorregirIzq ||
-                            decision.tipo == TipoAccion::CorregirDer;
     const bool esperando = EsperarRound3 && t >= TiempoAvanceInicio;
-    // Avanzando reacciona a lo que ve delante; esperando, a cualquier sensor
-    const bool visto = esperando ? decision.tipo != TipoAccion::Busqueda : porDelante;
+    // Cualquier sensor (frontal, 45° o lateral) que vea al rival termina la
+    // rutina: el control normal gira hacia él y ataca
+    const bool visto = decision.tipo != TipoAccion::Busqueda;
     const bool confirmado = rivalVisto.actualizar(visto, ahora);
     const unsigned long fin = TiempoAvanceInicio + (EsperarRound3 ? TiempoEsperaRound3 : 0);
     const bool sigue = !(confirmado && t >= TiempoMinimoAvanceInicio) && t < fin;

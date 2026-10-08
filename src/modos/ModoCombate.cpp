@@ -2,6 +2,9 @@
 #include "modos/ModoCombate.h"
 #include "Pines.h"
 #include "Parametros.h"
+#if defined(__AVR__)
+#include <avr/wdt.h>
+#endif
 
 ModoCombate::ModoCombate(PlacaXMotion& placaRef, DriverMotores& motoresRef, Percepcion& percepcionRef,
                          ControlMovimiento& controlRef, ControladorRobot& robotRef)
@@ -9,6 +12,11 @@ ModoCombate::ModoCombate(PlacaXMotion& placaRef, DriverMotores& motoresRef, Perc
       robot(robotRef), moduloArranque(FiltroModuloArranqueMs, FiltroParadaModuloMs) {}
 
 void ModoCombate::iniciar() {
+#if defined(__AVR__)
+    // Tras un reinicio por watchdog, apagarlo para que no vuelva a reiniciar
+    MCUSR = 0;
+    wdt_disable();
+#endif
     placa.inicializarPines();
     motores.deshabilitar();
 #if defined(MONITOREO_COMBATE)
@@ -59,6 +67,14 @@ void ModoCombate::actualizar() {
                 // Con los motores ya parados se puede escribir en la EEPROM
                 cajaNegra.guardar();
             }
+            // Parada larga (STOP o PROG del control remoto): reinicia la placa
+            // entera, como al encenderla. El siguiente START empieza de cero,
+            // vuelve a leer los DIP y hace la rutina de ese modo.
+            if (combateEmpezado && ReiniciarTrasParada &&
+                millis() - inicioParada >= TiempoReanudarCombate) {
+                reiniciarPlaca();
+                return;
+            }
             if (combateEmpezado) {
                 // Sigue leyendo los sensores: si el robot se desliza hasta la
                 // línea durante una parada corta, al reanudar lo sabrá (la
@@ -93,6 +109,20 @@ void ModoCombate::actualizar() {
     const unsigned long ciclo = micros() - inicioCiclo;
     if (ciclo > cicloMaximo) cicloMaximo = ciclo;
     enviarTelemetria();
+#endif
+}
+
+void ModoCombate::reiniciarPlaca() {
+    motores.deshabilitar();
+#if defined(__AVR__)
+    // El watchdog reinicia el microcontrolador en 15 ms: se borra toda la RAM
+    // (estado de sensores, maniobras, estrategia...) como al encenderlo
+    wdt_enable(WDTO_15MS);
+    while (true) {
+    }
+#else
+    // En el simulador: el siguiente RUN empieza un combate nuevo
+    combateEmpezado = false;
 #endif
 }
 

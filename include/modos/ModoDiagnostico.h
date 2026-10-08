@@ -2,7 +2,8 @@
 // Se compila con: pio run -e diagnostico -t upload -t monitor
 // Tras TiempoInicioReglamentario calibra los sensores e imprime por USB todas
 // las lecturas cada 100 ms. Por el monitor serie: 'c' recalibra, 'r' muestra la
-// caja negra (últimos combates) y 'b' la borra.
+// caja negra (últimos combates), 'b' la borra y 'a' registra durante 20 s cada
+// cambio de la señal del módulo de arranque (para ver qué hace cada botón).
 #ifndef MODO_DIAGNOSTICO_H
 #define MODO_DIAGNOSTICO_H
 
@@ -22,6 +23,7 @@ public:
 private:
     void calibrar();
     void imprimirCajaNegra();
+    void vigilarArrancador();
 
     PlacaXMotion& placa;
     DriverMotores& motores;

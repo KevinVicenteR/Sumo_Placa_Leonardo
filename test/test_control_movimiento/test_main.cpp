@@ -556,15 +556,23 @@ void test_la_linea_cancela_la_rutina(void) {
     assertNoAvanza(m);
 }
 
-// Pegado al borde (por ejemplo al empezar el round 3) detrás también puede
-// estar el borde: sin venir avanzando, nunca retrocede, gira en el sitio
-void test_linea_sin_venir_avanzando_gira_en_el_sitio(void) {
+// Línea vista estando parado: retrocede recto (o, con SalirGirandoSiNoAvanza,
+// gira en el sitio sin retroceder)
+void test_linea_sin_venir_avanzando(void) {
     for (int lado = -1; lado <= 1; lado += 2) {
         ControlMovimiento c(CLASICO);
         MotorMock m;
         const TipoAccion borde = lado < 0 ? TipoAccion::EvadirBordeIzq : TipoAccion::EvadirBordeDer;
         // Parado cuando un sensor pisa la línea
         c.ejecutar({borde}, m, 1000);
+        if (!SalirGirandoSiNoAvanza) {
+            // Retrocede recto mientras ve la línea: nunca gira junto al borde
+            for (unsigned long t = 1010; t < 1200; t += 10) {
+                c.ejecutar({borde}, m, t);
+                TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0 && m.izq == m.der);
+            }
+            continue;
+        }
         assertGiroEvasion(m, -lado);
         for (unsigned long t = 1010; t < 1200; t += 10) {
             c.ejecutar({borde}, m, t);
@@ -718,7 +726,7 @@ int main(int, char**) {
     RUN_TEST(test_rutina_lado_gira_hacia_el_lado_del_rival);
     RUN_TEST(test_rutina_frente_avanza_hasta_ver_al_rival);
     RUN_TEST(test_la_linea_cancela_la_rutina);
-    RUN_TEST(test_linea_sin_venir_avanzando_gira_en_el_sitio);
+    RUN_TEST(test_linea_sin_venir_avanzando);
     RUN_TEST(test_sin_interruptores_la_rutina_es_la_del_round_1);
     RUN_TEST(test_giro_lateral_ignora_un_frontal_antes_del_giro_minimo);
     RUN_TEST(test_rutina_frente_ignora_los_laterales);

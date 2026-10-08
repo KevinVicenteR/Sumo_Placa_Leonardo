@@ -133,13 +133,14 @@ bool ManiobraEvasion::reintentarSiAtascado(bool linea, MandoMotores& mando, IMot
     if (!linea || ahora - inicioFase < TiempoMaxParadoEnLinea) {
         return false;
     }
-    // Otro intento girando en el sitio (el centro no se mueve: no puede caerse),
-    // hacia el otro lado y con el tiempo máximo desde cero
-    sinRetroceso = true;
-    sentidoGiro = -sentidoGiro;
-    fase = Fase::GirandoSalida;
+    // Otro intento retrocediendo despacio (como con un solo sensor) solo durante
+    // TiempoReintentoRetroceso: así nunca cruza el dohyo de golpe. No gira, porque
+    // girar junto al borde saca la pala del dohyo.
+    sinRetroceso = false;
+    unSensor = true;
+    fase = Fase::Retrocediendo;
     inicioFase = ahora;
-    inicioEvasion = ahora;
+    inicioEvasion = ahora - (TiempoMaximoRecuperacionBorde - TiempoReintentoRetroceso);
     duracionRetroceso = 0;
     negroContinuo = false;
     separarse(linea, mando, motor, ahora);

@@ -105,19 +105,22 @@ constexpr unsigned long TiempoSeparacionUnSensor = 50;
 // Tope de toda la maniobra (no hay sensores traseros que avisen).
 constexpr unsigned long TiempoMaximoRecuperacionBorde = 700;
 // Si sigue viendo la línea parado más de este tiempo (por ejemplo, al agotar
-// TiempoMaximoRecuperacionBorde), vuelve a intentar salir girando en el sitio
-// (cada vez hacia el otro lado): nunca se queda quieto sobre la línea.
+// TiempoMaximoRecuperacionBorde), vuelve a retroceder despacio durante
+// TiempoReintentoRetroceso: nunca se queda quieto sobre la línea. No gira: con
+// las ruedas atrás, girar junto al borde barre la pala hacia fuera y se sale.
 constexpr unsigned long TiempoMaxParadoEnLinea = 300;
+constexpr unsigned long TiempoReintentoRetroceso = 150;
 // Pausa con motores parados entre retroceso y giro, y después del giro.
 constexpr unsigned long TiempoFrenado = 80;
 constexpr unsigned long TiempoAsentamientoEvasion = 100;
 // Duración del giro con un sensor / con los dos sensores en blanco.
 constexpr unsigned long TiempoGiroEvasion = 240;
 constexpr unsigned long TiempoGiroEvasionAmbos = 300;
-// Retroceder solo es seguro si el robot venía avanzando (el borde queda delante).
-// Si ve la línea girando o parado (por ejemplo, pegado al borde al empezar el
-// round 3), detrás también puede estar el borde: entonces gira en el sitio para
-// salir, que no mueve su centro. Umbral: velocidad media estimada en PWM.
+// Al ver la línea, primero retrocede y después gira. true = si no venía
+// avanzando (velocidad media estimada < AvanceMinimoParaRetroceder, en PWM)
+// gira en el sitio sin retroceder. Desactivado: con las ruedas atrás el robot
+// pivota sobre el eje trasero y, en el robot real, girando junto al borde se sale.
+constexpr bool SalirGirandoSiNoAvanza = false;
 constexpr int AvanceMinimoParaRetroceder = 50;
 // Retroceso extra (ms) si llega a la línea a velocidad máxima (proporcional a la
 // velocidad). Con poco agarre el robot sigue deslizando hacia fuera al frenar y,
@@ -158,7 +161,7 @@ constexpr bool EstimadorLimitaEmbestida = true;
 // Geometría: dohyo de 70 cm de diámetro (el reglamentario mide 77 cm) y línea de 2,5 cm.
 constexpr float RadioDohyo = 0.35f;
 constexpr float AnchoLineaBorde = 0.025f;
-constexpr float DistanciaSensorPiso = 0.045f;     // por delante del eje de ruedas
+constexpr float DistanciaSensorPiso = 0.078f;     // por delante del eje de ruedas (ruedas atrás)
 constexpr float SeparacionSensoresPiso = 0.04f;   // a cada lado del centro
 constexpr float TrochaRuedas = 0.085f;            // distancia entre ruedas
 // Modelo de las ruedas: VelocidadRuedaMaxima (m/s) a PWM 255, parada por

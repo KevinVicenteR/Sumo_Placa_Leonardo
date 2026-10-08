@@ -26,7 +26,14 @@ import simular
 # con borde blanco; fuera del dohyo (elevado) el sensor de piso no ve nada y lee
 # oscuro, como el negro: el caso más difícil. El dohyo mide 70 cm de diámetro.
 ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.34", "--par", "0.6", "--mu", "0.9",
-         "--bateria", "1.23", "--pala", "0.3", "--radio", "0.35"]
+         "--bateria", "1.23", "--pala", "0.3", "--radio", "0.35",
+         # Ruedas atrás (como en el video): el robot gira sobre el eje trasero; el
+         # cuerpo empieza 3,3 cm por delante, los sensores de piso van a 7,8 cm
+         # y el centro de masa se supone a 2 cm
+         "--centro-delante", "0.033", "--sensor-x", "0.078", "--cdm-delante", "0.02",
+         # "--vuelco-pala", "1" haría volcar el robot con la pala entera fuera del
+         # dohyo; sin calibrar con el robot real sale demasiado pesimista
+         ]
 # Los rivales que atacan también llevan pala (como el del video)
 PALA_RIVAL = ["--pala-rival", "0.3"]
 

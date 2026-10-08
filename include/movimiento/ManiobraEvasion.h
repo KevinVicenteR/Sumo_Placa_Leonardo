@@ -54,6 +54,9 @@ private:
     // Desde cuándo ve al rival durante la maniobra
     bool viendoRival = false;
     unsigned long inicioRival = 0;
+    // Último corte de la maniobra por ver al rival
+    bool huboCorte = false;
+    unsigned long ultimoCorte = 0;
     unsigned long inicioFase = 0;
     unsigned long inicioEvasion = 0;
     // Negro continuo bajo los sensores al retroceder

@@ -30,6 +30,10 @@ constexpr int VelocidadEmpuje = 255;
 // Rival en los tres sensores delanteros a la vez: es un robot cercano (un reflejo
 // no ocupa tres sensores), así que ataca ya a esta velocidad (0 = sin efecto).
 constexpr int VelocidadAtaqueDirecto = 0;
+// Rival en dos o tres sensores delanteros (el central y uno de 45°, o los tres):
+// lo tiene delante y cerca, así que ataca ya a esta velocidad, sin subida
+// gradual ni aproximación lenta (0 = sin efecto).
+constexpr int VelocidadAtaqueVariosFrontales = 255;
 // Rival de frente y también en un sensor de 45°: la rueda de ese lado va a
 // este porcentaje de la otra para centrarlo sin dejar de empujar.
 constexpr int PorcentajeAjuste = 85;
@@ -112,11 +116,14 @@ constexpr unsigned long TiempoSeparacionBorde = 90;
 constexpr unsigned long TiempoSeparacionUnSensor = 50;
 // Tope de toda la maniobra (no hay sensores traseros que avisen).
 constexpr unsigned long TiempoMaximoRecuperacionBorde = 700;
-// true = si algún sensor ve al rival durante la evasión (con los sensores de piso
-// ya sobre negro), corta la evasión y va contra él. La detección debe durar
-// TiempoConfirmarRivalEnEvasion ms seguidos para no cortarla por un reflejo.
+// true = si algún sensor ve al rival durante la evasión, corta la evasión y va
+// contra él. Solo después de separarse de la línea y frenar (mientras gira o en
+// la pausa final), nunca retrocediendo, y como mucho una vez cada
+// EsperaEntreCortesEvasion ms (si no, se queda atrapado en el borde cortando
+// evasiones). La detección debe durar TiempoConfirmarRivalEnEvasion ms seguidos.
 constexpr bool CortarEvasionAlVerRival = true;
 constexpr unsigned long TiempoConfirmarRivalEnEvasion = 20;
+constexpr unsigned long EsperaEntreCortesEvasion = 2000;
 // Si sigue viendo la línea parado más de este tiempo (por ejemplo, al agotar
 // TiempoMaximoRecuperacionBorde), vuelve a retroceder despacio durante
 // TiempoReintentoRetroceso: nunca se queda quieto sobre la línea. No gira: con
@@ -278,8 +285,11 @@ constexpr int VelocidadPivoteInicio = 180;
 // Ronda 3: avanza despacio y recto hacia delante hasta que cualquier sensor
 // (también los laterales) vea al rival (con
 // EsperarRound3, tras TiempoAvanceInicio se queda quieto esperándolo).
-constexpr int VelocidadAvanceInicio = 60;
+constexpr int VelocidadAvanceInicio = 80;
 constexpr unsigned long TiempoAvanceInicio = 4000;
+// Ronda 3: al ver al rival por delante, acelera de VelocidadAvanceInicio a
+// VelocidadEmpuje en este tiempo mientras lo ataca.
+constexpr unsigned long TiempoAceleracionRound3 = 1000;
 constexpr bool EsperarRound3 = false;
 constexpr unsigned long TiempoEsperaRound3 = 3000;
 // Rondas 1 y 2: al encontrar al rival embiste durante TiempoEmbestidaInicio,

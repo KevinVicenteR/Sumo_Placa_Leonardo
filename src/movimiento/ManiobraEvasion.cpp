@@ -38,9 +38,15 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
                                 unsigned long ahora, BusquedaRival& busqueda) {
     const bool linea = esBorde(decision.tipo);
 
-    // Rival a la vista con los sensores de piso sobre negro: corta la maniobra
-    // y el control normal va contra él
-    if (fase != Fase::Libre && rivalConfirmado(decision, linea, ahora)) {
+    // Rival a la vista: corta la maniobra y el control normal va contra él. Solo
+    // cuando ya se separó de la línea y frenó (girando o en la pausa final), y
+    // como mucho una vez cada EsperaEntreCortesEvasion: si no, cortaría la
+    // evasión pegado al borde una y otra vez y se quedaría atrapado allí.
+    const bool yaSeparado = fase == Fase::Girando || fase == Fase::Asentando;
+    const bool puedeCortar = yaSeparado && (!huboCorte || ahora - ultimoCorte >= EsperaEntreCortesEvasion);
+    if (puedeCortar && rivalConfirmado(decision, linea, ahora)) {
+        huboCorte = true;
+        ultimoCorte = ahora;
         fase = Fase::Libre;
         salidaSuave = false;
         limiteSalida = 255;

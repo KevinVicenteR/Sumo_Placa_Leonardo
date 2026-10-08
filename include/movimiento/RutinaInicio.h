@@ -37,7 +37,7 @@ private:
                unsigned long ahora, unsigned long t, BusquedaRival& busqueda, ControlAtaque& ataque);
     void decidirLado(const DecisionMovimiento& decision, BusquedaRival& busqueda);
     bool avanzarAlCentro(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-                         unsigned long ahora, unsigned long t);
+                         unsigned long ahora, unsigned long t, ControlAtaque& ataque);
     bool explorar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                   unsigned long ahora, unsigned long t);
 

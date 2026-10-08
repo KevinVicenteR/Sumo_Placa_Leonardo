@@ -244,8 +244,10 @@ void test_giro_lateral_termina_por_tiempo(void) {
 
 
 void test_ajuste_centra_al_enemigo_sin_dejar_de_atacar(void) {
-    assertAccionSimple(TipoAccion::AjusteIzq, VelocidadAtaque * PorcentajeAjuste / 100, VelocidadAtaque);
-    assertAccionSimple(TipoAccion::AjusteDer, VelocidadAtaque, VelocidadAtaque * PorcentajeAjuste / 100);
+    // Central y un 45° ven al rival: ataca ya a VelocidadAtaqueVariosFrontales
+    const int v = VelocidadAtaqueVariosFrontales > 0 ? VelocidadAtaqueVariosFrontales : VelocidadAtaque;
+    assertAccionSimple(TipoAccion::AjusteIzq, v * PorcentajeAjuste / 100, v);
+    assertAccionSimple(TipoAccion::AjusteDer, v, v * PorcentajeAjuste / 100);
 }
 
 void test_se_acomoda_y_luego_va_con_todo(void) {
@@ -341,21 +343,44 @@ void test_ataque_sube_gradualmente_y_borde_lo_interrumpe() {
     TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
 }
 
+// Avanza la evasión sin ver nada hasta que empieza a girar; devuelve ese instante
+static unsigned long hastaGiroEvasion(ControlMovimiento& c, MotorMock& m, unsigned long t) {
+    while (!(m.izq != 0 && m.izq == -m.der)) {
+        t += 5;
+        c.ejecutar({TipoAccion::Busqueda}, m, t);
+        TEST_ASSERT_TRUE(t < 5000);
+    }
+    return t;
+}
+
 void test_ver_al_rival_corta_la_evasion(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     venirAvanzando(c, m, 1000);
     c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 1000);
     TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
-    // Sobre la línea no corta la maniobra aunque vea al rival
-    c.ejecutar({TipoAccion::EvadirBordeAmbos, true}, m, 1030);
+    // Retrocediendo junto a la línea no la corta aunque vea al rival
+    for (unsigned long t = 1010; t <= 1060; t += 5) {
+        c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
+    }
     TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
-    // Ya sobre negro: un reflejo breve no la corta...
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, 1050);
-    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
+    // Ya separado y girando: un reflejo breve no la corta...
+    const unsigned long giro = hastaGiroEvasion(c, m, 1060);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, giro + 5);
+    TEST_ASSERT_TRUE(m.izq == -m.der);
     // ...pero verlo TiempoConfirmarRivalEnEvasion ms seguidos sí: va contra él
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, 1050 + TiempoConfirmarRivalEnEvasion);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, giro + 5 + TiempoConfirmarRivalEnEvasion);
     TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der);
+
+    // Vuelve a la línea enseguida: esta evasión ya no se corta (no se queda
+    // atrapado en el borde cortando evasiones)
+    const unsigned long otra = giro + 100;
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, otra);
+    const unsigned long giro2 = hastaGiroEvasion(c, m, otra);
+    TEST_ASSERT_TRUE(giro2 - giro < EsperaEntreCortesEvasion);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, giro2 + 5);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, giro2 + 5 + TiempoConfirmarRivalEnEvasion);
+    TEST_ASSERT_TRUE(m.izq == -m.der);
 }
 
 void test_un_sensor_retrocede_recto_y_gira_tras_separarse() {
@@ -488,7 +513,8 @@ void test_tres_frontales_cancelan_giro_y_pausa_pero_no_evasion() {
     const DecisionMovimiento directo{TipoAccion::AtaqueFrontal, true, false, true};
     c.ejecutar({TipoAccion::DefensaIzq}, m, 1000);
     c.ejecutar(directo, m, 1010);
-    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+    const int v = VelocidadAtaqueVariosFrontales > 0 ? VelocidadAtaqueVariosFrontales : VelocidadAtaque;
+    assertMovimiento(m, v, v);
     c.ejecutar({TipoAccion::Busqueda}, m, 1020);
     c.ejecutar(directo, m, 1030);
     TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der);
@@ -580,6 +606,32 @@ void test_rutina_frente_avanza_hasta_ver_al_rival(void) {
     // Confirmada tras el mínimo, sí
     c.ejecutar({TipoAccion::CorregirIzq}, m, 1000 + TiempoMinimoAvanceInicio + ConfirmacionDeteccion);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+}
+
+void test_rutina_frente_acelera_poco_a_poco_contra_el_rival(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(3, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    // Lo ve de frente: va contra él empezando a la velocidad lenta del avance
+    const unsigned long visto = 1000 + TiempoMinimoAvanceInicio;
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    TEST_ASSERT_TRUE(m.izq > 0 && m.izq <= VelocidadAvanceInicio + 5 && m.izq == m.der);
+    // A mitad de la aceleración va más rápido, pero aún no a fondo
+    int antes = m.izq;
+    for (unsigned long t = visto + 10; t <= visto + TiempoAceleracionRound3 / 2; t += 10) {
+        c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
+    }
+    TEST_ASSERT_TRUE(m.izq > antes && m.izq < VelocidadEmpuje);
+    // Sigue subiendo, sin pasar nunca del ataque normal
+    antes = m.izq;
+    for (unsigned long t = visto + TiempoAceleracionRound3 / 2; t <= visto + TiempoEmbestida + 300; t += 10) {
+        c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
+    }
+    TEST_ASSERT_TRUE(m.izq > antes);
+    TEST_ASSERT_EQUAL_INT(VelocidadEmpuje, m.izq);
 }
 
 void test_la_linea_cancela_la_rutina(void) {
@@ -805,6 +857,7 @@ int main(int, char**) {
     RUN_TEST(test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro);
     RUN_TEST(test_rutina_lado_gira_hacia_el_lado_del_rival);
     RUN_TEST(test_rutina_frente_avanza_hasta_ver_al_rival);
+    RUN_TEST(test_rutina_frente_acelera_poco_a_poco_contra_el_rival);
     RUN_TEST(test_la_linea_cancela_la_rutina);
     RUN_TEST(test_linea_sin_venir_avanzando);
     RUN_TEST(test_sin_interruptores_la_rutina_es_la_del_round_1);

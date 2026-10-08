@@ -29,6 +29,13 @@ struct Config {
     double ancho = 0.10;          // m
     double trocha = 0.085;        // m entre ruedas
     double sensorPisoX = 0.045;   // m hacia adelante desde el eje de ruedas
+    // Ruedas atrás: el centro del cuerpo (10 x 10 cm) y el centro de masa están
+    // por delante del eje de ruedas, sobre el que gira el robot (0 = ruedas en el centro)
+    double centroDelante = 0;     // m del eje de ruedas al centro del cuerpo
+    double cdmDelante = 0;        // m del eje de ruedas al centro de masa
+    // La pala es el apoyo delantero (ruedas atrás + pala delante): si sus dos
+    // esquinas quedan fuera del dohyo, el frente pierde el apoyo y el robot vuelca
+    bool vuelcoPala = false;
     double sensorPisoY = 0.040;   // m a cada lado
     double vmax = 0.8;            // m/s con PWM 255
     double tau = 0.05;            // s, constante de tiempo del motor
@@ -323,7 +330,7 @@ inline bool saturado(int sensor) {
 }
 
 inline bool sensorEnemigo(uint8_t pin) {
-    const double fx = cfg.largo / 2, ly = cfg.ancho / 2;
+    const double fx = cfg.centroDelante + cfg.largo / 2, ly = cfg.ancho / 2, cx = cfg.centroDelante;
     const uint8_t pines[5] = {S_FRONT_CEN, S_FRONT_IZQ, S_FRONT_DER, S_LAT_IZQ, S_LAT_DER};
     for (int i = 0; i < 5; i++) {
         if (pin == pines[i] && (fantasma(i) || saturado(i))) return true;
@@ -331,8 +338,8 @@ inline bool sensorEnemigo(uint8_t pin) {
     if (pin == S_FRONT_CEN) return rayoVe(fx, 0, 0);
     if (pin == S_FRONT_IZQ) return rayoVe(fx, ly * 0.6, PI / 4);
     if (pin == S_FRONT_DER) return rayoVe(fx, -ly * 0.6, -PI / 4);
-    if (pin == S_LAT_IZQ) return rayoVe(0, ly, PI / 2);
-    if (pin == S_LAT_DER) return rayoVe(0, -ly, -PI / 2);
+    if (pin == S_LAT_IZQ) return rayoVe(cx, ly, PI / 2);
+    if (pin == S_LAT_DER) return rayoVe(cx, -ly, -PI / 2);
     return false;
 }
 
@@ -497,7 +504,10 @@ inline void resolverChoque(double dt) {
     palaDebajo = false;
     palaRivalDebajo = false;
     if (ene.presente && cfg.masaEnemigo > 0) {
-        const double dx = ene.x - rob.x, dy = ene.y - rob.y;
+        // Nuestro robot choca con su cuerpo, cuyo centro está delante del eje
+        const double bx = rob.x + cfg.centroDelante * mat::cos(rob.th);
+        const double by = rob.y + cfg.centroDelante * mat::sin(rob.th);
+        const double dx = ene.x - bx, dy = ene.y - by;
         const double d = mat::hypot(dx, dy);
         const double minima = cfg.radioChoque + cfg.radioEnemigo;
         if (d < minima && d > 1e-9) {
@@ -530,7 +540,7 @@ inline bool enemigoFuera() { return ene.presente && mat::hypot(ene.x, ene.y) > c
 
 inline double maxRadioCuerpo() {
     double m = 0;
-    const double xs[2] = {-cfg.largo / 2, cfg.largo / 2};
+    const double xs[2] = {cfg.centroDelante - cfg.largo / 2, cfg.centroDelante + cfg.largo / 2};
     const double ys[2] = {-cfg.ancho / 2, cfg.ancho / 2};
     for (double rx : xs) {
         for (double ry : ys) {
@@ -572,7 +582,9 @@ inline void colocarRound() {
     const double contacto = cfg.radioChoque + cfg.radioEnemigo + 0.01;
     double ox = 0, oy = 0;  // del centro a nuestro robot; el rival en el opuesto
     if (cfg.salida == 1) {
-        ox = ux * contacto / 2; oy = uy * contacto / 2;
+        // Espalda con espalda y pegados: los cuerpos se tocan
+        const double pegados = contacto - 0.008;
+        ox = ux * pegados / 2; oy = uy * pegados / 2;
     } else if (cfg.salida == 2) {
         ox = -(cfg.ladoRival * rx * contacto - ux * 0.04) / 2;
         oy = -(cfg.ladoRival * ry * contacto - uy * 0.04) / 2;
@@ -581,7 +593,14 @@ inline void colocarRound() {
         // 5,5 cm del borde exterior: 33 cm del centro en un dohyo de 77 cm)
         ox = -ux * (cfg.radio - 0.055); oy = -uy * (cfg.radio - 0.055);
     }
-    rob = {cx + ox, cy + oy, th, 0, 0};
+    // Las posiciones de salida son del cuerpo; el robot se sitúa por su eje de ruedas
+    rob = {cx + ox - ux * cfg.centroDelante, cy + oy - uy * cfg.centroDelante, th, 0, 0};
+    // La imprecisión al colocarlo no puede dejar parte del cuerpo fuera del dohyo
+    for (int i = 0; i < 50 && maxRadioCuerpo() > cfg.radio - 0.002; i++) {
+        const double r = mat::hypot(rob.x, rob.y);
+        rob.x -= rob.x / r * 0.002;
+        rob.y -= rob.y / r * 0.002;
+    }
     ene.presente = modo != Modo::Ninguno;
     if (ene.presente) {
         const double thEne = th + PI + azar.normal() * 0.14;
@@ -623,8 +642,21 @@ inline double paso() {
     return dt;
 }
 
-// El robot cae cuando su centro de masa sale del dohyo
-inline bool cayo() { return mat::hypot(rob.x, rob.y) > cfg.radio; }
+// El robot cae cuando su centro de masa sale del dohyo o, si se apoya en la
+// pala, cuando la pala entera queda fuera y vuelca hacia delante
+inline bool cayo() {
+    const double c = mat::cos(rob.th), s = mat::sin(rob.th);
+    const double x = rob.x + cfg.cdmDelante * c, y = rob.y + cfg.cdmDelante * s;
+    if (mat::hypot(x, y) > cfg.radio) return true;
+    if (!cfg.vuelcoPala) return false;
+    const double fx = cfg.centroDelante + cfg.largo / 2, ly = cfg.ancho / 2;
+    for (double lado : {-1.0, 1.0}) {
+        double wx, wy;
+        aMundo(fx, lado * ly, wx, wy);
+        if (mat::hypot(wx, wy) <= cfg.radio) return false;  // esa esquina aún apoya
+    }
+    return true;
+}
 
 }  // namespace sim
 

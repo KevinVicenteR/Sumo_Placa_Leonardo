@@ -35,6 +35,12 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
 
     const unsigned long t = ahora - inicio;
     bool sigue = false;
+    // Ronda 2: el lado del giro lo decide el primer sensor lateral o de 45° que
+    // vea al rival, también durante la esquiva (al avanzar, el rival queda atrás
+    // y el sensor lateral deja de verlo)
+    if (rutina == 2) {
+        decidirLado(decision, busqueda);
+    }
     // Rondas 1 y 2: primero se aparta de la embestida avanzando recto
     const unsigned long esquiva = rutina == 1 ? TiempoEsquivaRound1 : rutina == 2 ? TiempoEsquivaRound2 : 0;
     if (t < esquiva) {
@@ -60,16 +66,11 @@ bool RutinaInicio::girar(const DecisionMovimiento& decision, MandoMotores& mando
                          ControlAtaque& ataque) {
     const unsigned long maximo = rutina == 1 ? TiempoMaxGiroEspalda : TiempoMaxGiroLado;
     const unsigned long minimo = rutina == 1 ? TiempoMinimoGiroEspalda : TiempoMinimoGiroLado;
+    // Una detección no termina el giro antes de su mínimo ni sin confirmarse
     const bool confirmado = rivalVisto.actualizar(veDeFrente(decision), ahora);
     const bool encontrado = confirmado && t >= minimo;
     const bool sigue = !encontrado && t < maximo;
 
-    // Ronda 2: si un sensor lateral ve al rival, el giro va hacia ese lado
-    if (rutina == 2 && !ladoDecidido && esDefensa(decision.tipo)) {
-        lado = decision.tipo == TipoAccion::DefensaIzq ? -1 : 1;
-        busqueda.fijarSentido(lado);
-        ladoDecidido = true;
-    }
 
     // Rival encontrado: embestida, frenando antes el giro si va rápido
     if (encontrado) {
@@ -86,8 +87,9 @@ bool RutinaInicio::girar(const DecisionMovimiento& decision, MandoMotores& mando
         // Pivote sobre la rueda del lado del rival
         mando.mover(motor, lado > 0 ? VelocidadPivoteInicio : 0, lado > 0 ? 0 : VelocidadPivoteInicio, true);
     } else if (sigue) {
-        // Giro en el sitio
-        mando.mover(motor, lado * VelocidadGiroInicio, -lado * VelocidadGiroInicio, true);
+        // Giro en el sitio (ronda 1: media vuelta hacia el lado de DIP3)
+        const int velocidad = rutina == 2 ? VelocidadGiroRound2 : VelocidadGiroInicio;
+        mando.mover(motor, lado * velocidad, -lado * velocidad, true);
     }
     return sigue;
 }
@@ -109,4 +111,21 @@ bool RutinaInicio::avanzarAlCentro(const DecisionMovimiento& decision, MandoMoto
         mando.mover(motor, VelocidadAvanceInicio, VelocidadAvanceInicio);
     }
     return sigue;
+}
+
+// Ronda 2: un sensor lateral o de 45° que ve al rival fija el lado del giro (si
+// ninguno lo ve, se usa el lado de DIP3). Una vez decidido, no cambia.
+void RutinaInicio::decidirLado(const DecisionMovimiento& decision, BusquedaRival& busqueda) {
+    if (ladoDecidido) {
+        return;
+    }
+    const TipoAccion t = decision.tipo;
+    const bool izquierda = t == TipoAccion::DefensaIzq || t == TipoAccion::CorregirIzq;
+    const bool derecha = t == TipoAccion::DefensaDer || t == TipoAccion::CorregirDer;
+    if (!izquierda && !derecha) {
+        return;
+    }
+    lado = izquierda ? -1 : 1;
+    busqueda.fijarSentido(lado);
+    ladoDecidido = true;
 }

@@ -68,7 +68,7 @@ void ControlMovimiento::actualizarLimites(const DecisionMovimiento& decision) {
 void ControlMovimiento::empezarEvasionSiHayBorde(const DecisionMovimiento& decision, unsigned long ahora) {
     // Retroceder solo si venía avanzando hacia la línea (ver AvanceMinimoParaRetroceder)
     const int velocidad = mando.velocidadAvanceEstimada();
-    const bool avanzaba = velocidad >= AvanceMinimoParaRetroceder;
+    const bool avanzaba = !SalirGirandoSiNoAvanza || velocidad >= AvanceMinimoParaRetroceder;
     // Cuanto más rápido llega, más retrocede (ver RetrocesoExtraAVelocidadMaxima)
     const unsigned long extra = velocidad > 0 ? RetrocesoExtraAVelocidadMaxima * velocidad / 255 : 0;
     bool empezo = false;

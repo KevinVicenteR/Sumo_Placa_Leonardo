@@ -23,7 +23,8 @@ public:
     void actualizar();  // en loop()
 
 private:
-    // Empieza (o reempieza) un combate con el robot ya colocado sobre el negro
+    // Empieza un combate nuevo con el robot ya colocado sobre el negro: lo
+    // reinicia todo (como recién encendido) y hace la rutina de los DIP
     void empezarCombate();
     void enviarTelemetria();
 
@@ -37,6 +38,7 @@ private:
     bool enCombate = false;
     // Ya hubo un combate y cuándo se paró (para distinguir interferencias)
     bool combateEmpezado = false;
+    unsigned long inicioCombate = 0;
     unsigned long inicioParada = 0;
 #if defined(MONITOREO_COMBATE)
     unsigned long cicloMaximo = 0;   // ciclo más lento (µs) desde la última traza

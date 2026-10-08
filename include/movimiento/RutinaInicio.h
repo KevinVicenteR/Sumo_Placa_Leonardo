@@ -1,5 +1,6 @@
 // RutinaInicio.h — Primer movimiento de cada round (elegido con los DIP)
-//   1 = espalda con espalda: media vuelta hasta ver al rival de frente.
+//   1 = espalda con espalda: media vuelta en el sitio hacia el lado de DIP3
+//       hasta ver al rival de frente (como en la rama con_control).
 //   2 = lado a lado: (opcional) avanza para esquivar y gira hacia el rival.
 //   3 = enfrentados: avanza hacia el centro y espera al rival.
 //   0 = sin rutina.
@@ -32,6 +33,7 @@ public:
 private:
     bool girar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                unsigned long ahora, unsigned long t, BusquedaRival& busqueda, ControlAtaque& ataque);
+    void decidirLado(const DecisionMovimiento& decision, BusquedaRival& busqueda);
     bool avanzarAlCentro(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                          unsigned long ahora, unsigned long t);
 

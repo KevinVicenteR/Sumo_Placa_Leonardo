@@ -199,7 +199,9 @@ Resultado correr(int semilla, FILE* trayectoria) {
         }
 
         // Contacto reciente con el enemigo: la caída pudo ser por empujón
-        if (ene.presente && mat::hypot(ene.x - rob.x, ene.y - rob.y) < cfg.radioChoque + cfg.radioEnemigo + 0.005)
+        const double cuerpoX = rob.x + cfg.centroDelante * mat::cos(rob.th);
+        const double cuerpoY = rob.y + cfg.centroDelante * mat::sin(rob.th);
+        if (ene.presente && mat::hypot(ene.x - cuerpoX, ene.y - cuerpoY) < cfg.radioChoque + cfg.radioEnemigo + 0.005)
             ultimoContacto = t;
         if (cayo()) {
             res.cayo = true;
@@ -232,6 +234,7 @@ void uso() {
                  "         [--saturacion n] (veces por segundo y sensor que queda cegado 0,5-2 s)\n"
                  "         [--cortes-arranque n --corte-max ms]  (cortes de la señal de START)\n"
                  "         [--desgaste-izq f --desgaste-der f]  (0 = llanta nueva, 1 = gastada)\n"
+                 "         [--centro-delante m --cdm-delante m]  (ruedas atrás: cuerpo y centro de masa por delante del eje)\n"
                  "         [--pala f]  (agarre que pierde el rival con nuestra pala debajo, 0-1)\n"
                  "         [--pala-rival f]  (agarre que perdemos con la pala del rival debajo)\n"
                  "         [--driver tb6612|l298n]  (con L298N, PWM a 0 deja el motor libre)\n"
@@ -295,6 +298,9 @@ int main(int argc, char** argv) {
         else if (a == "--corte-max") cfg.corteArranqueMaxMs = std::atof(v);
         else if (a == "--desgaste-izq") cfg.desgasteIzq = std::atof(v);
         else if (a == "--pala") cfg.pala = std::atof(v);
+        else if (a == "--centro-delante") cfg.centroDelante = std::atof(v);
+        else if (a == "--cdm-delante") cfg.cdmDelante = std::atof(v);
+        else if (a == "--vuelco-pala") cfg.vuelcoPala = std::atoi(v) != 0;
         else if (a == "--pala-rival") cfg.palaRival = std::atof(v);
         else if (a == "--desgaste-der") cfg.desgasteDer = std::atof(v);
         else if (a == "--borde") cfg.borde = std::atof(v);

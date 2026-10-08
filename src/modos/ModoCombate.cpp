@@ -21,17 +21,24 @@ void ModoCombate::iniciar() {
 }
 
 void ModoCombate::empezarCombate() {
+    // Reinicio completo: el robot queda como recién encendido, sin nada del
+    // combate anterior (sensores, maniobras, rutina), y en el modo de los DIP
+    placa.inicializarPines();
     motores.deshabilitar();
+    percepcion = Percepcion();
     // Medir el negro con los motores apagados. Los sensores de enemigo NO se
     // calibran: el rival puede estar delante al empezar.
     percepcion.calibrarPiso();
     controlMovimiento.reiniciar();
     // Rutina de inicio según los DIP (DIP3 elige el lado del giro)
     const int dip = placa.leerInterruptores();
-    controlMovimiento.iniciarRutina(rutinaSegunInterruptores(dip), (dip & 4) ? -1 : 1);
+    const int rutina = RutinaForzada >= 0 ? RutinaForzada : rutinaSegunInterruptores(dip);
+    const int lado = LadoForzado != 0 ? LadoForzado : (dip & 4) ? -1 : 1;
+    controlMovimiento.iniciarRutina(rutina, lado);
     cajaNegra.empezar(dip, percepcion.negroIzquierdo(), percepcion.negroDerecho(), millis());
     enCombate = true;
     combateEmpezado = true;
+    inicioCombate = millis();
 #if defined(MONITOREO_COMBATE)
     Serial.print(F("DIP=")); Serial.print(dip); Serial.print(' ');
     Serial.print(F("INICIO negroIzq=")); Serial.print(percepcion.negroIzquierdo());
@@ -62,7 +69,11 @@ void ModoCombate::actualizar() {
             return;
         }
         if (!enCombate) {
-            if (combateEmpezado && millis() - inicioParada < TiempoReanudarCombate) {
+            // Reanudar solo tras una parada corta de un combate que ya estaba en
+            // marcha (interferencia); si no, combate nuevo con su rutina
+            const bool paradaCorta = millis() - inicioParada < TiempoReanudarCombate;
+            const bool estabaEnMarcha = inicioParada - inicioCombate >= TiempoMinimoParaReanudar;
+            if (combateEmpezado && paradaCorta && estabaEnMarcha) {
                 // Parada corta (interferencia): sigue el mismo combate
                 enCombate = true;
                 cajaNegra.anotarInterrupcion();

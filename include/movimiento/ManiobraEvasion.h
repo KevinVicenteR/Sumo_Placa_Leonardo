@@ -9,7 +9,8 @@
 // - Asentando: otra pausa antes de seguir combatiendo.
 // Si vuelve a ver la línea a mitad de maniobra, vuelve a retroceder. Si se
 // queda parado sobre la línea (TiempoMaxParadoEnLinea), lo intenta de nuevo
-// retrocediendo un poco.
+// retrocediendo un poco. Si ve al rival fuera de la línea, corta la maniobra
+// (CortarEvasionAlVerRival) para ir contra él.
 #ifndef MANIOBRA_EVASION_H
 #define MANIOBRA_EVASION_H
 
@@ -46,7 +47,13 @@ private:
     // retroceder un poco. Devuelve true si lo hace.
     bool reintentarSiAtascado(bool linea, MandoMotores& mando, IMotor& motor, unsigned long ahora);
 
+    // Ve al rival (fuera de la línea) el tiempo suficiente para cortar la maniobra
+    bool rivalConfirmado(const DecisionMovimiento& decision, bool linea, unsigned long ahora);
+
     Fase fase = Fase::Libre;
+    // Desde cuándo ve al rival durante la maniobra
+    bool viendoRival = false;
+    unsigned long inicioRival = 0;
     unsigned long inicioFase = 0;
     unsigned long inicioEvasion = 0;
     // Negro continuo bajo los sensores al retroceder

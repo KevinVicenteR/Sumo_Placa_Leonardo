@@ -112,6 +112,11 @@ constexpr unsigned long TiempoSeparacionBorde = 90;
 constexpr unsigned long TiempoSeparacionUnSensor = 50;
 // Tope de toda la maniobra (no hay sensores traseros que avisen).
 constexpr unsigned long TiempoMaximoRecuperacionBorde = 700;
+// true = si algún sensor ve al rival durante la evasión (con los sensores de piso
+// ya sobre negro), corta la evasión y va contra él. La detección debe durar
+// TiempoConfirmarRivalEnEvasion ms seguidos para no cortarla por un reflejo.
+constexpr bool CortarEvasionAlVerRival = true;
+constexpr unsigned long TiempoConfirmarRivalEnEvasion = 20;
 // Si sigue viendo la línea parado más de este tiempo (por ejemplo, al agotar
 // TiempoMaximoRecuperacionBorde), vuelve a retroceder despacio durante
 // TiempoReintentoRetroceso: nunca se queda quieto sobre la línea. No gira: con

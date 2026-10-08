@@ -27,6 +27,7 @@ bool ManiobraEvasion::iniciar(int sentido, unsigned long duracionRet, unsigned l
     inicioFase = ahora;
     inicioEvasion = ahora;
     negroContinuo = false;
+    viendoRival = false;
     duracionRetroceso = duracionRet;
     duracionGiro = duracionGir;
     sentidoGiro = sentido;
@@ -36,6 +37,15 @@ bool ManiobraEvasion::iniciar(int sentido, unsigned long duracionRet, unsigned l
 bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                                 unsigned long ahora, BusquedaRival& busqueda) {
     const bool linea = esBorde(decision.tipo);
+
+    // Rival a la vista con los sensores de piso sobre negro: corta la maniobra
+    // y el control normal va contra él
+    if (fase != Fase::Libre && rivalConfirmado(decision, linea, ahora)) {
+        fase = Fase::Libre;
+        salidaSuave = false;
+        limiteSalida = 255;
+        return false;
+    }
 
     // Línea otra vez a mitad de maniobra: volver a separarse
     const bool separandose = fase == Fase::Retrocediendo || fase == Fase::GirandoSalida;
@@ -102,6 +112,20 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
     }
 
     return false;
+}
+
+bool ManiobraEvasion::rivalConfirmado(const DecisionMovimiento& decision, bool linea,
+                                      unsigned long ahora) {
+    const bool rival = CortarEvasionAlVerRival && !linea && decision.tipo != TipoAccion::Busqueda;
+    if (!rival) {
+        viendoRival = false;
+        return false;
+    }
+    if (!viendoRival) {
+        viendoRival = true;
+        inicioRival = ahora;
+    }
+    return ahora - inicioRival >= TiempoConfirmarRivalEnEvasion;
 }
 
 bool ManiobraEvasion::separarse(bool linea, MandoMotores& mando, IMotor& motor, unsigned long ahora) {

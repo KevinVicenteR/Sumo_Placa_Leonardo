@@ -341,6 +341,23 @@ void test_ataque_sube_gradualmente_y_borde_lo_interrumpe() {
     TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
 }
 
+void test_ver_al_rival_corta_la_evasion(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    venirAvanzando(c, m, 1000);
+    c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, 1000);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
+    // Sobre la línea no corta la maniobra aunque vea al rival
+    c.ejecutar({TipoAccion::EvadirBordeAmbos, true}, m, 1030);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
+    // Ya sobre negro: un reflejo breve no la corta...
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, 1050);
+    TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
+    // ...pero verlo TiempoConfirmarRivalEnEvasion ms seguidos sí: va contra él
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, 1050 + TiempoConfirmarRivalEnEvasion);
+    TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der);
+}
+
 void test_un_sensor_retrocede_recto_y_gira_tras_separarse() {
     for (int lado = -1; lado <= 1; lado += 2) {
         ControlMovimiento c(CLASICO);
@@ -357,10 +374,11 @@ void test_un_sensor_retrocede_recto_y_gira_tras_separarse() {
         c.ejecutar({TipoAccion::Busqueda}, m, paro);
         assertMovimiento(m, 0, 0);
         const unsigned long giro = paro + TiempoFrenado;
-        c.ejecutar({TipoAccion::AtaqueFrontal}, m, giro);
+        c.ejecutar({TipoAccion::Busqueda}, m, giro);
         assertGiroEvasion(m, -lado);
-        c.ejecutar({TipoAccion::AtaqueFrontal}, m, giro + TiempoGiroEvasion);
+        c.ejecutar({TipoAccion::Busqueda}, m, giro + TiempoGiroEvasion);
         assertMovimiento(m, 0, 0);
+        // El rival aparece justo al acabar la maniobra (aún sin confirmar)
         c.ejecutar({TipoAccion::AtaqueFrontal}, m, giro + TiempoGiroEvasion + TiempoAsentamientoEvasion);
         assertMovimiento(m, VelocidadSalidaUnSensor, VelocidadSalidaUnSensor);
         const unsigned long fin = giro + TiempoGiroEvasion + TiempoAsentamientoEvasion;
@@ -766,6 +784,7 @@ int main(int, char**) {
     RUN_TEST(test_segundo_sensor_cambia_a_recto_sin_reiniciar_limite);
     RUN_TEST(test_arranque_no_dispara_aunque_tres_frontales_vean_enemigo);
     RUN_TEST(test_tres_frontales_cancelan_giro_y_pausa_pero_no_evasion);
+    RUN_TEST(test_ver_al_rival_corta_la_evasion);
     RUN_TEST(test_un_sensor_retrocede_recto_y_gira_tras_separarse);
     RUN_TEST(test_ambos_retrocede_sin_reinicios_y_blanco_interrumpe_giro);
     RUN_TEST(test_busqueda_default_en_curvas_sin_paradas_y_borde_la_interrumpe);

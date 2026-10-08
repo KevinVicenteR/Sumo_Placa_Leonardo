@@ -252,8 +252,10 @@ constexpr unsigned long TiempoMaxGiroLado = 500;
 constexpr unsigned long TiempoEsquivaRound1 = 0;
 constexpr unsigned long TiempoEsquivaRound2 = 0;
 constexpr int VelocidadEsquiva = 160;
-// Ronda 2: true = pivota sobre una rueda; false = gira en el sitio.
-constexpr bool PivoteRound2 = false;
+// Ronda 2: true = pivota sobre una rueda hacia el lado del sensor lateral que ve
+// al rival (si lo ve el izquierdo, la rueda izquierda queda parada y empuja la
+// derecha), avanzando a la vez contra él; false = gira en el sitio.
+constexpr bool PivoteRound2 = true;
 constexpr int VelocidadPivoteInicio = 180;
 // Ronda 3: avanza despacio y recto hacia delante hasta que cualquier sensor
 // (también los laterales) vea al rival (con

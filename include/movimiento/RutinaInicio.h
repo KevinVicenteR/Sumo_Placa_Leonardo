@@ -3,6 +3,8 @@
 //       hasta ver al rival de frente (como en la rama con_control).
 //   2 = lado a lado: (opcional) avanza para esquivar y gira hacia el rival.
 //   3 = enfrentados: avanza hacia el centro y espera al rival.
+//   4 = salida libre (en cualquier parte del dohyo): gira en el sitio hasta que
+//       cualquier sensor vea al rival.
 //   0 = sin rutina.
 // Al encontrar al rival (rondas 1 y 2) frena el giro y empieza la embestida.
 // Ver la línea cancela la rutina (lo hace ControlMovimiento).
@@ -36,6 +38,8 @@ private:
     void decidirLado(const DecisionMovimiento& decision, BusquedaRival& busqueda);
     bool avanzarAlCentro(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                          unsigned long ahora, unsigned long t);
+    bool explorar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
+                  unsigned long ahora, unsigned long t);
 
     int rutina = 0;
     int lado = 1;

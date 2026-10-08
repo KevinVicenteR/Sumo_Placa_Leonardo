@@ -275,8 +275,9 @@ constexpr unsigned long TiempoMinimoGiroLateral = 60;
 
 // 9. Módulo de arranque
 constexpr bool ModuloArranqueActivoAlto = true;
-// RUN debe mantenerse estos ms seguidos para arrancar.
-constexpr unsigned long FiltroModuloArranqueMs = 5;
+// RUN debe mantenerse estos ms seguidos para arrancar (descarta pulsos breves
+// del módulo, por ejemplo al pulsar PROG en el control remoto).
+constexpr unsigned long FiltroModuloArranqueMs = 30;
 // STOP debe mantenerse estos ms seguidos para parar: más largo para que el
 // infrarrojo del rival no detenga (y reinicie) el combate.
 constexpr unsigned long FiltroParadaModuloMs = 150;

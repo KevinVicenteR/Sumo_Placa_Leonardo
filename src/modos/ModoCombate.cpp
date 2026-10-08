@@ -21,7 +21,11 @@ void ModoCombate::iniciar() {
 }
 
 void ModoCombate::empezarCombate() {
+    // Reinicio completo: el robot queda como recién encendido, sin nada del
+    // combate anterior (sensores, maniobras, rutina), y en el modo de los DIP
+    placa.inicializarPines();
     motores.deshabilitar();
+    percepcion = Percepcion();
     // Medir el negro con los motores apagados. Los sensores de enemigo NO se
     // calibran: el rival puede estar delante al empezar.
     percepcion.calibrarPiso();

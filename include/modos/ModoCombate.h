@@ -38,6 +38,7 @@ private:
     bool enCombate = false;
     // Ya hubo un combate y cuándo se paró (para distinguir interferencias)
     bool combateEmpezado = false;
+    unsigned long inicioCombate = 0;
     unsigned long inicioParada = 0;
 #if defined(MONITOREO_COMBATE)
     unsigned long cicloMaximo = 0;   // ciclo más lento (µs) desde la última traza

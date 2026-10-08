@@ -57,11 +57,16 @@ static void venirAvanzando(ControlMovimiento& c, MotorMock& m, unsigned long has
 }
 
 // Giro del round 2 hacia el lado del rival: pivote sobre una rueda o en el sitio
+// Giro del round 1 (lado 1 = derecha): media vuelta en el sitio
+static void assertGiroRound1(MotorMock& m, int lado) {
+    assertMovimiento(m, lado * VelocidadGiroInicio, -lado * VelocidadGiroInicio);
+}
+
 static void assertGiroRound2(MotorMock& m, int lado) {
     if (PivoteRound2) {
         assertMovimiento(m, lado > 0 ? VelocidadPivoteInicio : 0, lado > 0 ? 0 : VelocidadPivoteInicio);
     } else {
-        assertMovimiento(m, lado * VelocidadGiroInicio, -lado * VelocidadGiroInicio);
+        assertMovimiento(m, lado * VelocidadGiroRound2, -lado * VelocidadGiroRound2);
     }
 }
 
@@ -493,20 +498,28 @@ void test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro(void) {
     c.iniciarRutina(1, 1);
 
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
-    // Ve de lado durante el giro: sigue girando
-    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TauRuedas);
-    assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
+    if (TiempoEsquivaRound1 > 0) {
+        // Primero se separa del rival (están pegados) avanzando recto
+        assertMovimiento(m, VelocidadEsquiva, VelocidadEsquiva);
+    }
+    // El giro empieza al terminar la esquiva
+    const unsigned long g = 1000 + TiempoEsquivaRound1;
+    c.ejecutar({TipoAccion::Busqueda}, m, g);
+    assertGiroRound1(m, 1);
+    // Lo ve con el lateral del lado hacia el que gira: sigue girando igual
+    c.ejecutar({TipoAccion::DefensaDer}, m, g + TauRuedas);
+    assertGiroRound1(m, 1);
     // Un frontal antes del giro mínimo (un reflejo) no lo detiene
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, 1000 + TiempoMinimoGiroEspalda / 2);
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, 1000 + TiempoMinimoGiroEspalda / 2 + ConfirmacionDeteccion);
-    assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, g + TiempoMinimoGiroEspalda / 2);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, g + TiempoMinimoGiroEspalda / 2 + ConfirmacionDeteccion);
+    assertGiroRound1(m, 1);
     // De frente y confirmado tras el mínimo: contragiro para no pasarse de largo
-    const unsigned long visto = 1000 + TiempoMinimoGiroEspalda + 2 * TauRuedas;
+    const unsigned long visto = g + TiempoMinimoGiroEspalda + 2 * TauRuedas;
     c.ejecutar({TipoAccion::Busqueda}, m, visto - 1);
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto);
-    assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
+    assertGiroRound1(m, 1);
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion);
+    // Frena el giro con un contragiro
     TEST_ASSERT_TRUE(m.izq < 0 && m.der > 0);
     // Tras el freno, embiste
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion + TiempoFrenadoRuedas + 1);
@@ -622,6 +635,22 @@ void test_rutina_lado_elige_el_lado_con_el_sensor_lateral(void) {
     assertGiroRound2(m, 1);
 }
 
+// El sensor lateral ve al rival al empezar, pero al avanzar en la esquiva lo
+// deja atrás y ya no lo ve: aun así gira hacia ese lado, no hacia el de DIP3
+void test_rutina_lado_recuerda_el_lado_visto_durante_la_esquiva(void) {
+    if (TiempoEsquivaRound2 == 0) {
+        return;
+    }
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(2, -1);                               // DIP3: izquierda
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1000);        // el lateral derecho lo ve
+    assertMovimiento(m, VelocidadEsquiva, VelocidadEsquiva);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1050);          // al avanzar deja de verlo
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoEsquivaRound2);
+    assertGiroRound2(m, 1);                               // gira a la derecha
+}
+
 void test_rutina_lado_sin_lateral_usa_el_dip3(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
@@ -648,7 +677,9 @@ void test_round_1_mantiene_su_velocidad_tras_la_embestida(void) {
     MotorMock m;
     c.iniciarRutina(1, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    const unsigned long visto = 1000 + TiempoMinimoGiroEspalda + 2 * TauRuedas;
+    const unsigned long visto = 1000 + TiempoEsquivaRound1 + TiempoMinimoGiroEspalda + 2 * TauRuedas;
+    // Al girar, el rival pasa primero por el sensor de 45° y luego queda de frente
+    c.ejecutar({TipoAccion::CorregirDer}, m, visto - 20);
     c.ejecutar({TipoAccion::Busqueda}, m, visto - 1);
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto);
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion);
@@ -696,7 +727,8 @@ void test_reiniciar_vuelve_al_estado_inicial(void) {
     // Tras reiniciar, una nueva rutina arranca normalmente
     c.iniciarRutina(1, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 5000);
-    assertMovimiento(m, VelocidadGiroInicio, -VelocidadGiroInicio);
+    c.ejecutar({TipoAccion::Busqueda}, m, 5000 + TiempoEsquivaRound1);
+    assertGiroRound1(m, 1);
 }
 
 int main(int, char**) {
@@ -732,6 +764,7 @@ int main(int, char**) {
     RUN_TEST(test_rutina_frente_ignora_los_laterales);
     RUN_TEST(test_rutina_lado_elige_el_lado_con_el_sensor_lateral);
     RUN_TEST(test_rutina_lado_sin_lateral_usa_el_dip3);
+    RUN_TEST(test_rutina_lado_recuerda_el_lado_visto_durante_la_esquiva);
     RUN_TEST(test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado);
     RUN_TEST(test_round_1_mantiene_su_velocidad_tras_la_embestida);
     RUN_TEST(test_rutina_frente_espera_quieto_tras_avanzar);

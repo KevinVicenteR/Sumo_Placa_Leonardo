@@ -580,7 +580,9 @@ inline void colocarRound() {
     const double contacto = cfg.radioChoque + cfg.radioEnemigo + 0.01;
     double ox = 0, oy = 0;  // del centro a nuestro robot; el rival en el opuesto
     if (cfg.salida == 1) {
-        ox = ux * contacto / 2; oy = uy * contacto / 2;
+        // Espalda con espalda y pegados: los cuerpos se tocan
+        const double pegados = contacto - 0.008;
+        ox = ux * pegados / 2; oy = uy * pegados / 2;
     } else if (cfg.salida == 2) {
         ox = -(cfg.ladoRival * rx * contacto - ux * 0.04) / 2;
         oy = -(cfg.ladoRival * ry * contacto - uy * 0.04) / 2;

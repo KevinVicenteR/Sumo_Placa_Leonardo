@@ -38,7 +38,8 @@ def compilar(params: dict, banderas: tuple = ()) -> Path:
     ruta = inc / "Parametros.h"
     texto = ruta.read_text()
     for nombre, valor in params.items():
-        texto, n = re.subn(rf"(\b{nombre}\s*=\s*)[^;]+;", rf"\g<1>{valor};", texto)
+        # Solo en declaraciones (no en comentarios como "(PatronBusqueda = 0)")
+        texto, n = re.subn(rf"(constexpr[^=;\n]*\b{nombre}\s*=\s*)[^;]+;", rf"\g<1>{valor};", texto)
         if n == 0:
             sys.exit(f"Parámetro desconocido: {nombre}")
     ruta.write_text(texto)

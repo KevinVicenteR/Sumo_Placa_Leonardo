@@ -38,7 +38,7 @@ constexpr bool ResistirEnBorde = false;
 // false = giro en el sitio a VelocidadPivoteLateral.
 constexpr bool GiroLateralEnRueda = false;
 constexpr int VelocidadRuedaPivote = 180;
-constexpr int VelocidadPivoteLateral = 180;
+constexpr int VelocidadPivoteLateral = 220;
 
 // --- Evasión del borde ---
 constexpr int VelocidadRetroceso = 255;
@@ -215,7 +215,7 @@ constexpr bool UsarPoliticaAprendida = false;
 // Búsqueda: 0 = avance y giro en el sitio; 1 = arcos suaves que cambian de
 // lado cada TiempoArcoBusqueda (rueda interior a PorcentajeArcoBusqueda).
 constexpr int PatronBusqueda = 1;
-constexpr int PorcentajeArcoBusqueda = 90;
+constexpr int PorcentajeArcoBusqueda = 50;
 constexpr unsigned long TiempoArcoBusqueda = 900;
 // La búsqueda arranca acelerando poco a poco durante este tiempo.
 constexpr unsigned long TiempoArranqueBusqueda = 400;
@@ -238,21 +238,25 @@ constexpr int RampaPwmPorMs = 1;
 // true = un interruptor en ON lee LOW (contra GND, con pull-up).
 constexpr bool DipActivoBajo = true;
 // Rondas 1 y 2: giro inicial.
-constexpr int VelocidadGiroInicio = 150;
+// Ronda 1 (como en la rama con_control): media vuelta en el sitio a esta velocidad.
+constexpr int VelocidadGiroInicio = 180;
+// Giro de la ronda 2 (el rival está al lado: girar despacio le deja golpear)
+constexpr int VelocidadGiroRound2 = 150;
 constexpr unsigned long TiempoMaxGiroEspalda = 500;
 constexpr unsigned long TiempoMaxGiroLado = 500;
 // Rondas 1 y 2: antes de girar hacia el rival, avanza recto este tiempo a
 // VelocidadEsquiva para apartarse de su embestida y atacarlo de lado
-// (0 = gira enseguida). En la simulación, contra rivales que embisten, la
-// esquiva del round 2 sube las victorias del 22 % al 95 %.
+// (0 = gira enseguida). En el round 1 separa al robot del rival: están pegados
+// y, con las ruedas atrás, al girar las esquinas traseras barren unos 3,6 cm
+// hacia atrás, chocan con él y cortan el giro.
 constexpr unsigned long TiempoEsquivaRound1 = 0;
-constexpr unsigned long TiempoEsquivaRound2 = 150;
+constexpr unsigned long TiempoEsquivaRound2 = 0;
 constexpr int VelocidadEsquiva = 160;
 // Ronda 2: true = pivota sobre una rueda; false = gira en el sitio.
 constexpr bool PivoteRound2 = false;
 constexpr int VelocidadPivoteInicio = 180;
 // Ronda 3: avance hacia el centro y, después, espera quieto al rival.
-constexpr int VelocidadAvanceInicio = 130;
+constexpr int VelocidadAvanceInicio = 80;
 constexpr unsigned long TiempoAvanceInicio = 4000;
 constexpr bool EsperarRound3 = true;
 constexpr unsigned long TiempoEsperaRound3 = 3000;
@@ -289,11 +293,21 @@ constexpr unsigned long FiltroParadaModuloMs = 150;
 // Debe ser corto: con el control remoto (STOP, RESTART y START) un START antes
 // de este tiempo se tomaría como la misma pelea y se saltaría la rutina del round.
 constexpr unsigned long TiempoReanudarCombate = 500;
+// Solo se reanuda un combate que llevaba al menos este tiempo en marcha. Al
+// pulsar PROG el módulo da pulsos breves de RUN (mientras parpadea su LED): el
+// START que se pulsa después debe empezar un combate nuevo, con su rutina.
+constexpr unsigned long TiempoMinimoParaReanudar = 1000;
 
 // Rutina (1 espalda, 2 lado, 3 frente, 0 ninguna) según DIP1 (bit 0) y DIP2 (bit 1).
 constexpr int rutinaSegunInterruptores(int dip) {
     return (dip & 3) == 0 ? 1 : (dip & 3) == 1 ? 2 : (dip & 3) == 2 ? 3 : 0;
 }
+
+// Para probar sin depender de los DIP: -1 = la rutina la eligen los DIP (normal);
+// 0, 1, 2 o 3 = siempre esa rutina. LadoForzado: 0 = lo elige DIP3; 1 = derecha;
+// -1 = izquierda.
+constexpr int RutinaForzada = 1;
+constexpr int LadoForzado = 0;
 
 // Si la curva fuera más rápida que el ataque, al corregir hacia un rival visto
 // a 45° la rueda interior iría más rápida y el robot giraría al revés.

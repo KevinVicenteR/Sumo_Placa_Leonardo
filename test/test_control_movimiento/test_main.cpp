@@ -615,16 +615,16 @@ void test_sin_interruptores_la_rutina_es_la_del_round_1(void) {
     TEST_ASSERT_EQUAL_INT(1, rutinaSegunInterruptores(4));  // DIP3 solo elige el lado
 }
 
-void test_rutina_frente_ignora_los_laterales(void) {
+void test_rutina_frente_reacciona_a_los_laterales(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(3, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    // Algo fuera del dohyo visto de lado: sigue avanzando
+    // Rival visto por el lateral izquierdo: termina la rutina y gira hacia él
     c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoMinimoAvanceInicio);
     c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoMinimoAvanceInicio + 2 * ConfirmacionDeteccion);
-    TEST_ASSERT_EQUAL_INT(3, c.rutinaActual());
-    TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    TEST_ASSERT_TRUE(m.izq < m.der);
 }
 
 void test_rutina_lado_elige_el_lado_con_el_sensor_lateral(void) {
@@ -766,7 +766,7 @@ int main(int, char**) {
     RUN_TEST(test_linea_sin_venir_avanzando);
     RUN_TEST(test_sin_interruptores_la_rutina_es_la_del_round_1);
     RUN_TEST(test_giro_lateral_ignora_un_frontal_antes_del_giro_minimo);
-    RUN_TEST(test_rutina_frente_ignora_los_laterales);
+    RUN_TEST(test_rutina_frente_reacciona_a_los_laterales);
     RUN_TEST(test_rutina_lado_elige_el_lado_con_el_sensor_lateral);
     RUN_TEST(test_rutina_lado_sin_lateral_usa_el_dip3);
     RUN_TEST(test_rutina_lado_recuerda_el_lado_visto_durante_la_esquiva);

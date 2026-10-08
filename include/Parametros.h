@@ -263,10 +263,12 @@ constexpr int VelocidadEsquiva = 160;
 // Ronda 2: true = pivota sobre una rueda; false = gira en el sitio.
 constexpr bool PivoteRound2 = false;
 constexpr int VelocidadPivoteInicio = 180;
-// Ronda 3: avance hacia el centro y, después, espera quieto al rival.
-constexpr int VelocidadAvanceInicio = 80;
+// Ronda 3: avanza despacio y recto hacia delante hasta que cualquier sensor
+// (también los laterales) vea al rival (con
+// EsperarRound3, tras TiempoAvanceInicio se queda quieto esperándolo).
+constexpr int VelocidadAvanceInicio = 60;
 constexpr unsigned long TiempoAvanceInicio = 4000;
-constexpr bool EsperarRound3 = true;
+constexpr bool EsperarRound3 = false;
 constexpr unsigned long TiempoEsperaRound3 = 3000;
 // Rondas 1 y 2: al encontrar al rival embiste durante TiempoEmbestidaInicio,
 // subiendo poco a poco de VelocidadEmbestidaInicio a VelocidadEmbestidaMaxima
@@ -314,7 +316,7 @@ constexpr int rutinaSegunInterruptores(int dip) {
 // Para probar sin depender de los DIP: -1 = la rutina la eligen los DIP (normal);
 // 0, 1, 2 o 3 = siempre esa rutina. LadoForzado: 0 = lo elige DIP3; 1 = derecha;
 // -1 = izquierda.
-constexpr int RutinaForzada = 1;
+constexpr int RutinaForzada = -1;
 constexpr int LadoForzado = 0;
 
 // Si la curva fuera más rápida que el ataque, al corregir hacia un rival visto

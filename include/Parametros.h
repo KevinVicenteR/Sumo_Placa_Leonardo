@@ -278,7 +278,9 @@ constexpr unsigned long FiltroParadaModuloMs = 150;
 // colocar los robots) sino una interferencia: al volver RUN, el robot sigue el
 // mismo combate sin recalibrar el piso (recalibrar sobre la línea blanca le
 // haría ver borde en todas partes).
-constexpr unsigned long TiempoReanudarCombate = 2000;
+// Debe ser corto: con el control remoto (STOP, RESTART y START) un START antes
+// de este tiempo se tomaría como la misma pelea y se saltaría la rutina del round.
+constexpr unsigned long TiempoReanudarCombate = 500;
 
 // Rutina (1 espalda, 2 lado, 3 frente, 0 ninguna) según DIP1 (bit 0) y DIP2 (bit 1).
 constexpr int rutinaSegunInterruptores(int dip) {

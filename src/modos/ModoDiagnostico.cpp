@@ -46,12 +46,38 @@ void ModoDiagnostico::calibrar() {
     Serial.print(F(" margenDer=")); Serial.println(percepcion.margenDerecho());
 }
 
+// Registra cada cambio de nivel del pin del módulo de arranque con el tiempo y
+// lo que duró el nivel anterior. Sin pausas, para no perder pulsos cortos.
+void ModoDiagnostico::vigilarArrancador() {
+    if (PIN_MODULO_ARRANQUE < 0) {
+        Serial.println(F("Este robot no tiene modulo de arranque"));
+        return;
+    }
+    Serial.println(F("=== SENAL DEL ARRANCADOR durante 20 s: pulsa START, STOP y RESTART ==="));
+    const unsigned long inicio = millis();
+    int nivel = digitalRead((uint8_t)PIN_MODULO_ARRANQUE);
+    unsigned long desde = inicio;
+    Serial.print(F("0 ms: ")); Serial.println(nivel == HIGH ? F("HIGH (RUN)") : F("LOW (STOP)"));
+    while (millis() - inicio < 20000) {
+        const int nuevo = digitalRead((uint8_t)PIN_MODULO_ARRANQUE);
+        if (nuevo == nivel) continue;
+        const unsigned long ahora = millis();
+        Serial.print(ahora - inicio); Serial.print(F(" ms: "));
+        Serial.print(nuevo == HIGH ? F("HIGH (RUN)") : F("LOW (STOP)"));
+        Serial.print(F("   (el nivel anterior duro ")); Serial.print(ahora - desde); Serial.println(F(" ms)"));
+        nivel = nuevo;
+        desde = ahora;
+    }
+    Serial.println(F("=== fin: pulsos de pocos ms al pulsar RESTART pueden arrancar el robot por error ==="));
+}
+
 void ModoDiagnostico::actualizar() {
     // Órdenes por el monitor serie
     if (Serial.available()) {
         const char orden = Serial.read();
         if (orden == 'c') calibrar();
         if (orden == 'r') imprimirCajaNegra();
+        if (orden == 'a') vigilarArrancador();
         if (orden == 'b') {
             cajaNegra.borrar();
             Serial.println(F("Caja negra borrada"));

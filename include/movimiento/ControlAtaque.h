@@ -5,6 +5,9 @@
 //   embiste durante TiempoEmbestidaInicio, subiendo de VelocidadEmbestidaInicio
 //   a VelocidadEmbestidaMaxima.
 // - Con el rival en los tres sensores delanteros, VelocidadAtaqueDirecto.
+// - Ronda 3: al ver al rival por delante durante el avance lento, va contra él
+//   acelerando poco a poco desde VelocidadAvanceInicio hasta VelocidadEmpuje en
+//   TiempoAceleracionRound3 (aproximación), mientras lo siga atacando.
 #ifndef CONTROL_ATAQUE_H
 #define CONTROL_ATAQUE_H
 
@@ -19,6 +22,8 @@ public:
 
     // La rutina de inicio encontró al rival: embestida a fondo
     void iniciarEmbestida(unsigned long ahora);
+    // Ronda 3: el avance lento encontró al rival por delante
+    void iniciarAproximacion(unsigned long ahora);
     // Pierde el contacto (por ejemplo, al evadir el borde)
     void olvidarFrente() { viendoFrente = false; empujandoRival = false; }
 
@@ -32,6 +37,9 @@ private:
     bool embestidaInicio = false;
     unsigned long finEmbestidaInicio = 0;
     bool ataqueDeRutina = false;
+    // Aproximación de la ronda 3
+    bool aproximacion = false;
+    unsigned long inicioAproximacion = 0;
 };
 
 #endif

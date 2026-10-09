@@ -25,6 +25,11 @@ void ControlAtaque::iniciarEmbestida(unsigned long ahora) {
     finEmbestidaInicio = ahora + TiempoEmbestidaInicio;
 }
 
+void ControlAtaque::iniciarAproximacion(unsigned long ahora) {
+    aproximacion = true;
+    inicioAproximacion = ahora;
+}
+
 int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long ahora) {
     // La embestida de la rutina dura mientras siga atacando y no se acabe su tiempo
     if (embestidaInicio && (!esAtaque(decision.tipo) || (long)(ahora - finEmbestidaInicio) >= 0)) {
@@ -32,6 +37,23 @@ int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long a
     }
     if (ataqueDeRutina && !esAtaque(decision.tipo)) {
         ataqueDeRutina = false;
+    }
+    // Ronda 3: va contra el rival subiendo poco a poco desde la velocidad lenta
+    // del avance hasta VelocidadEmpuje, mientras lo siga atacando
+    if (aproximacion && !esAtaque(decision.tipo)) {
+        aproximacion = false;
+    }
+    if (aproximacion) {
+        const unsigned long transcurrido = ahora - inicioAproximacion;
+        if (transcurrido >= TiempoAceleracionRound3) {
+            return VelocidadEmpuje;
+        }
+        return VelocidadAvanceInicio +
+               (long)(VelocidadEmpuje - VelocidadAvanceInicio) * transcurrido / TiempoAceleracionRound3;
+    }
+    // La aproximación de la ronda 3 dura mientras siga atacando
+    if (aproximacion && !esAtaque(decision.tipo)) {
+        aproximacion = false;
     }
 
     int ataque = VelocidadAtaque;

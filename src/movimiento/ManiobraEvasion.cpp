@@ -27,6 +27,7 @@ bool ManiobraEvasion::iniciar(int sentido, unsigned long duracionRet, unsigned l
     inicioFase = ahora;
     inicioEvasion = ahora;
     negroContinuo = false;
+    viendoRival = false;
     duracionRetroceso = duracionRet;
     duracionGiro = duracionGir;
     sentidoGiro = sentido;
@@ -36,6 +37,21 @@ bool ManiobraEvasion::iniciar(int sentido, unsigned long duracionRet, unsigned l
 bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                                 unsigned long ahora, BusquedaRival& busqueda) {
     const bool linea = esBorde(decision.tipo);
+
+    // Rival a la vista: corta la maniobra y el control normal va contra él. Solo
+    // cuando ya se separó de la línea y frenó (girando o en la pausa final), y
+    // como mucho una vez cada EsperaEntreCortesEvasion: si no, cortaría la
+    // evasión pegado al borde una y otra vez y se quedaría atrapado allí.
+    const bool yaSeparado = fase == Fase::Girando || fase == Fase::Asentando;
+    const bool puedeCortar = yaSeparado && (!huboCorte || ahora - ultimoCorte >= EsperaEntreCortesEvasion);
+    if (puedeCortar && rivalConfirmado(decision, linea, ahora)) {
+        huboCorte = true;
+        ultimoCorte = ahora;
+        fase = Fase::Libre;
+        salidaSuave = false;
+        limiteSalida = 255;
+        return false;
+    }
 
     // Línea otra vez a mitad de maniobra: volver a separarse
     const bool separandose = fase == Fase::Retrocediendo || fase == Fase::GirandoSalida;
@@ -102,6 +118,20 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
     }
 
     return false;
+}
+
+bool ManiobraEvasion::rivalConfirmado(const DecisionMovimiento& decision, bool linea,
+                                      unsigned long ahora) {
+    const bool rival = CortarEvasionAlVerRival && !linea && decision.tipo != TipoAccion::Busqueda;
+    if (!rival) {
+        viendoRival = false;
+        return false;
+    }
+    if (!viendoRival) {
+        viendoRival = true;
+        inicioRival = ahora;
+    }
+    return ahora - inicioRival >= TiempoConfirmarRivalEnEvasion;
 }
 
 bool ManiobraEvasion::separarse(bool linea, MandoMotores& mando, IMotor& motor, unsigned long ahora) {

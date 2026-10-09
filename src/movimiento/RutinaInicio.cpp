@@ -52,7 +52,7 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
         const unsigned long tGiro = t - esquiva;
         sigue = girar(decision, mando, motor, ahora, tGiro, busqueda, ataque);
     } else if (rutina == 3) {
-        sigue = avanzarAlCentro(decision, mando, motor, ahora, t);
+        sigue = avanzarAlCentro(decision, mando, motor, ahora, t, ataque);
     } else if (rutina == 4) {
         sigue = explorar(decision, mando, motor, ahora, t);
     }
@@ -96,16 +96,22 @@ bool RutinaInicio::girar(const DecisionMovimiento& decision, MandoMotores& mando
     return sigue;
 }
 
-// Ronda 3: avanzar hacia el centro y después esperar quieto al rival
+// Ronda 3: avanzar despacio hacia delante. Al ver al rival por delante va contra
+// él acelerando poco a poco desde esta velocidad lenta; si lo ve de lado,
+// termina y el control normal gira hacia él.
 bool RutinaInicio::avanzarAlCentro(const DecisionMovimiento& decision, MandoMotores& mando,
-                                   IMotor& motor, unsigned long ahora, unsigned long t) {
+                                   IMotor& motor, unsigned long ahora, unsigned long t,
+                                   ControlAtaque& ataque) {
     const bool esperando = EsperarRound3 && t >= TiempoAvanceInicio;
-    // Cualquier sensor (frontal, 45° o lateral) que vea al rival termina la
-    // rutina: el control normal gira hacia él y ataca
     const bool visto = decision.tipo != TipoAccion::Busqueda;
     const bool confirmado = rivalVisto.actualizar(visto, ahora);
     const unsigned long fin = TiempoAvanceInicio + (EsperarRound3 ? TiempoEsperaRound3 : 0);
-    const bool sigue = !(confirmado && t >= TiempoMinimoAvanceInicio) && t < fin;
+    // Una detección no termina el avance antes de TiempoMinimoAvanceInicio
+    const bool encontrado = confirmado && t >= TiempoMinimoAvanceInicio;
+    const bool sigue = !encontrado && t < fin;
+    if (encontrado && esAtaque(decision.tipo)) {
+        ataque.iniciarAproximacion(ahora);
+    }
     if (sigue && esperando) {
         mando.mover(motor, 0, 0, true);
     } else if (sigue) {

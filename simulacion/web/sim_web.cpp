@@ -22,7 +22,7 @@ double inicioCombateUs = 0;
 }
 
 // Robot real: 750 rpm, ruedas JSUMO de 3 cm, 340 g y pala delantera; el rival
-// también lleva pala. Dohyo de 70 cm con línea de 2,5 cm.
+// también lleva pala. Dohyo de 77 cm con línea de 2,5 cm.
 EXPORTAR("sim_reiniciar") void sim_reiniciar(double semilla) {
     sim::cfg.rpm = 750;
     sim::cfg.diametro = 0.03;
@@ -30,7 +30,7 @@ EXPORTAR("sim_reiniciar") void sim_reiniciar(double semilla) {
     sim::cfg.mu = 0.9;
     sim::cfg.pala = 0.3;
     sim::cfg.palaRival = 0.3;
-    sim::cfg.radio = 0.35;
+    sim::cfg.radio = 0.385;
     sim::cfg.borde = 0.025;
     sim::reiniciar((unsigned long long)semilla);
 }

@@ -82,6 +82,11 @@ constexpr int VelocidadCercaBorde = 100;
 
 // Espera inicial del modo diagnóstico (el de combate usa el módulo de arranque).
 constexpr unsigned long TiempoInicioReglamentario = 5000;
+// Reglamento SECIHTI: tras el START el robot espera este tiempo (ms) con los
+// motores apagados antes de su primer movimiento (si sale antes, se repite el
+// round). El piso se calibra al recibir START. 0 = sale al instante.
+// Solo en el robot real: en el simulador los dos robots salen a la vez.
+constexpr unsigned long EsperaInicioCombate = 5000;
 
 // --- Frenado al perder al rival ---
 // Cada rueda frena según su velocidad estimada (la orden filtrada con la
@@ -166,8 +171,9 @@ constexpr unsigned long TiempoMaxGiroLateral = 400;
 constexpr bool UsarEstimadorBorde = true;
 // true = también limita la embestida si prevé el borde cerca.
 constexpr bool EstimadorLimitaEmbestida = true;
-// Geometría: dohyo de 70 cm de diámetro (el reglamentario mide 77 cm) y línea de 2,5 cm.
-constexpr float RadioDohyo = 0.35f;
+// Geometría: dohyo de la competencia SECIHTI, 77 cm de diámetro (línea incluida)
+// y línea blanca de 2,5 cm.
+constexpr float RadioDohyo = 0.385f;
 constexpr float AnchoLineaBorde = 0.025f;
 constexpr float DistanciaSensorPiso = 0.078f;     // por delante del eje de ruedas (ruedas atrás)
 constexpr float SeparacionSensoresPiso = 0.04f;   // a cada lado del centro
@@ -181,10 +187,12 @@ constexpr float TauRuedaEstimador = 0.06f;
 constexpr float RadioSalidaEstimado = 0.15f;
 // Con rutina de inicio se sabe dónde empieza: rounds 1 y 2 junto al centro (a lo
 // sumo a IncertSalidaCentro), round 3 a RadioSalidaRound3 del centro mirándolo
-// (con IncertSalidaRound3 de error y IncertRumboRound3 rad de rumbo).
+// (con IncertSalidaRound3 de error y IncertRumboRound3 rad de rumbo). En el
+// round 3 el juez puede colocarlos más cerca que pegados al borde: por eso el
+// error de posición es amplio.
 constexpr float IncertSalidaCentro = 0.06f;
-constexpr float RadioSalidaRound3 = 0.295f;
-constexpr float IncertSalidaRound3 = 0.03f;
+constexpr float RadioSalidaRound3 = 0.33f;
+constexpr float IncertSalidaRound3 = 0.06f;
 constexpr float IncertRumboRound3 = 0.3f;
 // Cuánto crece la incertidumbre: fracción de lo recorrido, de lo girado y
 // deriva del rumbo (rad) por metro.

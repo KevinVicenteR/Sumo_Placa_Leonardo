@@ -81,7 +81,7 @@ code { font-family: var(--f-mono); font-size: 13px; }
 
 <div class="pagina">
   <header>
-    <div class="ceja">Mini sumo X3 · dohyo Ø 70 cm · borde blanco 2,5 cm · 400 rpm · LiPo 2S · ruedas JSUMO 3 cm · 340 g · pala</div>
+    <div class="ceja">Mini sumo X3 · dohyo Ø 77 cm · borde blanco 2,5 cm · 400 rpm · LiPo 2S · ruedas JSUMO 3 cm · 340 g · pala</div>
     <h1>Dohyo Sumo X3</h1>
     <p class="lead">Arrastra tu robot (placa blanca, pala plateada) y el rival (rojo) a donde quieras. Las líneas que salen de tu robot son sus 5 sensores de enemigo: se ponen rojas cuando ven al rival. En la vista 3D, arrastra para girar la cámara y usa la rueda del ratón para acercarte. El enemigo pesa 300 g, lleva pala y resiste el empuje: gana quien saque al otro. Para girar el robot, arrastra el punto que tiene delante o usa el control de orientación. Lo que corre aquí es tu firmware real de <code>src/</code> compilado a WebAssembly, con la misma física que el simulador de consola.</p>
   </header>
@@ -253,7 +253,7 @@ const FIRMWARE = {
   nuevo: __SIM_NUEVO__,
   anterior: __SIM_ANTERIOR__,
 };
-const R = 0.35, BORDE = 0.025, LARGO = 0.10, SX = 0.045, SY = 0.04, DURACION = 30;
+const R = 0.385, BORDE = 0.025, LARGO = 0.10, SX = 0.045, SY = 0.04, DURACION = 30;
 const env = { sin: Math.sin, cos: Math.cos, atan2: Math.atan2, log: Math.log };
 
 const estado = {

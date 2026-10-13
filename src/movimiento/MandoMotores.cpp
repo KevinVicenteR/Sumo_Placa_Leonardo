@@ -43,7 +43,7 @@ void MandoMotores::mover(IMotor& motor, int izq, int der, bool urgente) {
         int limite = limiteArranque;
         if (limites.salidaSuave < limite) limite = limites.salidaSuave;
         if (limites.cercaBorde && VelocidadCercaBorde < limite) limite = VelocidadCercaBorde;
-        if (UsarEstimadorBorde && (!limites.empujando || EstimadorLimitaEmbestida) &&
+        if (UsarEstimadorBorde && !limites.golpe && (!limites.empujando || EstimadorLimitaEmbestida) &&
             limites.estimador < limite) {
             limite = limites.estimador;
         }
@@ -54,7 +54,7 @@ void MandoMotores::mover(IMotor& motor, int izq, int der, bool urgente) {
         }
     }
     // 2. Rampa (salvo en maniobras urgentes)
-    if (rampa > 0 && !urgente) {
+    if (rampa > 0 && !urgente && !limites.golpe) {
         izq = conRampa(ordenIzq, izq);
         der = conRampa(ordenDer, der);
     }

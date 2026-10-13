@@ -43,6 +43,14 @@ void EstimadorBorde::colocar(float radio, float sigmaPos, bool mirandoAlCentro, 
     sigTh = mirandoAlCentro ? sigmaRumbo : Pi;
 }
 
+void EstimadorBorde::colocarGirado(float radio, float sigmaPos, float desvio, float sigmaRumbo) {
+    px = radio;
+    py = 0;
+    th = envolver(Pi + desvio);
+    sigPos = sigmaPos;
+    sigTh = sigmaRumbo;
+}
+
 float EstimadorBorde::velocidadRegimen(int pwm) {
     const int magnitud = pwm < 0 ? -pwm : pwm;
     if (magnitud <= ZonaMuertaPwm) return 0;
@@ -125,12 +133,9 @@ float EstimadorBorde::distanciaLibre() const {
     const float limite = RadioDohyo - MargenBorde;
     const float r = sqrt(px * px + py * py);
     const float rPeor = minf(r + SigmasSeguridad * sigPos, RadioDohyo);
-    if (rPeor >= limite) {
-        return 0;
-    }
     const float abanico = SigmasSeguridad * sigTh;
     if (abanico >= Pi || r < 0.001f) {
-        return limite - rPeor;
+        return rPeor >= limite ? 0 : limite - rPeor;
     }
     const float rel = envolver(th - atan2(py, px));
     float peor;
@@ -140,7 +145,13 @@ float EstimadorBorde::distanciaLibre() const {
         peor = minf(absf(envolver(rel - abanico)), absf(envolver(rel + abanico)));
     }
     const float s = rPeor * sin(peor);
-    return -rPeor * cos(peor) + sqrt(limite * limite - s * s);
+    const float c = cos(peor);
+    // Ya en la zona de margen: solo hay sitio si mira hacia dentro y su
+    // trayectoria vuelve a cruzar el círculo seguro (hasta el otro lado)
+    if (rPeor >= limite && (c >= 0 || absf(s) >= limite)) {
+        return 0;
+    }
+    return -rPeor * c + sqrt(limite * limite - s * s);
 }
 
 bool EstimadorBorde::confiable() const {

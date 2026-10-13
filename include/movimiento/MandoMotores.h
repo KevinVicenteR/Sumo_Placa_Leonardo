@@ -17,6 +17,8 @@ struct LimitesAvance {
     bool cercaBorde = false;  // un sensor de piso empieza a ver claro
     int estimador = 255;      // el estimador de borde prevé el borde cerca
     bool empujando = false;   // empujando al rival (el estimador puede no limitar)
+    bool golpe = false;       // golpe o maniobra de una estrategia de espera: sin
+                              // rampa y sin límite del estimador (rival delante, o giro corto)
 };
 
 // Contramando para frenar: velocidad de cada rueda y cuánto tiempo aplicarla

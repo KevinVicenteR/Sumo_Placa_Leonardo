@@ -5,6 +5,8 @@
 //   3 = enfrentados: avanza hacia el centro y espera al rival.
 //   4 = salida libre (en cualquier parte del dohyo): gira en el sitio hasta que
 //       cualquier sensor vea al rival.
+//   5-8 = estrategias de espera con colocación libre (Rumania): contragolpe,
+//       emboscada a 45°, de lado y espera con esquiva (ver Parametros.h).
 //   0 = sin rutina.
 // Al encontrar al rival (rondas 1 y 2) frena el giro y empieza la embestida.
 // Ver la línea cancela la rutina (lo hace ControlMovimiento).
@@ -40,6 +42,14 @@ private:
                          unsigned long ahora, unsigned long t, ControlAtaque& ataque);
     bool explorar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                   unsigned long ahora, unsigned long t);
+    // Estrategias de espera (rutinas 5 a 8)
+    bool esperarRival(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
+                      unsigned long ahora, unsigned long t, ControlAtaque& ataque);
+    bool pivotarHaciaRival(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
+                           unsigned long ahora, ControlAtaque& ataque);
+    // Cambia a otra rutina (al agotar la espera)
+    bool pasarA(int nueva, unsigned long ahora, MandoMotores& mando, IMotor& motor);
+    void empezarFase(int nueva, unsigned long ahora);
 
     int rutina = 0;
     int lado = 1;
@@ -53,6 +63,12 @@ private:
     bool frenandoGiro = false;
     unsigned long inicioFreno = 0;
     Freno freno;
+    // Estrategias de espera: 0 esperando, 1 pivotando hacia el rival, 2 esquivando
+    int fase = 0;
+    unsigned long inicioFase = 0;
+    int ladoGolpe = 1;
+    bool viendoLateral = false;
+    unsigned long inicioLateral = 0;
 };
 
 #endif

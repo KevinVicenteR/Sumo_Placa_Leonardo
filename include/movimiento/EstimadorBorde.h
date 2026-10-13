@@ -15,6 +15,9 @@ public:
     // Posición de salida conocida: a "radio" del centro con incertidumbre
     // sigmaPos; mirandoAlCentro = el rumbo apunta al centro (con sigmaRumbo)
     void colocar(float radio, float sigmaPos, bool mirandoAlCentro, float sigmaRumbo);
+    // Igual, con el rumbo conocido: girado "desvio" rad (positivo a la izquierda)
+    // respecto a mirar al centro
+    void colocarGirado(float radio, float sigmaPos, float desvio, float sigmaRumbo);
 
     // Avanza la estimación dt segundos con estas órdenes de motor.
     // empujon = desplazamiento desconocido (m/s) por contacto con el rival

@@ -1,13 +1,19 @@
 #include "movimiento/LimitadorBorde.h"
 #include "Parametros.h"
 
-void LimitadorBorde::colocarSalida(int rutina) {
+void LimitadorBorde::colocarSalida(int rutina, int lado) {
     if (rutina == 1 || rutina == 2) {
         // Espalda con espalda o lado a lado: junto al centro, rumbo cualquiera
         estimadorBorde.colocar(0, IncertSalidaCentro, false, 0);
     } else if (rutina == 3) {
         // Enfrentados: junto al borde, mirando al centro
         estimadorBorde.colocar(RadioSalidaRound3, IncertSalidaRound3, true, IncertRumboRound3);
+    } else if (rutina >= 5 && rutina <= 8) {
+        // Colocación libre (lo coloca uno mismo, con cuidado): de frente (5 y 8),
+        // girado 45° (6) o de lado (7), con el rival hacia el lado de DIP3
+        const float desvio = rutina == 6 ? 0.785f : rutina == 7 ? 1.571f : 0;
+        estimadorBorde.colocarGirado(RadioSalidaRound3, IncertSalidaLibre,
+                                     (lado < 0 ? -1 : 1) * desvio, IncertRumboLibre);
     }
 }
 

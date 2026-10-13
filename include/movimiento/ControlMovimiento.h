@@ -34,7 +34,7 @@ public:
     // Rutina del round (ver RutinaInicio) y lado del giro (1 der, -1 izq)
     void iniciarRutina(int rutinaInicio, int ladoInicio) {
         rutina.iniciar(rutinaInicio, ladoInicio);
-        limitadorBorde.colocarSalida(rutinaInicio);
+        limitadorBorde.colocarSalida(rutinaInicio, ladoInicio);
     }
 
     // --- Consultas (telemetría, tests y simulador) ---

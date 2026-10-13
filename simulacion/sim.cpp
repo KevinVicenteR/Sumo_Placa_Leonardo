@@ -228,7 +228,7 @@ void uso() {
                  "         [--bateria Vbat/Vmotor] [--friccion-caja f] [--friccion-giro f]\n"
                  "         [--adc-negro n --adc-blanco n --adc-fuera n] [--pared m] [--sensor-x m]\n"
                  "         [--inicio-r m] [--retardo-piso ms] [--mancha m]\n"
-                 "         [--salida espalda|lado|frente] [--rival-lado der|izq] [--dip N]\n"
+                 "         [--salida espalda|lado|frente] [--rival-lado der|izq] [--dip N] [--giro-salida grados]\n"
                  "                  (posición de salida de cada round; DIP: bit0=DIP1, bit1=DIP2, bit2=DIP3)\n"
                  "         [--fantasmas n]  (detecciones falsas por segundo y sensor)\n"
                  "         [--saturacion n] (veces por segundo y sensor que queda cegado 0,5-2 s)\n"
@@ -292,6 +292,7 @@ int main(int argc, char** argv) {
         }
         else if (a == "--rival-lado") cfg.ladoRival = std::string(v) == "izq" ? -1 : 1;
         else if (a == "--dip") cfg.dip = std::atoi(v);
+        else if (a == "--giro-salida") cfg.giroSalida = std::atof(v) * PI / 180;
         else if (a == "--fantasmas") cfg.fantasmasPorSegundo = std::atof(v);
         else if (a == "--saturacion") cfg.saturacionesPorSegundo = std::atof(v);
         else if (a == "--cortes-arranque") cfg.cortesArranquePorSegundo = std::atof(v);

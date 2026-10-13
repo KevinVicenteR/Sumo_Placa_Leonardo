@@ -16,13 +16,25 @@ SerialSim Serial;
 void operator delete(void*) noexcept {}
 void operator delete(void*, unsigned long) noexcept {}
 extern "C" void __cxa_pure_virtual() { __builtin_trap(); }
+// El compilador las usa al copiar objetos grandes (p. ej. al reiniciar el combate)
+extern "C" void* memset(void* destino, int valor, unsigned long n) {
+    volatile unsigned char* d = static_cast<unsigned char*>(destino);
+    for (unsigned long i = 0; i < n; i++) d[i] = (unsigned char)valor;
+    return destino;
+}
+extern "C" void* memcpy(void* destino, const void* origen, unsigned long n) {
+    volatile unsigned char* d = static_cast<unsigned char*>(destino);
+    const unsigned char* o = static_cast<const unsigned char*>(origen);
+    for (unsigned long i = 0; i < n; i++) d[i] = o[i];
+    return destino;
+}
 
 namespace {
 double inicioCombateUs = 0;
 }
 
 // Robot real: 750 rpm, ruedas JSUMO de 3 cm, 340 g y pala delantera; el rival
-// también lleva pala. Dohyo de 70 cm con línea de 2,5 cm.
+// también lleva pala. Dohyo de 77 cm con línea de 2,5 cm.
 EXPORTAR("sim_reiniciar") void sim_reiniciar(double semilla) {
     sim::cfg.rpm = 750;
     sim::cfg.diametro = 0.03;
@@ -30,7 +42,7 @@ EXPORTAR("sim_reiniciar") void sim_reiniciar(double semilla) {
     sim::cfg.mu = 0.9;
     sim::cfg.pala = 0.3;
     sim::cfg.palaRival = 0.3;
-    sim::cfg.radio = 0.35;
+    sim::cfg.radio = 0.385;
     sim::cfg.borde = 0.025;
     sim::reiniciar((unsigned long long)semilla);
 }
@@ -65,11 +77,13 @@ EXPORTAR("sim_fijar") void sim_fijar(int id, double v) {
 }
 
 // Round: posición de salida (0 libre, 1 espalda, 2 lado, 3 enfrentados), lado
-// del rival en el round 2 (1 der, -1 izq) e interruptores DIP del robot
-EXPORTAR("sim_round") void sim_round(int salida, int ladoRival, int dip) {
+// del rival en el round 2 (1 der, -1 izq), interruptores DIP del robot y, en la
+// salida enfrentados, cuánto va girado nuestro robot (grados, + a la izquierda)
+EXPORTAR("sim_round") void sim_round(int salida, int ladoRival, int dip, double giroGrados) {
     sim::cfg.salida = salida;
     sim::cfg.ladoRival = ladoRival;
     sim::cfg.dip = dip;
+    sim::cfg.giroSalida = giroGrados * 3.14159265358979 / 180;
 }
 
 EXPORTAR("sim_robot") void sim_robot(double x, double y, double th) {

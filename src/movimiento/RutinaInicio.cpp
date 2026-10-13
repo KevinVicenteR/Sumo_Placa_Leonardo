@@ -19,6 +19,8 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
         rivalVisto.reiniciar();
         ladoDecidido = false;
         busqueda.fijarSentido(lado);
+        fase = 0;
+        viendoLateral = false;
     }
 
     // Frenando el giro tras encontrar al rival
@@ -55,6 +57,8 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
         sigue = avanzarAlCentro(decision, mando, motor, ahora, t, ataque);
     } else if (rutina == 4) {
         sigue = explorar(decision, mando, motor, ahora, t);
+    } else if (rutina >= 5 && rutina <= 8) {
+        sigue = esperarRival(decision, mando, motor, ahora, t, ataque);
     }
     if (!sigue) {
         rutina = 0;
@@ -131,6 +135,158 @@ bool RutinaInicio::explorar(const DecisionMovimiento& decision, MandoMotores& ma
         mando.mover(motor, lado * VelocidadGiroRound4, -lado * VelocidadGiroRound4, true);
     }
     return sigue;
+}
+
+// --- Estrategias de espera (rutinas 5 a 8, colocación libre) ---
+
+static bool variosFrontales(const DecisionMovimiento& d) {
+    return d.ataqueDirecto || d.tipo == TipoAccion::AjusteIzq || d.tipo == TipoAccion::AjusteDer;
+}
+
+// -1 / 1 si lo ve el sensor lateral izquierdo / derecho; 0 si no
+static int ladoLateral(TipoAccion t) {
+    return t == TipoAccion::DefensaIzq ? -1 : t == TipoAccion::DefensaDer ? 1 : 0;
+}
+
+// -1 / 1 si lo ve solo el sensor de 45° izquierdo / derecho; 0 si no
+static int lado45(TipoAccion t) {
+    return t == TipoAccion::CorregirIzq ? -1 : t == TipoAccion::CorregirDer ? 1 : 0;
+}
+
+void RutinaInicio::empezarFase(int nueva, unsigned long ahora) {
+    fase = nueva;
+    inicioFase = ahora;
+    rivalVisto.reiniciar();
+}
+
+bool RutinaInicio::pasarA(int nueva, unsigned long ahora, MandoMotores& mando, IMotor& motor) {
+    rutina = nueva;
+    inicio = ahora;
+    empezarFase(0, ahora);
+    mando.mover(motor, 0, 0, true);
+    return true;
+}
+
+bool RutinaInicio::esperarRival(const DecisionMovimiento& decision, MandoMotores& mando,
+                                IMotor& motor, unsigned long ahora, unsigned long t,
+                                ControlAtaque& ataque) {
+    if (fase == 1) {
+        return pivotarHaciaRival(decision, mando, motor, ahora, ataque);
+    }
+    if (fase == 2) {
+        // Rutina 8: se aparta del camino del rival pivotando hacia DIP3; después
+        // el control normal lo busca (pasará de largo y lo verá un lateral)
+        if (ahora - inicioFase >= TiempoEsquivaLibre) {
+            return false;
+        }
+        mando.limites.golpe = true;
+        mando.mover(motor, lado > 0 ? VelocidadEsquivaLibre : 0, lado > 0 ? 0 : VelocidadEsquivaLibre, true);
+        return true;
+    }
+
+    const TipoAccion tipo = decision.tipo;
+    const bool confirmado = rivalVisto.actualizar(tipo != TipoAccion::Busqueda, ahora);
+
+    // Sin ver nada durante TiempoMaxEsperaRival: sale a buscarlo
+    if (t >= TiempoMaxEsperaRival && tipo == TipoAccion::Busqueda) {
+        if (rutina == 6 || rutina == 7) {
+            ladoGolpe = lado;                        // pivota hacia DIP3 (hacia el rival)
+            empezarFase(1, ahora);
+            return pivotarHaciaRival(decision, mando, motor, ahora, ataque);
+        }
+        return pasarA(3, ahora, mando, motor);       // avanza despacio (ronda 3)
+    }
+
+    if (rutina == 8) {
+        // Si el frontal lo ve antes de VentanaRivalRapido desde la salida (ya se
+        // ha acercado), viene embistiendo rápido: se aparta. Si no, golpe
+        // cuando está cerca (dos o tres frontales).
+        const bool rapido = t <= VentanaRivalRapido;
+        if (confirmado && (rapido ? veDeFrente(decision) : variosFrontales(decision))) {
+            if (rapido) {
+                empezarFase(2, ahora);
+                mando.limites.golpe = true;
+        mando.mover(motor, lado > 0 ? VelocidadEsquivaLibre : 0, lado > 0 ? 0 : VelocidadEsquivaLibre, true);
+                return true;
+            }
+            ataque.iniciarGolpe(ahora);
+            return false;
+        }
+    } else if (rutina == 5) {
+        // Contragolpe: golpe a fondo cuando dos o tres frontales lo ven (cerca),
+        // o ya al verlo el frontal con ContragolpeAlVerlo
+        const bool listo = ContragolpeAlVerlo ? veDeFrente(decision) : variosFrontales(decision);
+        if (listo && confirmado) {
+            ataque.iniciarGolpe(ahora);
+            return false;
+        }
+    } else {
+        // Rutinas 6 y 7: de frente, golpe directo
+        if (veDeFrente(decision) && confirmado) {
+            ataque.iniciarGolpe(ahora);
+            return false;
+        }
+    }
+
+    const int lat = ladoLateral(tipo);
+    const int diag = lado45(tipo);
+    if (rutina == 6 && confirmado && (lat != 0 || diag != 0)) {
+        // Emboscada: el rival pasa por el lateral o el 45°, pivota y lo golpea de lado
+        ladoGolpe = lat != 0 ? lat : diag;
+        empezarFase(1, ahora);
+        return pivotarHaciaRival(decision, mando, motor, ahora, ataque);
+    }
+    if (rutina == 7) {
+        // De lado: espera mientras solo lo ve el lateral; si sigue ahí
+        // TiempoLateralCerca o pasa al 45°, pivota y lo golpea
+        if (lat == 0) {
+            viendoLateral = false;
+        } else if (!viendoLateral) {
+            viendoLateral = true;
+            inicioLateral = ahora;
+        }
+        const bool encima = viendoLateral && ahora - inicioLateral >= TiempoLateralCerca;
+        if ((diag != 0 && confirmado) || encima) {
+            ladoGolpe = diag != 0 ? diag : lat;
+            empezarFase(1, ahora);
+            return pivotarHaciaRival(decision, mando, motor, ahora, ataque);
+        }
+        mando.mover(motor, 0, 0, true);
+        return true;
+    }
+    if ((rutina == 5 || rutina == 8) && lat != 0 && confirmado) {
+        // Lo ve de lado: el control normal gira hacia él
+        return false;
+    }
+    if ((rutina == 5 || rutina == 8) && diag != 0) {
+        // Solo un 45°: gira en el sitio para centrarlo, sin avanzar
+        mando.mover(motor, diag * VelocidadGiroEspera, -diag * VelocidadGiroEspera, true);
+        return true;
+    }
+    // Nada, o solo el frontal central (aún lejos): quieto (o, con
+    // ContragolpeAvanzaLento, avanzando despacio hacia él)
+    if ((rutina == 5 || rutina == 8) && ContragolpeAvanzaLento && veDeFrente(decision)) {
+        mando.mover(motor, VelocidadAvanceInicio, VelocidadAvanceInicio);
+        return true;
+    }
+    mando.mover(motor, 0, 0, true);
+    return true;
+}
+
+// Pivota sobre la rueda del lado del rival hasta tenerlo de frente y lo golpea
+bool RutinaInicio::pivotarHaciaRival(const DecisionMovimiento& decision, MandoMotores& mando,
+                                     IMotor& motor, unsigned long ahora, ControlAtaque& ataque) {
+    if (rivalVisto.actualizar(veDeFrente(decision), ahora)) {
+        ataque.iniciarGolpe(ahora);
+        return false;
+    }
+    if (ahora - inicioFase >= TiempoMaxGiroLado) {
+        return false;
+    }
+    mando.limites.golpe = true;
+    const int velocidad = rutina == 7 ? VelocidadPivoteDeLado : VelocidadPivoteEmboscada;
+    mando.mover(motor, ladoGolpe > 0 ? velocidad : 0, ladoGolpe > 0 ? 0 : velocidad, true);
+    return true;
 }
 
 // Ronda 2: un sensor lateral o de 45° que ve al rival fija el lado del giro (si

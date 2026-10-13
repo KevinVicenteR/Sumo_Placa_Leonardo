@@ -166,8 +166,8 @@ constexpr unsigned long TiempoMaxGiroLateral = 400;
 constexpr bool UsarEstimadorBorde = true;
 // true = también limita la embestida si prevé el borde cerca.
 constexpr bool EstimadorLimitaEmbestida = true;
-// Geometría: dohyo de 70 cm de diámetro (el reglamentario mide 77 cm) y línea de 2,5 cm.
-constexpr float RadioDohyo = 0.35f;
+// Geometría: dohyo de 77 cm de diámetro (línea incluida) y línea de 2,5 cm.
+constexpr float RadioDohyo = 0.385f;
 constexpr float AnchoLineaBorde = 0.025f;
 constexpr float DistanciaSensorPiso = 0.078f;     // por delante del eje de ruedas (ruedas atrás)
 constexpr float SeparacionSensoresPiso = 0.04f;   // a cada lado del centro
@@ -183,9 +183,13 @@ constexpr float RadioSalidaEstimado = 0.15f;
 // sumo a IncertSalidaCentro), round 3 a RadioSalidaRound3 del centro mirándolo
 // (con IncertSalidaRound3 de error y IncertRumboRound3 rad de rumbo).
 constexpr float IncertSalidaCentro = 0.06f;
-constexpr float RadioSalidaRound3 = 0.295f;
+constexpr float RadioSalidaRound3 = 0.33f;
 constexpr float IncertSalidaRound3 = 0.03f;
 constexpr float IncertRumboRound3 = 0.3f;
+// Colocación libre (rutinas 5 a 8): lo coloca uno mismo en el ángulo de la
+// estrategia, así que posición y rumbo se conocen mejor.
+constexpr float IncertSalidaLibre = 0.02f;
+constexpr float IncertRumboLibre = 0.15f;
 // Cuánto crece la incertidumbre: fracción de lo recorrido, de lo girado y
 // deriva del rumbo (rad) por metro.
 constexpr float ErrorDistancia = 0.3f;
@@ -326,9 +330,51 @@ constexpr bool ReiniciarTrasParada = true;
 // START que se pulsa después debe empezar un combate nuevo, con su rutina.
 constexpr unsigned long TiempoMinimoParaReanudar = 1000;
 
-// Rutina (1 espalda, 2 lado, 3 frente, 4 salida libre) según DIP1 (bit 0) y DIP2 (bit 1).
+// Rumania: cada uno coloca su robot (salida de frente, como el round 3, pero con
+// la posición y el ángulo que elijas). Con RutinasColocacionLibre los DIP eligen
+// una de las cuatro estrategias de espera:
+//   DIP1 DIP2  rutina
+//   off  off   5: contragolpe   -> de frente; quieto hasta que el frontal lo ve
+//                 y entonces golpe a fondo (o al verlo dos o tres frontales, si
+//                 ContragolpeAlVerlo = false)
+//   ON   off   6: emboscada 45° -> girado 45° (rival hacia el lado de DIP3);
+//                 quieto, y al verlo un lateral o un 45° pivota y lo golpea de lado
+//   off  ON    7: de lado       -> de lado (rival hacia el lado de DIP3); quieto
+//                 mientras solo lo ve el lateral; al pasar al 45°/frontal (o
+//                 seguir en el lateral TiempoLateralCerca) pivota y golpea
+//   ON   ON    8: espera y esquiva -> de frente; si viene rápido (el frontal
+//                 lo ve antes de VentanaRivalRapido) se aparta hacia DIP3 y luego
+//                 lo ataca de lado; si no, como el contragolpe
+// En todas, si en TiempoMaxEsperaRival no ve nada sale a buscarlo.
+constexpr bool RutinasColocacionLibre = true;
+constexpr unsigned long TiempoMaxEsperaRival = 3000;
+// Esperando, rival solo en un 45°: gira en el sitio a esta velocidad para centrarlo.
+constexpr int VelocidadGiroEspera = 140;
+// Pivote sobre una rueda hacia el rival (la otra a esta velocidad): rutina 6
+// (emboscada a 45°) y rutina 7 (de lado). Elegidas con la simulación: en la 6 más
+// rápido se pasa de largo al rival rápido; en la 7, 230 gana al rival rápido.
+constexpr int VelocidadPivoteEmboscada = 180;
+constexpr int VelocidadPivoteDeLado = 230;
+// Rutina 7: rival en el lateral este tiempo seguido = ya está encima, pivota.
+constexpr unsigned long TiempoLateralCerca = 400;
+// Rutina 8: si el frontal lo ve antes de este tiempo desde la salida, viene
+// embistiendo rápido y se aparta (si no, golpe como el contragolpe).
+constexpr unsigned long VentanaRivalRapido = 800;
+// Rutinas 5 y 8: true = mientras solo lo ve el central avanza despacio
+// (VelocidadAvanceInicio) en vez de esperar quieto.
+constexpr bool ContragolpeAvanzaLento = false;
+// Rutina 5: true = golpe a fondo en cuanto el frontal central lo ve (sin esperar
+// a que lo vean dos o tres).
+constexpr bool ContragolpeAlVerlo = true;
+// Rutina 8: esquiva pivotando hacia DIP3 (rueda exterior a esta velocidad).
+constexpr int VelocidadEsquivaLibre = 255;
+constexpr unsigned long TiempoEsquivaLibre = 60;
+
+// Rutina según DIP1 (bit 0) y DIP2 (bit 1): 1 espalda, 2 lado, 3 frente,
+// 4 salida libre; con RutinasColocacionLibre, 5 a 8 (ver arriba).
 constexpr int rutinaSegunInterruptores(int dip) {
-    return (dip & 3) == 0 ? 1 : (dip & 3) == 1 ? 2 : (dip & 3) == 2 ? 3 : 4;
+    return RutinasColocacionLibre ? 5 + (dip & 3)
+         : (dip & 3) == 0 ? 1 : (dip & 3) == 1 ? 2 : (dip & 3) == 2 ? 3 : 4;
 }
 
 // Para probar sin depender de los DIP: -1 = la rutina la eligen los DIP (normal);

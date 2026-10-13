@@ -24,10 +24,14 @@ public:
     void iniciarEmbestida(unsigned long ahora);
     // Ronda 3: el avance lento encontró al rival por delante
     void iniciarAproximacion(unsigned long ahora);
+    // Estrategias de espera: golpe a fondo (VelocidadEmpuje) mientras lo ataque
+    void iniciarGolpe(unsigned long ahora);
     // Pierde el contacto (por ejemplo, al evadir el borde)
     void olvidarFrente() { viendoFrente = false; empujandoRival = false; }
 
     bool empujando() const { return empujandoRival; }
+    // Golpe a fondo de una estrategia de espera en marcha
+    bool golpeando() const { return aproximacion && aproximacionDuracion == 0; }
 
 private:
     bool viendoFrente = false;
@@ -40,6 +44,8 @@ private:
     // Aproximación de la ronda 3
     bool aproximacion = false;
     unsigned long inicioAproximacion = 0;
+    int aproximacionDesde = 0;
+    unsigned long aproximacionDuracion = 0;
 };
 
 #endif

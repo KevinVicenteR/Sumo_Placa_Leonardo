@@ -670,11 +670,12 @@ void test_linea_sin_venir_avanzando(void) {
 }
 
 void test_sin_interruptores_la_rutina_es_la_del_round_1(void) {
-    TEST_ASSERT_EQUAL_INT(1, rutinaSegunInterruptores(0));
-    TEST_ASSERT_EQUAL_INT(2, rutinaSegunInterruptores(1));
-    TEST_ASSERT_EQUAL_INT(3, rutinaSegunInterruptores(2));
-    TEST_ASSERT_EQUAL_INT(4, rutinaSegunInterruptores(3));
-    TEST_ASSERT_EQUAL_INT(1, rutinaSegunInterruptores(4));  // DIP3 solo elige el lado
+    const int base = RutinasColocacionLibre ? 5 : 1;
+    TEST_ASSERT_EQUAL_INT(base, rutinaSegunInterruptores(0));
+    TEST_ASSERT_EQUAL_INT(base + 1, rutinaSegunInterruptores(1));
+    TEST_ASSERT_EQUAL_INT(base + 2, rutinaSegunInterruptores(2));
+    TEST_ASSERT_EQUAL_INT(base + 3, rutinaSegunInterruptores(3));
+    TEST_ASSERT_EQUAL_INT(base, rutinaSegunInterruptores(4));  // DIP3 solo elige el lado
 }
 
 void test_rutina_frente_reacciona_a_los_laterales(void) {
@@ -687,6 +688,97 @@ void test_rutina_frente_reacciona_a_los_laterales(void) {
     c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoMinimoAvanceInicio + 2 * ConfirmacionDeteccion);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
     TEST_ASSERT_TRUE(m.izq < m.der);
+}
+
+// Confirma una decisión durante ConfirmacionDeteccion desde t
+static void confirmar(ControlMovimiento& c, MotorMock& m, DecisionMovimiento d, unsigned long t) {
+    c.ejecutar(d, m, t);
+    c.ejecutar(d, m, t + ConfirmacionDeteccion);
+}
+
+void test_contragolpe_espera_y_golpea_al_verlo(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(5, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, 0, 0);
+    if (!ContragolpeAlVerlo) {
+        // Solo el central (aún lejos): sigue quieto hasta verlo con dos frontales
+        confirmar(c, m, {TipoAccion::AtaqueFrontal, true}, 1100);
+        assertMovimiento(m, 0, 0);
+        TEST_ASSERT_EQUAL_INT(5, c.rutinaActual());
+    }
+    confirmar(c, m, {TipoAccion::AjusteIzq, true}, 1200);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    TEST_ASSERT_EQUAL_INT(VelocidadEmpuje, m.der);
+}
+
+void test_contragolpe_sin_ver_nada_avanza_despacio(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(5, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoMaxEsperaRival);
+    TEST_ASSERT_EQUAL_INT(3, c.rutinaActual());
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoMaxEsperaRival + 200);
+    TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der && m.izq <= VelocidadAvanceInicio);
+}
+
+void test_emboscada_pivota_hacia_el_lateral_y_golpea(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(6, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, 0, 0);
+    // Pasa por el lateral izquierdo: pivota sobre la rueda izquierda
+    confirmar(c, m, {TipoAccion::DefensaIzq}, 1100);
+    assertMovimiento(m, 0, VelocidadPivoteEmboscada);
+    // De frente: golpe a fondo
+    confirmar(c, m, {TipoAccion::AtaqueFrontal, true}, 1200);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    assertMovimiento(m, VelocidadEmpuje, VelocidadEmpuje);
+}
+
+void test_de_lado_espera_mientras_solo_lo_ve_el_lateral(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(7, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    confirmar(c, m, {TipoAccion::DefensaDer}, 1100);
+    assertMovimiento(m, 0, 0);
+    // Sigue en el lateral TiempoLateralCerca: ya está encima, pivota hacia él
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1100 + TiempoLateralCerca);
+    assertMovimiento(m, VelocidadPivoteDeLado, 0);
+}
+
+void test_espera_y_esquiva_se_aparta_si_viene_rapido(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(8, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    // Lo ve el frontal poco después de salir: viene rápido, se aparta hacia
+    // DIP3 (derecha)
+    confirmar(c, m, {TipoAccion::AtaqueFrontal, true}, 1000 + VentanaRivalRapido / 2);
+    assertMovimiento(m, VelocidadEsquivaLibre, 0);
+    TEST_ASSERT_EQUAL_INT(8, c.rutinaActual());
+    // Acabada la esquiva, sigue el control normal
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + VentanaRivalRapido / 2 + TiempoEsquivaLibre + 10);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+}
+
+void test_espera_y_esquiva_golpea_si_viene_despacio(void) {
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(8, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + VentanaRivalRapido + 10);
+    // Aparece tarde: espera a tenerlo cerca y golpea
+    confirmar(c, m, {TipoAccion::AtaqueFrontal, true}, 1000 + VentanaRivalRapido + 20);
+    TEST_ASSERT_EQUAL_INT(8, c.rutinaActual());
+    DecisionMovimiento directo = {TipoAccion::AtaqueFrontal, true, false, true};
+    confirmar(c, m, directo, 1000 + VentanaRivalRapido + 50);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    assertMovimiento(m, VelocidadEmpuje, VelocidadEmpuje);
 }
 
 void test_rutina_libre_gira_hasta_ver_al_rival(void) {
@@ -855,6 +947,12 @@ int main(int, char**) {
     RUN_TEST(test_sin_interruptores_la_rutina_es_la_del_round_1);
     RUN_TEST(test_giro_lateral_ignora_un_frontal_antes_del_giro_minimo);
     RUN_TEST(test_rutina_frente_reacciona_a_los_laterales);
+    RUN_TEST(test_contragolpe_espera_y_golpea_al_verlo);
+    RUN_TEST(test_contragolpe_sin_ver_nada_avanza_despacio);
+    RUN_TEST(test_emboscada_pivota_hacia_el_lateral_y_golpea);
+    RUN_TEST(test_de_lado_espera_mientras_solo_lo_ve_el_lateral);
+    RUN_TEST(test_espera_y_esquiva_se_aparta_si_viene_rapido);
+    RUN_TEST(test_espera_y_esquiva_golpea_si_viene_despacio);
     RUN_TEST(test_rutina_libre_gira_hasta_ver_al_rival);
     RUN_TEST(test_rutina_libre_termina_al_agotar_su_tiempo);
     RUN_TEST(test_rutina_lado_elige_el_lado_con_el_sensor_lateral);

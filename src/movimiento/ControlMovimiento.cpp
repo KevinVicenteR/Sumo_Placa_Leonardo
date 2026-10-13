@@ -32,6 +32,8 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         busqueda.detener();
         return;
     }
+    // La rutina puede haber terminado empezando un golpe: límites al día
+    actualizarLimites(decision);
 
     // Rival centrado en los tres sensores: cualquier otra maniobra se cancela
     if (decision.ataqueDirecto && decision.tipo == TipoAccion::AtaqueFrontal) {
@@ -63,6 +65,7 @@ void ControlMovimiento::actualizarLimites(const DecisionMovimiento& decision) {
     mando.limites.cercaBorde = decision.cercaBorde;
     mando.limites.estimador = limitadorBorde.limite();
     mando.limites.empujando = ataque.empujando();
+    mando.limites.golpe = ataque.golpeando();
 }
 
 void ControlMovimiento::empezarEvasionSiHayBorde(const DecisionMovimiento& decision, unsigned long ahora) {

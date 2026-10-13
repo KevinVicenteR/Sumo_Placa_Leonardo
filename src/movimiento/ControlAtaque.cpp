@@ -28,6 +28,15 @@ void ControlAtaque::iniciarEmbestida(unsigned long ahora) {
 void ControlAtaque::iniciarAproximacion(unsigned long ahora) {
     aproximacion = true;
     inicioAproximacion = ahora;
+    aproximacionDesde = VelocidadAvanceInicio;
+    aproximacionDuracion = TiempoAceleracionRound3;
+}
+
+void ControlAtaque::iniciarGolpe(unsigned long ahora) {
+    aproximacion = true;
+    inicioAproximacion = ahora;
+    aproximacionDesde = VelocidadEmpuje;
+    aproximacionDuracion = 0;
 }
 
 int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long ahora) {
@@ -45,15 +54,11 @@ int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long a
     }
     if (aproximacion) {
         const unsigned long transcurrido = ahora - inicioAproximacion;
-        if (transcurrido >= TiempoAceleracionRound3) {
+        if (transcurrido >= aproximacionDuracion) {
             return VelocidadEmpuje;
         }
-        return VelocidadAvanceInicio +
-               (long)(VelocidadEmpuje - VelocidadAvanceInicio) * transcurrido / TiempoAceleracionRound3;
-    }
-    // La aproximación de la ronda 3 dura mientras siga atacando
-    if (aproximacion && !esAtaque(decision.tipo)) {
-        aproximacion = false;
+        return aproximacionDesde +
+               (long)(VelocidadEmpuje - aproximacionDesde) * transcurrido / aproximacionDuracion;
     }
 
     int ataque = VelocidadAtaque;

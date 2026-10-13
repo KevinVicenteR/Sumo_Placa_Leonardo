@@ -1,4 +1,4 @@
-<title>Dohyo Sumo Leonardo</title>
+<title>Dohyo Rumania</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -81,8 +81,8 @@ code { font-family: var(--f-mono); font-size: 13px; }
 
 <div class="pagina">
   <header>
-    <div class="ceja">Mini sumo · dohyo Ø 70 cm · borde blanco 2,5 cm · 750 rpm · LiPo 2S · ruedas JSUMO 3 cm · 340 g · pala</div>
-    <h1>Dohyo Sumo Leonardo</h1>
+    <div class="ceja">Rumania · colocación libre · dohyo Ø 77 cm · borde blanco 2,5 cm · 750 rpm · LiPo 2S · ruedas JSUMO 3 cm · 340 g · pala</div>
+    <h1>Dohyo Rumania</h1>
     <p class="lead">Arrastra tu robot (placa blanca, pala plateada) y el rival (rojo) a donde quieras. Las líneas que salen de tu robot son sus 5 sensores de enemigo: se ponen rojas cuando ven al rival. En la vista 3D, arrastra para girar la cámara y usa la rueda del ratón para acercarte. El enemigo pesa 300 g, lleva pala y resiste el empuje: gana quien saque al otro. Para girar el robot, arrastra el punto que tiene delante o usa el control de orientación. Lo que corre aquí es tu firmware real de <code>src/</code> compilado a WebAssembly, con la misma física que el simulador de consola.</p>
   </header>
 
@@ -112,7 +112,7 @@ code { font-family: var(--f-mono); font-size: 13px; }
           <span>Firmware</span>
           <div class="segmentado" id="firmware" role="group" aria-label="Firmware">
             <button type="button" data-v="nuevo" aria-pressed="true">Nuevo</button>
-            <button type="button" data-v="anterior" aria-pressed="false">El del torneo</button>
+            <button type="button" data-v="anterior" aria-pressed="false">Antes: ronda 3 lenta</button>
           </div>
         </div>
         <div class="fila">
@@ -126,13 +126,13 @@ code { font-family: var(--f-mono); font-size: 13px; }
           </div>
         </div>
         <div class="fila">
-          <span>Round (posición de salida y DIP)</span>
-          <div class="segmentado" id="ronda" role="group" aria-label="Round">
-            <button type="button" data-v="0,1,3" aria-pressed="true">Libre</button>
-            <button type="button" data-v="1,1,0" aria-pressed="false">R1 espalda</button>
-            <button type="button" data-v="2,1,1" aria-pressed="false">R2 rival der</button>
-            <button type="button" data-v="2,-1,5" aria-pressed="false">R2 rival izq</button>
-            <button type="button" data-v="3,1,2" aria-pressed="false">R3 enfrentados</button>
+          <span>Estrategia (DIP1 DIP2 · cómo se coloca)</span>
+          <div class="segmentado" id="ronda" role="group" aria-label="Estrategia">
+            <button type="button" data-v="0,1,0,0" aria-pressed="true">Arrastrar</button>
+            <button type="button" data-v="3,1,0,0" aria-pressed="false">5 Contragolpe · de frente</button>
+            <button type="button" data-v="3,1,1,45" aria-pressed="false">6 Emboscada · 45°</button>
+            <button type="button" data-v="3,1,2,90" aria-pressed="false">7 De lado · 90°</button>
+            <button type="button" data-v="3,1,3,0" aria-pressed="false">8 Espera y esquiva · de frente</button>
           </div>
         </div>
         <label class="fila" for="orientacion">
@@ -152,7 +152,7 @@ code { font-family: var(--f-mono); font-size: 13px; }
           <button type="button" class="boton" id="recolocar">Volver a colocar</button>
           <button type="button" class="boton" id="azar">Posición al azar</button>
         </div>
-        <p class="ayuda">El combate empieza al dar START (módulo de arranque), con el negro ya calibrado, y dura 30 s. En "Libre" se colocan los robots arrastrándolos; en los rounds, en su posición de salida.</p>
+        <p class="ayuda">El combate empieza al dar START (módulo de arranque), con el negro ya calibrado, y dura 30 s. Cada estrategia coloca a los robots enfrentados junto al borde, con tu robot recto, girado 45° o de lado y el rival a su derecha (DIP3 en OFF). En "Arrastrar" los colocas tú y se usa la estrategia 5. "Antes: ronda 3 lenta" es el firmware sin estrategias, avanzando despacio.</p>
       </div>
 
       <div class="grupo">
@@ -253,11 +253,11 @@ const FIRMWARE = {
   nuevo: __SIM_NUEVO__,
   anterior: __SIM_ANTERIOR__,
 };
-const R = 0.35, BORDE = 0.025, LARGO = 0.10, SX = 0.045, SY = 0.04, DURACION = 30;
+const R = 0.385, BORDE = 0.025, LARGO = 0.10, SX = 0.045, SY = 0.04, DURACION = 30;
 const env = { sin: Math.sin, cos: Math.cos, atan2: Math.atan2, log: Math.log };
 
 const estado = {
-  firmware: "nuevo", modoEnemigo: 1, vel: 1, ronda: "0,1,3",
+  firmware: "nuevo", modoEnemigo: 1, vel: 1, ronda: "0,1,0,0",
   robot: { x: 0, y: -0.15, th: Math.PI / 2 },
   enemigo: { x: 0, y: 0.15, th: -Math.PI / 2 },
   params: { bateria: "1.23", motores: "0.15,0.5", ruedas: "0.03", piso: "900,100,1000", pared: "0",
@@ -292,8 +292,9 @@ function configurar(e) {
   const [reflejos, cegados] = p.sensores.split(",").map(Number);
   e.sim_fijar(12, reflejos); e.sim_fijar(13, cegados);
   e.sim_fijar(20, Number(p.retardo));
-  const [salida, lado, dip] = estado.ronda.split(",").map(Number);
-  e.sim_round(salida, lado, dip);
+  const [salida, lado, dip, giro] = estado.ronda.split(",").map(Number);
+  // El firmware anterior no tiene las estrategias: sus DIP eligen la ronda 3 (lenta)
+  e.sim_round(salida, lado, estado.firmware === "anterior" ? 2 : dip, giro || 0);
 }
 const enRound = () => estado.ronda.split(",")[0] !== "0";
 

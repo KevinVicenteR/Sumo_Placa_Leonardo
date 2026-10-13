@@ -68,6 +68,7 @@ struct Config {
     // (mirando en sentidos opuestos), 3 enfrentados cerca de los bordes
     int salida = 0;
     int ladoRival = 1;            // round 2: +1 rival a la derecha, -1 a la izquierda
+    double giroSalida = 0;        // round 3: nuestro robot girado (rad, + a la izquierda)
     int dip = 0;                  // interruptores DIP en ON (bit 0 = DIP1...)
     // Pines de los DIP (XMotion: 5, 6, 7) y si ON lee LOW; deben coincidir con
     // Pines.h y DipActivoBajo del firmware (aquí fijos para poder simular
@@ -247,6 +248,15 @@ inline bool sobreBlanco(double rx, double ry) {
     aMundo(rx, ry, wx, wy);
     const double r = mat::hypot(wx, wy);
     return r > cfg.radio - cfg.borde && r <= cfg.radio;
+}
+
+// Distancia al centro del sensor de piso más alejado
+inline double radioSensoresPiso() {
+    double ax, ay, bx, by;
+    aMundo(cfg.sensorPisoX, cfg.sensorPisoY, ax, ay);
+    aMundo(cfg.sensorPisoX, -cfg.sensorPisoY, bx, by);
+    const double ra = mat::hypot(ax, ay), rb = mat::hypot(bx, by);
+    return ra > rb ? ra : rb;
 }
 
 inline bool sensorPisoSobreBlanco() {
@@ -592,9 +602,19 @@ inline void colocarRound() {
         ox = -ux * (cfg.radio - 0.055); oy = -uy * (cfg.radio - 0.055);
     }
     // Las posiciones de salida son del cuerpo; el robot se sitúa por su eje de ruedas
-    rob = {cx + ox - ux * cfg.centroDelante, cy + oy - uy * cfg.centroDelante, th, 0, 0};
+    // (colocación libre: nuestro robot puede ir girado giroSalida respecto al rival)
+    const double thRob = th + (cfg.salida == 3 ? cfg.giroSalida : 0);
+    const double vx = mat::cos(thRob), vy = mat::sin(thRob);
+    rob = {cx + ox - vx * cfg.centroDelante, cy + oy - vy * cfg.centroDelante, thRob, 0, 0};
     // La imprecisión al colocarlo no puede dejar parte del cuerpo fuera del dohyo
     for (int i = 0; i < 50 && maxRadioCuerpo() > cfg.radio - 0.002; i++) {
+        const double r = mat::hypot(rob.x, rob.y);
+        rob.x -= rob.x / r * 0.002;
+        rob.y -= rob.y / r * 0.002;
+    }
+    // Girado junto al borde, uno no lo coloca con un sensor de piso sobre la línea:
+    // lo mete hacia dentro hasta que los dos queden sobre negro (con 1 cm de margen)
+    for (int i = 0; i < 100 && radioSensoresPiso() > cfg.radio - cfg.borde - 0.01; i++) {
         const double r = mat::hypot(rob.x, rob.y);
         rob.x -= rob.x / r * 0.002;
         rob.y -= rob.y / r * 0.002;
@@ -648,7 +668,8 @@ inline bool cayo() {
     if (mat::hypot(x, y) > cfg.radio) return true;
     if (!cfg.vuelcoPala) return false;
     const double fx = cfg.centroDelante + cfg.largo / 2, ly = cfg.ancho / 2;
-    for (double lado : {-1.0, 1.0}) {
+    for (int i = 0; i < 2; i++) {
+        const double lado = i == 0 ? -1.0 : 1.0;
         double wx, wy;
         aMundo(fx, lado * ly, wx, wy);
         if (mat::hypot(wx, wy) <= cfg.radio) return false;  // esa esquina aún apoya

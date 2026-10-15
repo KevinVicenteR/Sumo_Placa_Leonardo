@@ -19,6 +19,7 @@
 #include "sensores/Percepcion.h"
 #include "estrategia/EstrategiaReglas.h"
 #include "estrategia/EstrategiaAprendida.h"
+#include "estrategia/EstrategiaPesos.h"
 #include "movimiento/ControlMovimiento.h"
 #include "robot/ControladorRobot.h"
 #include "Parametros.h"
@@ -29,7 +30,8 @@ struct ElegirTipo { using Tipo = SiVerdadero; };
 template <class SiVerdadero, class SiFalso>
 struct ElegirTipo<false, SiVerdadero, SiFalso> { using Tipo = SiFalso; };
 
-using EstrategiaElegida = ElegirTipo<UsarPoliticaAprendida, EstrategiaAprendida, EstrategiaReglas>::Tipo;
+using EstrategiaSinPesos = ElegirTipo<UsarPoliticaAprendida, EstrategiaAprendida, EstrategiaReglas>::Tipo;
+using EstrategiaElegida = ElegirTipo<UsarRedPesos, EstrategiaPesos, EstrategiaSinPesos>::Tipo;
 
 // --- Piezas del robot ---
 PlacaXMotion placa;

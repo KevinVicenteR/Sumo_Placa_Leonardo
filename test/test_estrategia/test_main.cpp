@@ -2,6 +2,8 @@
 #include "estrategia/EstrategiaReglas.h"
 #include "estrategia/PoliticaAprendida.h"
 #include "estrategia/TablaPolitica.h"
+#include "estrategia/EstrategiaPesos.h"
+#include "estrategia/RedPesos.h"
 
 static LecturasSensores L(
     bool lineaIzq,
@@ -106,6 +108,50 @@ void test_busqueda_si_no_hay_deteccion(void) {
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::Busqueda, (int)d.tipo);
 }
 
+// La red de pesos de partida decide igual que las reglas, con las tres activaciones
+void test_red_pesos_coincide_con_la_estrategia(void) {
+    EstrategiaReglas e;
+    const int funciones[] = {redpesos::Sigmoide, redpesos::Relu, redpesos::Tanh};
+    for (int f : funciones) {
+        for (int bits = 0; bits < 64; bits++) {
+            LecturasSensores s = L(false, false, bits & 8, bits & 2, bits & 1, bits & 4, bits & 16);
+            int8_t x[redpesos::NumEntradas];
+            redpesos::entradas(s, bits & 32, x);
+            const int n = redpesos::elegirNeurona(x, f, 0.5f);
+            TEST_ASSERT_EQUAL_INT((int)e.decidir(s).tipo, (int)redpesos::Acciones[n]);
+        }
+    }
+}
+
+void test_estrategia_pesos_respeta_borde_y_decide(void) {
+    EstrategiaPesos e;
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeIzq,
+                          (int)e.decidir(L(true, false, false, false, true, false, false)).tipo);
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::CorregirDer,
+                          (int)e.decidir(L(false, false, false, false, false, true, false)).tipo);
+    // La neurona ganadora es la más activada
+    for (int n = 0; n < redpesos::NumNeuronas; n++) {
+        TEST_ASSERT_TRUE(e.activacion(n) <= e.activacion(4));
+    }
+}
+
+void test_funciones_de_activacion(void) {
+    TEST_ASSERT_EQUAL_FLOAT(0.5f, redpesos::activar(0, redpesos::Sigmoide));
+    TEST_ASSERT_TRUE(redpesos::activar(5, redpesos::Sigmoide) > 0.8f);
+    TEST_ASSERT_TRUE(redpesos::activar(-5, redpesos::Sigmoide) < 0.2f);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, redpesos::activar(-3, redpesos::Relu));
+    TEST_ASSERT_EQUAL_FLOAT(3.0f, redpesos::activar(3, redpesos::Relu));
+    TEST_ASSERT_TRUE(redpesos::activar(-5, redpesos::Tanh) < -0.8f);
+}
+
+// Si ninguna neurona llega al umbral, el robot busca
+void test_umbral_de_activacion_manda_a_buscar(void) {
+    int8_t x[redpesos::NumEntradas];
+    redpesos::entradas(L(false, false, false, false, true, false, false), 0, x);
+    TEST_ASSERT_EQUAL_INT(0, redpesos::elegirNeurona(x, redpesos::Sigmoide, 0.5f));
+    TEST_ASSERT_EQUAL_INT(redpesos::NeuronaBusqueda, redpesos::elegirNeurona(x, redpesos::Sigmoide, 0.99f));
+}
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_prioriza_borde_sobre_todo);
@@ -120,5 +166,9 @@ int main(int, char**) {
     RUN_TEST(test_45_der_sobre_laterales);
     RUN_TEST(test_laterales);
     RUN_TEST(test_busqueda_si_no_hay_deteccion);
+    RUN_TEST(test_red_pesos_coincide_con_la_estrategia);
+    RUN_TEST(test_estrategia_pesos_respeta_borde_y_decide);
+    RUN_TEST(test_funciones_de_activacion);
+    RUN_TEST(test_umbral_de_activacion_manda_a_buscar);
     return UNITY_END();
 }

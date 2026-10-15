@@ -222,6 +222,15 @@ constexpr float IncertRumboConfiable = 0.8f;
 // las reglas escritas a mano.
 constexpr bool UsarPoliticaAprendida = false;
 
+// true = decide con la red de pesos y sesgos (TablaPesos.h): cada movimiento es
+// una neurona y gana la más activada. Tiene prioridad sobre UsarPoliticaAprendida.
+constexpr bool UsarRedPesos = true;
+// Función de activación de las neuronas: 0 = sigmoide, 1 = ReLU, 2 = tanh.
+constexpr int FuncionActivacion = 0;
+// Activación mínima de la neurona ganadora para hacer su movimiento; por debajo
+// el robot busca. 0,5 = suma ponderada positiva (con sigmoide).
+constexpr float UmbralActivacion = 0.5f;
+
 // 7. Suavidad de los movimientos
 
 // Búsqueda: 0 = avance y giro en el sitio; 1 = arcos suaves que cambian de

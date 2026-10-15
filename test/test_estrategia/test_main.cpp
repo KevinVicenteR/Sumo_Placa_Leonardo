@@ -109,15 +109,18 @@ void test_busqueda_si_no_hay_deteccion(void) {
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::Busqueda, (int)d.tipo);
 }
 
-// Las tres funciones de activación son crecientes: eligen la misma neurona
-void test_red_pesos_igual_con_las_tres_activaciones(void) {
-    for (int bits = 0; bits < 64; bits++) {
-        LecturasSensores s = L(false, false, bits & 8, bits & 2, bits & 1, bits & 4, bits & 16);
-        int8_t x[redpesos::NumEntradas];
-        redpesos::entradas(s, bits & 32, x);
-        const int sigmoide = redpesos::elegirNeurona(x, redpesos::Sigmoide, 0.5f);
-        TEST_ASSERT_TRUE(sigmoide >= 0 && sigmoide < redpesos::NumNeuronas);
-        TEST_ASSERT_EQUAL_INT(sigmoide, redpesos::elegirNeurona(x, redpesos::Tanh, 0.0f));
+// La red de pesos de partida decide igual que las reglas, con las tres activaciones
+void test_red_pesos_coincide_con_la_estrategia(void) {
+    EstrategiaReglas e;
+    const int funciones[] = {redpesos::Sigmoide, redpesos::Relu, redpesos::Tanh};
+    for (int f : funciones) {
+        for (int bits = 0; bits < 64; bits++) {
+            LecturasSensores s = L(false, false, bits & 8, bits & 2, bits & 1, bits & 4, bits & 16);
+            int8_t x[redpesos::NumEntradas];
+            redpesos::entradas(s, bits & 32, x);
+            const int n = redpesos::elegirNeurona(x, f, 0.5f);
+            TEST_ASSERT_EQUAL_INT((int)e.decidir(s).tipo, (int)redpesos::Acciones[n]);
+        }
     }
 }
 
@@ -125,13 +128,12 @@ void test_estrategia_pesos_respeta_borde_y_decide(void) {
     EstrategiaPesos e;
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeIzq,
                           (int)e.decidir(L(true, false, false, false, true, false, false)).tipo);
-    // La acción elegida es la de la neurona más activada
-    const TipoAccion tipo = e.decidir(L(false, false, false, false, false, true, false)).tipo;
-    int ganadora = 0;
-    for (int n = 1; n < redpesos::NumNeuronas; n++) {
-        if (e.activacion(n) > e.activacion(ganadora)) ganadora = n;
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::CorregirDer,
+                          (int)e.decidir(L(false, false, false, false, false, true, false)).tipo);
+    // La neurona ganadora es la más activada
+    for (int n = 0; n < redpesos::NumNeuronas; n++) {
+        TEST_ASSERT_TRUE(e.activacion(n) <= e.activacion(4));
     }
-    TEST_ASSERT_EQUAL_INT((int)redpesos::Acciones[ganadora], (int)tipo);
 }
 
 void test_funciones_de_activacion(void) {
@@ -174,7 +176,7 @@ int main(int, char**) {
     RUN_TEST(test_45_der_sobre_laterales);
     RUN_TEST(test_laterales);
     RUN_TEST(test_busqueda_si_no_hay_deteccion);
-    RUN_TEST(test_red_pesos_igual_con_las_tres_activaciones);
+    RUN_TEST(test_red_pesos_coincide_con_la_estrategia);
     RUN_TEST(test_estrategia_pesos_respeta_borde_y_decide);
     RUN_TEST(test_funciones_de_activacion);
     RUN_TEST(test_umbral_de_activacion_manda_a_buscar);

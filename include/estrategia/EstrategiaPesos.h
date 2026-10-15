@@ -7,11 +7,12 @@
 
 #include "estrategia/EstrategiaCombate.h"
 #include "estrategia/RedPesos.h"
+#include "Parametros.h"
 
 class EstrategiaPesos: public EstrategiaCombate {
 public:
     // Activación de cada neurona en el último ciclo (telemetría y tests)
-    float activacion(int neurona) const { return activaciones[neurona]; }
+    float activacion(int neurona) const { return redpesos::activar(sumas[neurona], FuncionActivacion); }
 
 protected:
     DecisionMovimiento elegirContraEnemigo(const LecturasSensores& lecturas) override;
@@ -19,7 +20,12 @@ protected:
 private:
     // Último lado donde se vio al rival: 0 = izquierda, 1 = derecha
     int ladoUltimo = 0;
-    float activaciones[redpesos::NumNeuronas] = {};
+    // Para las entradas de tiempo: última vez que vio al rival y desde cuándo
+    // lo ve sin parar el frontal
+    unsigned long ultimaVez = 0;
+    unsigned long inicioFrontal = 0;
+    // Suma ponderada de cada neurona en el último ciclo
+    int16_t sumas[redpesos::NumNeuronas] = {};
 };
 
 #endif

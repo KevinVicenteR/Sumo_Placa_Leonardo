@@ -52,6 +52,12 @@ int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long a
     if (aproximacion && !esAtaque(decision.tipo)) {
         aproximacion = false;
     }
+    // Golpe sin llegar a empujar en TiempoMaxGolpe: lo que ve está lejos (o fuera
+    // del dohyo); sigue con el ataque normal, que respeta el limitador de borde
+    if (aproximacion && aproximacionDuracion == 0 && !empujandoRival &&
+        ahora - inicioAproximacion >= TiempoMaxGolpe) {
+        aproximacion = false;
+    }
     if (aproximacion) {
         const unsigned long transcurrido = ahora - inicioAproximacion;
         if (transcurrido >= aproximacionDuracion) {

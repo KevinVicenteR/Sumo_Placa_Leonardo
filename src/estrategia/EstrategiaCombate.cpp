@@ -31,6 +31,13 @@ DecisionMovimiento EstrategiaCombate::elegir(const LecturasSensores& lecturas) {
 
     // 2. Rival centrado en los tres sensores delanteros: ataque directo
     if (lecturas.c45Izq && lecturas.frontal && lecturas.c45Der) {
+        if (!priorizarAtaqueFrontal()) {
+            DecisionMovimiento decision = elegirContraEnemigo(lecturas);
+            // Solo una esquiva deliberada sustituye al ataque directo. No
+            // convertir una lectura centrada en una corrección lateral espuria.
+            if (!esEsquiva(decision.tipo)) decision.tipo = TipoAccion::AtaqueFrontal;
+            return decision;
+        }
         return {TipoAccion::AtaqueFrontal, true};
     }
 

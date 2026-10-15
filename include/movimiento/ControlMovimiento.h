@@ -21,9 +21,10 @@
 #include "movimiento/ControlAtaque.h"
 #include "movimiento/LimitadorBorde.h"
 #include "movimiento/ControlPID.h"
+#include "estrategia/IContextoCombate.h"
 #include "Parametros.h"
 
-class ControlMovimiento: public IControlMovimiento {
+class ControlMovimiento: public IControlMovimiento, public IContextoCombate {
 public:
     explicit ControlMovimiento(int rampaPwmPorMs = RampaPwmPorMs, int patronBusqueda = PatronBusqueda)
         : rampa(rampaPwmPorMs), patron(patronBusqueda), mando(rampaPwmPorMs), busqueda(patronBusqueda) {}
@@ -48,6 +49,10 @@ public:
     const EstimadorBorde& estimadorBorde() const { return limitadorBorde.estimador(); }
     int limiteAvanceActual() const { return limitadorBorde.limite(); }
 
+    // --- IContextoCombate (para la red de lógica) ---
+    bool bordeDelante() const override { return limitadorBorde.limite() < 255; }
+    bool enRutina() const override { return rutina.actual() != 0; }
+
 private:
     // Pasa a MandoMotores los límites de avance actuales de cada maniobra
     void actualizarLimites(const DecisionMovimiento& decision);
@@ -57,6 +62,8 @@ private:
     bool resistirEnBorde(const DecisionMovimiento& decision, IMotor& motor);
     // Acción normal: atacar, girar hacia un lado o buscar
     void ejecutarAccion(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora);
+    // Mueve las ruedas aplicando la corrección de la red de control
+    void moverConRed(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora, int izq, int der);
 
     int rampa;
     int patron;
@@ -71,6 +78,11 @@ private:
     LimitadorBorde limitadorBorde;
     ControlPID pid;
     unsigned int numEvasiones = 0;
+    // Entradas de la red de control
+    int errorAnterior = 0;
+    unsigned long inicioAtaque = 0;
+    unsigned long ultimoCicloRed = 0;
+    bool atacando = false;
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "movimiento/ControlMovimiento.h"
+#include "movimiento/RedControl.h"
 
 void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     // --- 1. Preparar el ciclo: actualizar el estado de cada maniobra ---
@@ -119,12 +120,18 @@ void ControlMovimiento::ejecutarAccion(const DecisionMovimiento& decision, IMoto
 
     if (UsarPID && esAtaque(decision.tipo)) {
         // PID: gira hacia el rival en proporción a la corrección
-        const float u = pid.correccion(decision.errorRival, ahora);
+        int u = pid.correccion(decision.errorRival, ahora);
+        // Empujando: frenar mucho una rueda le quita fuerza al empuje
+        constexpr int limiteEmpuje = (int)(LimitePIDEmpujando * ControlPID::Unidad + 0.5f);
+        if (ataque.empujando()) {
+            if (u > limiteEmpuje) u = limiteEmpuje;
+            if (u < -limiteEmpuje) u = -limiteEmpuje;
+        }
         int izq, der;
         if (PIDDiferencial) {
             // Acelera la exterior y frena la interior; si la exterior pasa del
             // máximo, baja las dos para mantener la diferencia
-            const int giro = (int)(velocidad * u);
+            const int giro = (int)((long)velocidad * u / ControlPID::Unidad);
             izq = velocidad + giro;
             der = velocidad - giro;
             const int exceso = (izq > der ? izq : der) - VelocidadMaxima;
@@ -133,10 +140,10 @@ void ControlMovimiento::ejecutarAccion(const DecisionMovimiento& decision, IMoto
                 der -= exceso;
             }
         } else {
-            izq = u < 0 ? (int)(velocidad * (1.0f + u)) : velocidad;
-            der = u > 0 ? (int)(velocidad * (1.0f - u)) : velocidad;
+            izq = u < 0 ? (int)((long)velocidad * (ControlPID::Unidad + u) / ControlPID::Unidad) : velocidad;
+            der = u > 0 ? (int)((long)velocidad * (ControlPID::Unidad - u) / ControlPID::Unidad) : velocidad;
         }
-        mando.mover(motor, izq, der);
+        moverConRed(decision, motor, ahora, izq, der);
         return;
     }
 
@@ -156,6 +163,12 @@ void ControlMovimiento::ejecutarAccion(const DecisionMovimiento& decision, IMoto
     case TipoAccion::CorregirDer:
         mando.mover(motor, velocidad, interior45);
         break;
+    case TipoAccion::EsquivarIzq:
+        moverConRed(decision, motor, ahora, VelocidadEsquivaInterior, VelocidadEsquivaExterior);
+        break;
+    case TipoAccion::EsquivarDer:
+        moverConRed(decision, motor, ahora, VelocidadEsquivaExterior, VelocidadEsquivaInterior);
+        break;
     case TipoAccion::DefensaIzq:
         GiroLateral::girarHacia(mando, motor, -1);
         break;
@@ -169,6 +182,47 @@ void ControlMovimiento::ejecutarAccion(const DecisionMovimiento& decision, IMoto
     }
 }
 
+void ControlMovimiento::moverConRed(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora,
+                                    int izq, int der) {
+    if (!UsarRedControl) {
+        mando.mover(motor, izq, der);
+        return;
+    }
+    // Ataque o esquiva nuevo (o tras una pausa): empieza a contar de cero
+    if (!atacando || ahora - ultimoCicloRed > 50) {
+        inicioAtaque = ahora;
+        errorAnterior = decision.errorRival;
+    }
+    atacando = true;
+    ultimoCicloRed = ahora;
+    int cambio = (decision.errorRival - errorAnterior) / 125;
+    if (cambio > 16) cambio = 16;
+    if (cambio < -16) cambio = -16;
+    const unsigned long tramos = (ahora - inicioAtaque) / 100;
+    const int8_t x[redcontrol::NumEntradasRed] = {
+        (int8_t)(decision.errorRival / 125),
+        (int8_t)cambio,
+        (int8_t)(ataque.empujando() ? 8 : 0),
+        (int8_t)(tramos > 8 ? 8 : tramos),
+        (int8_t)(limitadorBorde.limite() < 255 ? 8 : 0),
+        (int8_t)(mando.velocidadAvanceEstimada() / 32),
+        (int8_t)(decision.tipo == TipoAccion::EsquivarIzq ? -8 : decision.tipo == TipoAccion::EsquivarDer ? 8 : 0),
+    };
+    errorAnterior = decision.errorRival;
+    int avance, giro;
+    redcontrol::corregir(x, avance, giro);
+    if (avance != 0 || giro != 0) {
+        // Avance y giro de la orden de siempre, más la corrección de la red
+        const int base = (izq + der) / 2 + avance;
+        const int vuelta = (der - izq) / 2 + giro;
+        izq = base - vuelta;
+        der = base + vuelta;
+        izq = izq > 255 ? 255 : izq < -255 ? -255 : izq;
+        der = der > 255 ? 255 : der < -255 ? -255 : der;
+    }
+    mando.mover(motor, izq, der);
+}
+
 void ControlMovimiento::reiniciar() {
     mando = MandoMotores(rampa);
     evasion = ManiobraEvasion();
@@ -180,4 +234,5 @@ void ControlMovimiento::reiniciar() {
     limitadorBorde = LimitadorBorde();
     pid = ControlPID();
     numEvasiones = 0;
+    atacando = false;
 }

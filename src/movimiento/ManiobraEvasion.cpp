@@ -14,6 +14,9 @@ bool ManiobraEvasion::iniciar(int sentido, unsigned long duracionRet, unsigned l
         // sin reiniciar el tiempo máximo
         if (unSensor && !lineaUnSensor) {
             unSensor = false;
+            // El segundo sensor requiere la recuperación completa, sin
+            // reiniciar el reloj global ni acortar una frenada ya calculada.
+            if (duracionRet > duracionRetroceso) duracionRetroceso = duracionRet;
             duracionGiro = duracionGir;
             negroContinuo = false;
         }

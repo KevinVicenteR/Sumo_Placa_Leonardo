@@ -2,13 +2,17 @@
 
 namespace redpesos {
 
-void entradas(const LecturasSensores& l, int ladoUltimo, int8_t x[NumEntradas]) {
+void entradas(const LecturasSensores& l, int ladoUltimo, int8_t x[NumEntradas],
+              bool recienPerdido, bool frontalSostenido) {
     x[0] = l.frontal;
     x[1] = l.c45Izq;
     x[2] = l.c45Der;
     x[3] = l.latIzq;
     x[4] = l.latDer;
     x[5] = ladoUltimo ? 1 : 0;
+    x[6] = l.cercaBorde;
+    x[7] = recienPerdido;
+    x[8] = frontalSostenido;
 }
 
 int sumaPonderada(int neurona, const int8_t x[NumEntradas]) {
@@ -19,33 +23,19 @@ int sumaPonderada(int neurona, const int8_t x[NumEntradas]) {
     return suma;
 }
 
-float activar(int suma, int funcion) {
-    const float z = (float)suma;
-    const float suave = z / (1.0f + (z < 0 ? -z : z));   // -1..1
-    switch (funcion) {
-    case Relu:
-        return z > 0 ? z : 0.0f;
-    case Tanh:
-        return suave;
-    case Sigmoide:
-    default:
-        return 0.5f * (1.0f + suave);
-    }
-}
-
-int elegirNeurona(const int8_t x[NumEntradas], int funcion, float umbral, float* activaciones) {
+int elegirPorSuma(const int8_t x[NumEntradas], int minima, int16_t* sumas) {
     int mejor = NeuronaBusqueda;
-    float mejorActivacion = 0;
+    int mejorSuma = 0;
     for (int n = 0; n < NumNeuronas; n++) {
-        const float a = activar(sumaPonderada(n, x), funcion);
-        if (activaciones) activaciones[n] = a;
-        if (n == 0 || a > mejorActivacion) {
+        const int suma = sumaPonderada(n, x);
+        if (sumas) sumas[n] = (int16_t)suma;
+        if (n == 0 || suma > mejorSuma) {
             mejor = n;
-            mejorActivacion = a;
+            mejorSuma = suma;
         }
     }
     // Ninguna neurona se activa lo suficiente: buscar
-    return mejorActivacion >= umbral ? mejor : NeuronaBusqueda;
+    return mejorSuma >= minima ? mejor : NeuronaBusqueda;
 }
 
 }

@@ -5,7 +5,7 @@ Búsqueda por coordenadas: para cada peso y cada sesgo prueba sumarle y restarle
 varios pasos dejando el resto fijo y se queda con el cambio que más puntos da
 en la batería de combates (misma puntuación que optimizar.py). Como solo
 importa qué neurona gana en cada estado, un cambio que no altera ninguna
-decisión de los 64 estados no se simula.
+decisión de ningún estado no se simula.
 
 Los combates de la búsqueda usan unas semillas y la validación final otras.
 Al acabar, si los pesos nuevos ganan en la validación, reescribe TablaPesos.h.
@@ -13,6 +13,7 @@ Al acabar, si los pesos nuevos ganan en la validación, reescribe TablaPesos.h.
   python3 simulacion/optimizar_pesos.py                  # unas horas
   python3 simulacion/optimizar_pesos.py --n 4 --pasadas 1
   python3 simulacion/optimizar_pesos.py --no-escribir     # solo mostrar el resultado
+  python3 simulacion/optimizar_pesos.py --entradas Borde,Perd,Emp   # solo esas columnas
 """
 import argparse
 import os
@@ -28,15 +29,16 @@ from optimizar import PESO_EMPUJADO, PESO_PROPIA
 TABLA = simular.RAIZ / "include" / "estrategia" / "TablaPesos.h"
 NEURONAS = ["AtaqueFrontal", "AjusteIzq", "AjusteDer", "CorregirIzq", "CorregirDer",
             "DefensaIzq", "DefensaDer", "Busqueda"]
-ENTRADAS = ["Fr", "45I", "45D", "LatI", "LatD", "Lado"]
+ENTRADAS = ["Fr", "45I", "45D", "LatI", "LatD", "Lado", "Borde", "Perd", "Emp"]
+FILA = r"\{\s*-?\d+(?:,\s*-?\d+){%d}\s*\}" % (len(ENTRADAS) - 1)
 PASOS = [-4, -1, 1, 4]
 LIMITE = 20
 
 
 def leer_tabla():
     texto = TABLA.read_text()
-    filas = re.findall(r"\{\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+)\s*\}", texto)
-    pesos = [[int(v) for v in f] for f in filas]
+    filas = re.findall(FILA, texto)
+    pesos = [[int(v) for v in re.findall(r"-?\d+", f)] for f in filas]
     bloque = texto.split("Sesgos[NumNeuronas] = {")[1].split("};")[0]
     sesgos = [int(v) for v in re.findall(r"^\s*(-?\d+),", bloque, re.M)]
     assert len(pesos) == 8 and len(sesgos) == 8
@@ -45,7 +47,7 @@ def leer_tabla():
 
 def escribir_tabla(texto, pesos, sesgos):
     filas = iter(pesos)
-    texto = re.sub(r"\{\s*-?\d+,\s*-?\d+,\s*-?\d+,\s*-?\d+,\s*-?\d+,\s*-?\d+\s*\}",
+    texto = re.sub(FILA,
                    lambda _: "{ " + ",".join(f"{v:>4}" for v in next(filas)) + " }", texto)
     cab, resto = texto.split("Sesgos[NumNeuronas] = {")
     bloque, fin = resto.split("};", 1)
@@ -55,11 +57,11 @@ def escribir_tabla(texto, pesos, sesgos):
 
 
 def decisiones(pesos, sesgos):
-    """Neurona ganadora en cada uno de los 64 estados (igual que RedPesos.cpp,
+    """Neurona ganadora en cada uno de los estados (igual que RedPesos.cpp,
     con una activación creciente y UmbralActivacion = 0,5: suma >= 0)."""
     tabla = []
-    for e in range(64):
-        x = [(e >> b) & 1 for b in (0, 1, 2, 3, 4, 5)]   # Fr, 45I, 45D, LatI, LatD, Lado
+    for e in range(1 << len(ENTRADAS)):
+        x = [(e >> b) & 1 for b in range(len(ENTRADAS))]
         sumas = [sesgos[n] + sum(xi * w for xi, w in zip(x, pesos[n])) for n in range(8)]
         mejor = max(range(8), key=lambda n: (sumas[n], -n))
         tabla.append(mejor if sumas[mejor] >= 0 else 7)
@@ -86,6 +88,8 @@ def main():
     ap.add_argument("--pasadas", type=int, default=2)
     ap.add_argument("--validar", type=int, default=20, help="combates por casilla en la validación")
     ap.add_argument("--no-escribir", action="store_true", help="no reescribir TablaPesos.h")
+    ap.add_argument("--entradas", default=",".join(ENTRADAS),
+                    help="columnas a ajustar, p. ej. Borde,Perd,Emp (los sesgos se ajustan siempre)")
     a = ap.parse_args()
     simular.BUILD.mkdir(parents=True, exist_ok=True)
 
@@ -96,7 +100,8 @@ def main():
     print(f"inicio: puntos {puntos:.1f}  gana {vic:.1f}%  se cae {cai:.1f}% (solo: {pro})", flush=True)
 
     # Cada coordenada: (neurona, entrada) para un peso, (neurona, None) para el sesgo
-    coordenadas = [(nn, i) for nn in range(8) for i in list(range(6)) + [None]]
+    columnas = [ENTRADAS.index(e) for e in a.entradas.split(",")]
+    coordenadas = [(nn, i) for nn in range(8) for i in columnas + [None]]
     for pasada in range(a.pasadas):
         for nn, i in coordenadas:
             for paso in PASOS:

@@ -17,9 +17,18 @@
 #include "hardware/DriverMotores.h"
 #include "hardware/PlacaXMotion.h"
 #include "sensores/Percepcion.h"
+// Las piezas de combate solo existen en los modos que las utilizan.
+PlacaXMotion placa;
+DriverMotores motores;
+#if !defined(MODO_PRUEBA_MOTORES)
+Percepcion percepcion;
+#endif
+
+#if !defined(MODO_PRUEBA_MOTORES) && !defined(MODO_DIAGNOSTICO)
 #include "estrategia/EstrategiaReglas.h"
 #include "estrategia/EstrategiaAprendida.h"
 #include "estrategia/EstrategiaPesos.h"
+#include "estrategia/EstrategiaRed.h"
 #include "movimiento/ControlMovimiento.h"
 #include "robot/ControladorRobot.h"
 #include "Parametros.h"
@@ -31,15 +40,15 @@ template <class SiVerdadero, class SiFalso>
 struct ElegirTipo<false, SiVerdadero, SiFalso> { using Tipo = SiFalso; };
 
 using EstrategiaSinPesos = ElegirTipo<UsarPoliticaAprendida, EstrategiaAprendida, EstrategiaReglas>::Tipo;
-using EstrategiaElegida = ElegirTipo<UsarRedPesos, EstrategiaPesos, EstrategiaSinPesos>::Tipo;
+using EstrategiaConPesos = ElegirTipo<UsarRedPesos, EstrategiaPesos, EstrategiaSinPesos>::Tipo;
+using EstrategiaElegida = ElegirTipo<UsarRedLogica, EstrategiaRed, EstrategiaConPesos>::Tipo;
 
-// --- Piezas del robot ---
-PlacaXMotion placa;
-DriverMotores motores;
-Percepcion percepcion;
+// --- Piezas de combate ---
 EstrategiaElegida estrategia;
 ControlMovimiento controlMovimiento;
 ControladorRobot robot(percepcion, estrategia, controlMovimiento, motores);
+
+#endif
 
 // --- Modo de funcionamiento ---
 #if defined(MODO_PRUEBA_MOTORES)
@@ -54,6 +63,9 @@ ModoCombate modo(placa, motores, percepcion, controlMovimiento, robot);
 #endif
 
 void setup() {
+#if !defined(MODO_PRUEBA_MOTORES) && !defined(MODO_DIAGNOSTICO)
+    estrategia.conectar(controlMovimiento);
+#endif
     modo.iniciar();
 }
 

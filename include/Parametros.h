@@ -15,8 +15,7 @@ constexpr int VelocidadMaxima = 255;
 constexpr int VelocidadFreno = 140;
 
 // --- Ataque ---
-// Velocidad al empezar a atacar; sube poco a poco hasta VelocidadEmpuje
-// durante TiempoEmbestida mientras tenga al rival de frente.
+// Aproximación progresiva hasta el empuje a 255 PWM; el borde conserva prioridad.
 constexpr int VelocidadAtaque = 130;
 constexpr int VelocidadEmpuje = 255;
 // Rival en los tres sensores delanteros a la vez: es un robot cercano (un reflejo
@@ -46,6 +45,9 @@ constexpr bool PIDDiferencial = false;
 constexpr unsigned long PausaReinicioPID = 50;
 // Posición (error) que vale un sensor de 45° para el PID; el central vale 0.
 constexpr int PosicionSensor45PID = 1000;
+// Corrección máxima del PID mientras empuja al rival (1 = sin límite): frenar
+// mucho una rueda en pleno empuje le quita fuerza.
+constexpr float LimitePIDEmpujando = 0.3f;
 constexpr int VelocidadCurva = 85;
 // true = al llegar a la línea empujando al rival, sigue empujando en vez de
 // retroceder (solo tras TiempoEmbestida empujándolo de frente).
@@ -171,7 +173,7 @@ constexpr int PorcentajeArcoZigzag = 100;
 constexpr unsigned long TiempoArcoZigzag = 0;
 
 // --- Ataque ---
-// Tiempo de la subida de VelocidadAtaque a VelocidadEmpuje. Vuelve a empezar
+// Tiempo para confirmar el empuje frontal (también rige la subida si las velocidades difieren). Vuelve a empezar
 // si pierde al rival de frente o evade el borde.
 constexpr unsigned long TiempoEmbestida = 2500;
 // Giro hacia un rival visto de lado: sigue hasta verlo de frente o este tiempo.
@@ -248,6 +250,23 @@ constexpr int FuncionActivacion = 0;
 // Activación mínima de la neurona ganadora para hacer su movimiento; por debajo
 // el robot busca. 0,5 = suma ponderada positiva (con sigmoide).
 constexpr float UmbralActivacion = 0.5f;
+// Entradas de tiempo de la red: "rival recién perdido" dura este tiempo tras
+// dejar de verlo y "empujando" se activa con el frontal viéndolo sin parar
+// este tiempo.
+constexpr unsigned long RecuerdoRivalMs = 300;
+constexpr unsigned long ContactoFrontalMs = 200;
+// true = decide con la red de lógica (TablaRedLogica.h, dos capas, con la
+// acción de esquivar). Tiene prioridad sobre UsarRedPesos.
+constexpr bool UsarRedLogica = true;
+// true = la red de control (TablaRedControl.h) corrige las ruedas al atacar y
+// al esquivar.
+constexpr bool UsarRedControl = true;
+// Esquiva ("Campanero"): arco hacia el lado elegido, con la rueda interior y
+// la exterior a estas velocidades.
+constexpr unsigned long TiempoMinimoEsquivaRed = 120;
+constexpr unsigned long TiempoRearmeEsquivaRed = 400;
+constexpr int VelocidadEsquivaInterior = 60;
+constexpr int VelocidadEsquivaExterior = 255;
 
 // 7. Suavidad de los movimientos
 
@@ -309,8 +328,8 @@ constexpr int VelocidadPivoteInicio = 180;
 // reparto de peso del robot, al ir rápido o acelerar de golpe se tuerce.
 constexpr int VelocidadAvanceInicio = 40;
 constexpr unsigned long TiempoAvanceInicio = 4000;
-// Ronda 3: al ver al rival por delante, acelera de VelocidadAvanceInicio a
-// VelocidadEmpuje en este tiempo mientras lo ataca (suave para no torcerse).
+// Ronda 3: tiempo para alcanzar VelocidadEmpuje al ver al rival delante.
+// Cero pide la potencia máxima de ataque desde la detección.
 constexpr unsigned long TiempoAceleracionRound3 = 2500;
 constexpr bool EsperarRound3 = false;
 constexpr unsigned long TiempoEsperaRound3 = 3000;
@@ -396,6 +415,10 @@ constexpr bool ContragolpeAlVerlo = true;
 // Rutina 8: esquiva pivotando hacia DIP3 (rueda exterior a esta velocidad).
 constexpr int VelocidadEsquivaLibre = 255;
 constexpr unsigned long TiempoEsquivaLibre = 60;
+// Golpe a fondo de las rutinas de espera: si en este tiempo no ha llegado a
+// empujar al rival, pasa al ataque normal (con el limitador de borde). Evita
+// salir a 255 contra algo que está fuera del dohyo.
+constexpr unsigned long TiempoMaxGolpe = 120;
 
 // Rutina según DIP1 (bit 0) y DIP2 (bit 1): 1 espalda, 2 lado, 3 frente,
 // 4 salida libre; con RutinasColocacionLibre, 5 a 8 (ver arriba).

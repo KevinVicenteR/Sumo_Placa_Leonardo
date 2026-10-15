@@ -2,12 +2,22 @@
 #include "Parametros.h"
 
 namespace {
-float limitar(float x, float limite) {
+constexpr long U = ControlPID::Unidad;
+// Ganancias en punto fijo. P: KpPID · error, con 64 · Unidad de resolución
+constexpr long KpQ = (long)(KpPID * U * 64 + 0.5f);
+constexpr long KiQ = (long)(KiPID * 256 + 0.5f);
+constexpr long KdQ = (long)(KdPID * 256 + 0.5f);
+constexpr long FiltroQ = (long)(FiltroDerivadaPID * 256 + 0.5f);
+// Anti-windup: Ki · integral no pasa de ±1
+constexpr long LimiteIntegral = KiQ > 0 ? U * 256 / KiQ : 0;
+
+long limitar(long x, long limite) {
     return x > limite ? limite : x < -limite ? -limite : x;
 }
 }
 
-float ControlPID::correccion(int error, unsigned long ahora) {
+int ControlPID::correccion(int error, unsigned long ahora) {
+    const long p = (long)error * KpQ / 64;
     // Primer ciclo de ataque o tras una pausa larga: empieza de cero
     if (!activo || ahora - tAnterior > PausaReinicioPID) {
         activo = true;
@@ -15,19 +25,15 @@ float ControlPID::correccion(int error, unsigned long ahora) {
         tAnterior = ahora;
         integral = 0;
         derivada = 0;
-        salida = KpPID * error;
-        return limitar(salida, 1.0f);
+        return (int)limitar(p, U);
     }
     // I y D se actualizan una vez por periodo; P responde en cada ciclo
     if (ahora - tAnterior >= PeriodoPID) {
-        const float e = error / 1000.0f;
-        const float cambio = (error - errorAnterior) / 1000.0f;
-        derivada += FiltroDerivadaPID * (cambio - derivada);
-        // Anti-windup: la integral no pasa de ±1
-        integral = limitar(integral + e, KiPID > 0 ? 1.0f / KiPID : 0.0f);
+        const long cambio = (long)(error - errorAnterior) * U / 1000;
+        derivada += (int)((cambio - derivada) * FiltroQ / 256);
+        integral = limitar(integral + (long)error * U / 1000, LimiteIntegral);
         errorAnterior = error;
         tAnterior = ahora;
     }
-    salida = KpPID * error + KiPID * integral + KdPID * derivada;
-    return limitar(salida, 1.0f);
+    return (int)limitar(p + integral * KiQ / 256 + (long)derivada * KdQ / 256, U);
 }

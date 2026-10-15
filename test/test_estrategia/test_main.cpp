@@ -4,6 +4,9 @@
 #include "estrategia/TablaPolitica.h"
 #include "estrategia/EstrategiaPesos.h"
 #include "estrategia/RedPesos.h"
+#include "estrategia/RedLogica.h"
+#include "estrategia/EstrategiaRed.h"
+#include <string.h>
 #include "Parametros.h"
 
 static LecturasSensores L(
@@ -162,6 +165,78 @@ void test_error_rival_para_el_pid(void) {
     TEST_ASSERT_EQUAL_INT(0, e.decidir(L(false, false, false, true, true, true, false)).errorRival);
 }
 
+// Red de lógica con pesos puestos a mano (se restauran al acabar)
+static int8_t copiaRed[1024];
+static void guardarRed() { memcpy(copiaRed, redlogica::Parametros, redlogica::numParametros()); }
+static void restaurarRed() { memcpy(redlogica::Parametros, copiaRed, redlogica::numParametros()); }
+
+void test_red_logica_elige_la_salida_mayor(void) {
+    guardarRed();
+    memset(redlogica::Parametros, 0, redlogica::numParametros());
+    // Primera neurona oculta = 16 × frontal; la salida 3 la mira con peso 1
+    const int e = redlogica::NumEntradasRed;
+    const int ocultas = (redlogica::numParametros() - redlogica::NumAcciones) / (e + 1 + redlogica::NumAcciones);
+    redlogica::Parametros[0] = 16;
+    redlogica::Parametros[ocultas * (e + 1) + 3 * (ocultas + 1)] = 1;
+    int8_t x[redlogica::NumEntradasRed] = {1};
+    long sumas[redlogica::NumAcciones];
+    TEST_ASSERT_EQUAL_INT(3, redlogica::elegir(x, 0, sumas));
+    TEST_ASSERT_EQUAL_INT(16, sumas[3]);
+    // Sin entradas todas valen 0: gana la primera si llega a la suma mínima
+    x[0] = 0;
+    TEST_ASSERT_EQUAL_INT(0, redlogica::elegir(x, 0));
+    TEST_ASSERT_EQUAL_INT(redlogica::SalidaBusqueda, redlogica::elegir(x, 1));
+    restaurarRed();
+}
+
+// La red puede esquivar con el rival centrado, pero nunca ignora la línea blanca.
+void test_estrategia_red_puede_esquivar_y_respeta_borde(void) {
+    guardarRed();
+    memset(redlogica::Parametros, 0, redlogica::numParametros());
+    const int e = redlogica::NumEntradasRed;
+    const int n = redlogica::numParametros();
+    const int h = (n - redlogica::NumAcciones) / (e + 1 + redlogica::NumAcciones);
+    redlogica::Parametros[h * (e + 1) + 8 * (h + 1) + h] = 64;
+    EstrategiaRed estrategia;
+    const auto borde = estrategia.decidir(L(true, false, false, true, true, true, false));
+    const auto centrado = estrategia.decidir(L(false, false, false, true, true, true, false));
+    restaurarRed();
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeIzq, (int)borde.tipo);
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::EsquivarIzq, (int)centrado.tipo);
+    TEST_ASSERT_FALSE(centrado.ataqueDirecto);
+}
+
+extern unsigned long g_millis;
+void test_esquiva_tiene_duracion_y_ventana_de_ataque(void) {
+    guardarRed();
+    memset(redlogica::Parametros, 0, redlogica::numParametros());
+    const int e = redlogica::NumEntradasRed;
+    const int n = redlogica::numParametros();
+    const int h = (n - redlogica::NumAcciones) / (e + 1 + redlogica::NumAcciones);
+    const int salida = h * (e + 1);
+    redlogica::Parametros[salida + 8 * (h + 1) + h] = 64;
+    EstrategiaRed estrategia;
+    const auto rival = L(false, false, false, true, true, true, false);
+    g_millis = 1000;
+    const auto inicio = estrategia.decidir(rival);
+    // La red cambia de opinión un ciclo después; el arco no debe cortarse.
+    redlogica::Parametros[salida + h] = 100;
+    g_millis = 1001;
+    const auto sostenida = estrategia.decidir(rival);
+    redlogica::Parametros[salida + h] = 0;
+    g_millis = 1000 + TiempoMinimoEsquivaRed;
+    const auto ataque = estrategia.decidir(rival);
+    g_millis = 1000 + TiempoRearmeEsquivaRed;
+    const auto rearmada = estrategia.decidir(rival);
+    restaurarRed();
+    g_millis = 0;
+    TEST_ASSERT_EQUAL_INT((int)TipoAccion::EsquivarIzq, (int)inicio.tipo);
+    TEST_ASSERT_EQUAL_INT((int)inicio.tipo, (int)sostenida.tipo);
+    TEST_ASSERT_FALSE(esEsquiva(ataque.tipo));
+    TEST_ASSERT_EQUAL_INT((int)inicio.tipo, (int)rearmada.tipo);
+}
+
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_prioriza_borde_sobre_todo);
@@ -181,5 +256,8 @@ int main(int, char**) {
     RUN_TEST(test_funciones_de_activacion);
     RUN_TEST(test_umbral_de_activacion_manda_a_buscar);
     RUN_TEST(test_error_rival_para_el_pid);
+    RUN_TEST(test_red_logica_elige_la_salida_mayor);
+    RUN_TEST(test_estrategia_red_puede_esquivar_y_respeta_borde);
+    RUN_TEST(test_esquiva_tiene_duracion_y_ventana_de_ataque);
     return UNITY_END();
 }

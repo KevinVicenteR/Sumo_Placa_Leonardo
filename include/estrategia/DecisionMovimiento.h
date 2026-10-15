@@ -15,7 +15,9 @@ enum class TipoAccion {
     CorregirDer,        // rival solo en el sensor de 45° derecho
     DefensaIzq,         // rival en el sensor lateral izquierdo
     DefensaDer,         // rival en el sensor lateral derecho
-    Busqueda            // no se ve al rival
+    Busqueda,           // no se ve al rival
+    EsquivarIzq,        // apartarse en arco hacia la izquierda (red de lógica)
+    EsquivarDer         // apartarse en arco hacia la derecha (red de lógica)
 };
 
 struct DecisionMovimiento {
@@ -40,6 +42,11 @@ inline bool esAtaque(TipoAccion tipo) {
     return tipo == TipoAccion::AtaqueFrontal || tipo == TipoAccion::AjusteIzq ||
            tipo == TipoAccion::AjusteDer || tipo == TipoAccion::CorregirIzq ||
            tipo == TipoAccion::CorregirDer;
+}
+
+// Esquiva ("Campanero"): salir del camino del rival para atacarlo de lado
+inline bool esEsquiva(TipoAccion tipo) {
+    return tipo == TipoAccion::EsquivarIzq || tipo == TipoAccion::EsquivarDer;
 }
 
 inline bool esDefensa(TipoAccion tipo) {

@@ -35,6 +35,30 @@ bool leerOdometria(float& avance, float& giro) {
 }
 #endif
 
+// ---------------------------------------------------------------- redes
+// --red archivo: pesos de la red de lógica y de la de control (enteros, en el
+// orden de TablaRedLogica.h y TablaRedControl.h) en vez de los de las tablas.
+#include "estrategia/RedLogica.h"
+#include "movimiento/RedControl.h"
+
+bool cargarRedes(const char* ruta) {
+    FILE* f = std::fopen(ruta, "r");
+    if (!f) return false;
+    bool ok = true;
+    for (int i = 0; ok && i < redlogica::numParametros(); i++) {
+        int v;
+        ok = std::fscanf(f, "%d", &v) == 1;
+        redlogica::Parametros[i] = (int8_t)v;
+    }
+    for (int i = 0; ok && i < redcontrol::numParametros(); i++) {
+        int v;
+        ok = std::fscanf(f, "%d", &v) == 1;
+        redcontrol::Parametros[i] = (int8_t)v;
+    }
+    std::fclose(f);
+    return ok;
+}
+
 #ifdef ENTRENAMIENTO_POLITICA
 // ---------------------------------------------------------------- entrenamiento
 // El firmware pregunta qué acción tomar en cada estado (PoliticaAprendida); aquí
@@ -306,6 +330,7 @@ int main(int argc, char** argv) {
         else if (a == "--desgaste-der") cfg.desgasteDer = std::atof(v);
         else if (a == "--borde") cfg.borde = std::atof(v);
         else if (a == "--tray") rutaTray = v;
+        else if (a == "--red") { if (!cargarRedes(v)) { std::fprintf(stderr, "no se pudo leer %s\n", v); return 1; } }
 #ifdef ENTRENAMIENTO_POLITICA
         else if (a == "--q") { if (!entrenamiento::cargar(v)) { std::fprintf(stderr, "no se pudo leer %s\n", v); return 1; } }
         else if (a == "--epsilon") entrenamiento::epsilon = std::atof(v);

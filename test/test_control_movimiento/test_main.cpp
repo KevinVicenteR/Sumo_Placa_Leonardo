@@ -1,7 +1,25 @@
 #include <unity.h>
 #include "movimiento/ControlMovimiento.h"
+#include "movimiento/RedControl.h"
+#include <string.h>
+#include <vector>
 #include "Parametros.h"
 #include "Arduino.h"
+
+// Unity ejecuta tearDown incluso si una aserción aborta la prueba con longjmp.
+// Cada caso conserva los pesos entrenados para las pruebas de integración.
+static std::vector<int8_t> pesosRedOriginales;
+void setUp(void) {
+    pesosRedOriginales.assign(redcontrol::Parametros,
+                             redcontrol::Parametros + redcontrol::numParametros());
+}
+void tearDown(void) {
+    memcpy(redcontrol::Parametros, pesosRedOriginales.data(), pesosRedOriginales.size());
+}
+
+static void neutralizarRedControl() {
+    memset(redcontrol::Parametros, 0, redcontrol::numParametros());
+}
 
 // Comportamiento clásico: sin rampa y búsqueda con giro en el sitio
 #define CLASICO 0, 0
@@ -609,16 +627,23 @@ void test_rutina_frente_avanza_hasta_ver_al_rival(void) {
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
 }
 
-void test_rutina_frente_acelera_poco_a_poco_contra_el_rival(void) {
+void test_rutina_frente_respeta_potencia_configurada(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(3, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    // Lo ve de frente: va contra él empezando a la velocidad lenta del avance
+    // Lo ve de frente: con aceleración cero debe atacar a potencia máxima.
     const unsigned long visto = 1000 + TiempoMinimoAvanceInicio;
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto);
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    if (TiempoAceleracionRound3 == 0) {
+        assertMovimiento(m, VelocidadEmpuje, VelocidadEmpuje);
+        // La potencia máxima conserva la prioridad del borde.
+        c.ejecutar({TipoAccion::EvadirBordeAmbos, true}, m, visto + ConfirmacionDeteccion + 10);
+        TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
+        return;
+    }
     TEST_ASSERT_TRUE(m.izq > 0 && m.izq <= VelocidadAvanceInicio + 5 && m.izq == m.der);
     // A mitad de la aceleración va más rápido, pero aún no a fondo
     int antes = m.izq;
@@ -930,6 +955,8 @@ static DecisionMovimiento conError(TipoAccion tipo, int error) {
 
 // Parte proporcional: frena la rueda del lado del rival según el error
 void test_pid_proporcional(void) {
+    // Aísla el PID de la corrección aprendida que se suma a su salida.
+    neutralizarRedControl();
     if (!UsarPID || PIDDiferencial) return;
     ControlMovimiento c(CLASICO);
     MotorMock m;
@@ -943,6 +970,8 @@ void test_pid_proporcional(void) {
 
 // Parte derivativa: un cambio brusco del error gira más que la parte P sola
 void test_pid_derivativo(void) {
+    // Aísla el PID de la corrección aprendida que se suma a su salida.
+    neutralizarRedControl();
     if (!UsarPID || KdPID <= 0) return;
     ControlMovimiento c(CLASICO);
     MotorMock m;
@@ -955,6 +984,8 @@ void test_pid_derivativo(void) {
 
 // Tras una pausa sin atacar, el PID empieza de cero: solo la parte P
 void test_pid_olvida_tras_una_pausa(void) {
+    // Aísla el PID de la corrección aprendida que se suma a su salida.
+    neutralizarRedControl();
     if (!UsarPID || PIDDiferencial) return;
     ControlMovimiento c(CLASICO);
     MotorMock m;
@@ -962,6 +993,68 @@ void test_pid_olvida_tras_una_pausa(void) {
     c.ejecutar(conError(TipoAccion::AjusteIzq, -100), m, 1000 + PausaReinicioPID + 1);
     // La rueda derecha va a la velocidad de ataque (que ya ha subido algo)
     TEST_ASSERT_INT_WITHIN(1, (int)(m.der * (1.0f - KpPID * 100)), m.izq);
+}
+
+void test_segundo_sensor_amplia_retroceso_sin_reiniciar_tope(void) {
+    ManiobraEvasion evasion;
+    MandoMotores mando(0);
+    MotorMock motor;
+    BusquedaRival busqueda;
+    TEST_ASSERT_TRUE(evasion.iniciar(1, 90, 100, 1000, true));
+    TEST_ASSERT_FALSE(evasion.iniciar(1, 200, 100, 1010, false));
+    evasion.continuar({TipoAccion::Busqueda}, mando, motor, 1010, busqueda);
+    evasion.continuar({TipoAccion::Busqueda}, mando, motor, 1110, busqueda);
+    assertMovimiento(motor, -VelocidadRetroceso, -VelocidadRetroceso);
+    evasion.continuar({TipoAccion::Busqueda}, mando, motor, 1200, busqueda);
+    assertMovimiento(motor, 0, 0);
+    ManiobraEvasion agotada;
+    agotada.iniciar(1, 90, 100, 1000, true);
+    agotada.iniciar(1, 200, 100, 1010, false);
+    agotada.continuar({TipoAccion::EvadirBordeAmbos}, mando, motor,
+                     1000 + TiempoMaximoRecuperacionBorde, busqueda);
+    assertMovimiento(motor, 0, 0);
+}
+
+// La corrección aprendida sigue sumándose al mando completo de ataque.
+void test_red_control_se_suma_al_ataque(void) {
+    if (!UsarRedControl) return;
+    neutralizarRedControl();
+    ControlMovimiento base(CLASICO);
+    MotorMock sinCorreccion;
+    base.ejecutar(conError(TipoAccion::AtaqueFrontal, 0), sinCorreccion, 1000);
+
+    const int n = redcontrol::numParametros();
+    const int ocultas = (n - 2) / (redcontrol::NumEntradasRed + 1 + 2);
+    // Sesgo de avance: -64 / 16 = -4 PWM, sin depender de pesos entrenados.
+    redcontrol::Parametros[n - ocultas - 2] = -64;
+    ControlMovimiento corregido(CLASICO);
+    MotorMock conCorreccion;
+    corregido.ejecutar(conError(TipoAccion::AtaqueFrontal, 0), conCorreccion, 1000);
+    assertMovimiento(conCorreccion, sinCorreccion.izq - 4, sinCorreccion.der - 4);
+}
+
+// Red de control: con todo a cero no corrige; la salida es la suma / 16, limitada a ±255
+void test_red_control_escala_y_limita(void) {
+    const int n = redcontrol::numParametros();
+    memset(redcontrol::Parametros, 0, n);
+    int8_t x[redcontrol::NumEntradasRed] = {8, 0, 0, 0, 0, 0, 0};
+    int avance = 1, giro = 1;
+    redcontrol::corregir(x, avance, giro);
+    TEST_ASSERT_EQUAL_INT(0, avance);
+    TEST_ASSERT_EQUAL_INT(0, giro);
+    // Primera neurona oculta = 2 × error (16); el avance la mira con peso 4: 64 / 16 = 4
+    const int e = redcontrol::NumEntradasRed;
+    const int ocultas = (n - 2) / (e + 1 + 2);
+    redcontrol::Parametros[0] = 2;
+    redcontrol::Parametros[ocultas * (e + 1)] = 4;
+    redcontrol::corregir(x, avance, giro);
+    TEST_ASSERT_EQUAL_INT(4, avance);
+    TEST_ASSERT_EQUAL_INT(0, giro);
+    // Muy grande: se limita
+    redcontrol::Parametros[0] = 127;
+    redcontrol::Parametros[ocultas * (e + 1)] = 127;
+    redcontrol::corregir(x, avance, giro);
+    TEST_ASSERT_EQUAL_INT(255, avance);
 }
 
 int main(int, char**) {
@@ -991,7 +1084,7 @@ int main(int, char**) {
     RUN_TEST(test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro);
     RUN_TEST(test_rutina_lado_gira_hacia_el_lado_del_rival);
     RUN_TEST(test_rutina_frente_avanza_hasta_ver_al_rival);
-    RUN_TEST(test_rutina_frente_acelera_poco_a_poco_contra_el_rival);
+    RUN_TEST(test_rutina_frente_respeta_potencia_configurada);
     RUN_TEST(test_la_linea_cancela_la_rutina);
     RUN_TEST(test_linea_sin_venir_avanzando);
     RUN_TEST(test_sin_interruptores_la_rutina_es_la_del_round_1);
@@ -1015,5 +1108,8 @@ int main(int, char**) {
     RUN_TEST(test_pid_proporcional);
     RUN_TEST(test_pid_derivativo);
     RUN_TEST(test_pid_olvida_tras_una_pausa);
+    RUN_TEST(test_red_control_escala_y_limita);
+    RUN_TEST(test_red_control_se_suma_al_ataque);
+    RUN_TEST(test_segundo_sensor_amplia_retroceso_sin_reiniciar_tope);
     return UNITY_END();
 }

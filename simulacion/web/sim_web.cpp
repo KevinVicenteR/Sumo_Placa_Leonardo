@@ -13,6 +13,17 @@
 SerialSim Serial;
 
 // Soporte mínimo de C++ sin biblioteca estándar
+extern "C" void* memset(void* destino, int valor, __SIZE_TYPE__ n) {
+    volatile unsigned char* d = static_cast<volatile unsigned char*>(destino);
+    for (__SIZE_TYPE__ i = 0; i < n; ++i) d[i] = static_cast<unsigned char>(valor);
+    return destino;
+}
+extern "C" void* memcpy(void* destino, const void* origen, __SIZE_TYPE__ n) {
+    volatile unsigned char* d = static_cast<volatile unsigned char*>(destino);
+    const volatile unsigned char* o = static_cast<const volatile unsigned char*>(origen);
+    for (__SIZE_TYPE__ i = 0; i < n; ++i) d[i] = o[i];
+    return destino;
+}
 void operator delete(void*) noexcept {}
 void operator delete(void*, unsigned long) noexcept {}
 extern "C" void __cxa_pure_virtual() { __builtin_trap(); }

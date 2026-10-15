@@ -14,6 +14,7 @@ bool ManiobraEvasion::iniciar(int sentido, unsigned long duracionRet, unsigned l
         // sin reiniciar el tiempo máximo
         if (unSensor && !lineaUnSensor) {
             unSensor = false;
+            if (mejorarRetroceso && duracionRet > duracionRetroceso) duracionRetroceso = duracionRet;
             duracionGiro = duracionGir;
             negroContinuo = false;
         }

@@ -15,7 +15,9 @@ enum class TipoAccion {
     CorregirDer,        // rival solo en el sensor de 45° derecho
     DefensaIzq,         // rival en el sensor lateral izquierdo
     DefensaDer,         // rival en el sensor lateral derecho
-    Busqueda            // no se ve al rival
+    Busqueda,           // no se ve al rival
+    EsquivarIzq,        // ruta mejorada
+    EsquivarDer         // ruta mejorada
 };
 
 struct DecisionMovimiento {
@@ -23,6 +25,7 @@ struct DecisionMovimiento {
     bool enemigoFrente;   // el sensor central ve al rival
     bool cercaBorde;      // un sensor de piso empieza a ver claro
     bool ataqueDirecto;   // los tres sensores delanteros ven al rival
+    int errorRival;        // ruta mejorada: posición del rival para el PID
 };
 
 // --- Clasificación de acciones (la usan varias partes del movimiento) ---
@@ -37,6 +40,10 @@ inline bool esAtaque(TipoAccion tipo) {
     return tipo == TipoAccion::AtaqueFrontal || tipo == TipoAccion::AjusteIzq ||
            tipo == TipoAccion::AjusteDer || tipo == TipoAccion::CorregirIzq ||
            tipo == TipoAccion::CorregirDer;
+}
+
+inline bool esEsquiva(TipoAccion tipo) {
+    return tipo == TipoAccion::EsquivarIzq || tipo == TipoAccion::EsquivarDer;
 }
 
 inline bool esDefensa(TipoAccion tipo) {

@@ -648,7 +648,8 @@ inline bool cayo() {
     if (mat::hypot(x, y) > cfg.radio) return true;
     if (!cfg.vuelcoPala) return false;
     const double fx = cfg.centroDelante + cfg.largo / 2, ly = cfg.ancho / 2;
-    for (double lado : {-1.0, 1.0}) {
+    for (int esquina = 0; esquina < 2; ++esquina) {
+        const double lado = esquina == 0 ? -1.0 : 1.0;
         double wx, wy;
         aMundo(fx, lado * ly, wx, wy);
         if (mat::hypot(wx, wy) <= cfg.radio) return false;  // esa esquina aún apoya

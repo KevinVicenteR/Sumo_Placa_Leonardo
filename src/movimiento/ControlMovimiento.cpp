@@ -118,10 +118,24 @@ void ControlMovimiento::ejecutarAccion(const DecisionMovimiento& decision, IMoto
     const int interior45 = Corregir45EnPivote ? 0 : VelocidadCurva * velocidad / VelocidadAtaque;
 
     if (UsarPID && esAtaque(decision.tipo)) {
-        // PID: frena la rueda del lado del rival en proporción a la corrección
+        // PID: gira hacia el rival en proporción a la corrección
         const float u = pid.correccion(decision.errorRival, ahora);
-        const int izq = u < 0 ? (int)(velocidad * (1.0f + u)) : velocidad;
-        const int der = u > 0 ? (int)(velocidad * (1.0f - u)) : velocidad;
+        int izq, der;
+        if (PIDDiferencial) {
+            // Acelera la exterior y frena la interior; si la exterior pasa del
+            // máximo, baja las dos para mantener la diferencia
+            const int giro = (int)(velocidad * u);
+            izq = velocidad + giro;
+            der = velocidad - giro;
+            const int exceso = (izq > der ? izq : der) - VelocidadMaxima;
+            if (exceso > 0) {
+                izq -= exceso;
+                der -= exceso;
+            }
+        } else {
+            izq = u < 0 ? (int)(velocidad * (1.0f + u)) : velocidad;
+            der = u > 0 ? (int)(velocidad * (1.0f - u)) : velocidad;
+        }
         mando.mover(motor, izq, der);
         return;
     }

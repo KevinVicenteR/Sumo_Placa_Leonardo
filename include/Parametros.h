@@ -33,7 +33,15 @@ constexpr bool Corregir45EnPivote = true;
 // a 45°). Error = posición del rival, de -1000 (45° izq) a +1000 (45° der).
 constexpr bool UsarPID = true;
 constexpr float KpPID = 0.0014f;
+constexpr float KiPID = 0.0f;
 constexpr float KdPID = 1.0f;
+// Cada cuántos ms se actualizan la integral y la derivada.
+constexpr unsigned long PeriodoPID = 10;
+// Suavizado de la derivada (1 = sin filtro, más bajo = más suave).
+constexpr float FiltroDerivadaPID = 0.5f;
+// Mezcla: true = la rueda exterior acelera y la interior frena a partes iguales
+// (sin pasar de VelocidadMaxima); false = solo frena la interior.
+constexpr bool PIDDiferencial = false;
 // Sin atacar durante más de este tiempo (ms), el PID olvida el error anterior.
 constexpr unsigned long PausaReinicioPID = 50;
 // Posición (error) que vale un sensor de 45° para el PID; el central vale 0.

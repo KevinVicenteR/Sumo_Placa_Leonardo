@@ -28,6 +28,16 @@ constexpr int PorcentajeAjuste = 85;
 // Rival visto solo por un sensor de 45°: true = la rueda de ese lado se para y
 // hace de pivote; false = curva con las dos ruedas (la interior a VelocidadCurva).
 constexpr bool Corregir45EnPivote = true;
+// PID de ataque: true = al atacar, el giro hacia el rival lo calcula el
+// regulador PD de ControlPID.h (sustituye a PorcentajeAjuste y a la corrección
+// a 45°). Error = posición del rival, de -1000 (45° izq) a +1000 (45° der).
+constexpr bool UsarPID = true;
+constexpr float KpPID = 0.0014f;
+constexpr float KdPID = 1.0f;
+// Sin atacar durante más de este tiempo (ms), el PID olvida el error anterior.
+constexpr unsigned long PausaReinicioPID = 50;
+// Posición (error) que vale un sensor de 45° para el PID; el central vale 0.
+constexpr int PosicionSensor45PID = 1000;
 constexpr int VelocidadCurva = 85;
 // true = al llegar a la línea empujando al rival, sigue empujando en vez de
 // retroceder (solo tras TiempoEmbestida empujándolo de frente).

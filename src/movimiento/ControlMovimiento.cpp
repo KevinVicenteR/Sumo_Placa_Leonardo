@@ -117,6 +117,15 @@ void ControlMovimiento::ejecutarAccion(const DecisionMovimiento& decision, IMoto
     // Rueda interior al corregir hacia un rival visto a 45°
     const int interior45 = Corregir45EnPivote ? 0 : VelocidadCurva * velocidad / VelocidadAtaque;
 
+    if (UsarPID && esAtaque(decision.tipo)) {
+        // PID: frena la rueda del lado del rival en proporción a la corrección
+        const float u = pid.correccion(decision.errorRival, ahora);
+        const int izq = u < 0 ? (int)(velocidad * (1.0f + u)) : velocidad;
+        const int der = u > 0 ? (int)(velocidad * (1.0f - u)) : velocidad;
+        mando.mover(motor, izq, der);
+        return;
+    }
+
     switch (decision.tipo) {
     case TipoAccion::AtaqueFrontal:
         mando.mover(motor, velocidad, velocidad);
@@ -155,5 +164,6 @@ void ControlMovimiento::reiniciar() {
     paro = ParoPerdida();
     ataque = ControlAtaque();
     limitadorBorde = LimitadorBorde();
+    pid = ControlPID();
     numEvasiones = 0;
 }

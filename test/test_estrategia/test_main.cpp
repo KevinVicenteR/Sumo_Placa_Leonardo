@@ -4,6 +4,7 @@
 #include "estrategia/TablaPolitica.h"
 #include "estrategia/EstrategiaPesos.h"
 #include "estrategia/RedPesos.h"
+#include "Parametros.h"
 
 static LecturasSensores L(
     bool lineaIzq,
@@ -152,6 +153,15 @@ void test_umbral_de_activacion_manda_a_buscar(void) {
     TEST_ASSERT_EQUAL_INT(redpesos::NeuronaBusqueda, redpesos::elegirNeurona(x, redpesos::Sigmoide, 0.99f));
 }
 
+// Error del PID: media de las posiciones de los sensores delanteros que ven al rival
+void test_error_rival_para_el_pid(void) {
+    EstrategiaReglas e;
+    TEST_ASSERT_EQUAL_INT(0, e.decidir(L(false, false, false, false, true, false, false)).errorRival);
+    TEST_ASSERT_EQUAL_INT(-PosicionSensor45PID, e.decidir(L(false, false, false, true, false, false, false)).errorRival);
+    TEST_ASSERT_EQUAL_INT(PosicionSensor45PID / 2, e.decidir(L(false, false, false, false, true, true, false)).errorRival);
+    TEST_ASSERT_EQUAL_INT(0, e.decidir(L(false, false, false, true, true, true, false)).errorRival);
+}
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_prioriza_borde_sobre_todo);
@@ -170,5 +180,6 @@ int main(int, char**) {
     RUN_TEST(test_estrategia_pesos_respeta_borde_y_decide);
     RUN_TEST(test_funciones_de_activacion);
     RUN_TEST(test_umbral_de_activacion_manda_a_buscar);
+    RUN_TEST(test_error_rival_para_el_pid);
     return UNITY_END();
 }

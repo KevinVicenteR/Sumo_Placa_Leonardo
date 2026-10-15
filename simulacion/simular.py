@@ -26,9 +26,11 @@ FUENTES = sorted((RAIZ / "src").rglob("*.cpp")) + [RAIZ / "simulacion" / "sim.cp
 MODOS = ["ninguno", "estatico", "errante", "agresivo"]
 
 
-def compilar(params: dict, banderas: tuple = ()) -> Path:
-    """Copia include/ aplicando los cambios a Parametros.h y compila."""
-    clave = hashlib.sha1(repr((sorted(params.items()), banderas)).encode()).hexdigest()[:10]
+def compilar(params: dict, banderas: tuple = (), archivos: dict | None = None) -> Path:
+    """Copia include/ aplicando los cambios a Parametros.h y compila.
+    archivos: {ruta dentro de include/: texto} que sustituye esos ficheros."""
+    archivos = archivos or {}
+    clave = hashlib.sha1(repr((sorted(params.items()), banderas, sorted(archivos.items()))).encode()).hexdigest()[:10]
     inc = BUILD / f"include_{clave}"
     binario = BUILD / f"sim_{clave}"
     if inc.exists():
@@ -43,6 +45,8 @@ def compilar(params: dict, banderas: tuple = ()) -> Path:
         if n == 0:
             sys.exit(f"Parámetro desconocido: {nombre}")
     ruta.write_text(texto)
+    for nombre, contenido in archivos.items():
+        (inc / nombre).write_text(contenido)
 
     cmd = ["c++", "-std=c++17", "-O2", "-w", *banderas,
            f"-I{inc}", f"-I{RAIZ / 'simulacion' / 'support'}",

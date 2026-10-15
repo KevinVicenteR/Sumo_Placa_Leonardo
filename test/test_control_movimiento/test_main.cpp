@@ -95,9 +95,12 @@ static void assertAccionSimple(TipoAccion accion, int izq, int der) {
 
 void test_acciones_simples_velocidades_correctas(void) {
     assertAccionSimple(TipoAccion::AtaqueFrontal, VelocidadAtaque, VelocidadAtaque);
-    // Visto solo a 45°: pivota sobre la rueda de ese lado (o curva)
-    assertAccionSimple(TipoAccion::CorregirIzq, interior45(VelocidadAtaque), VelocidadAtaque);
-    assertAccionSimple(TipoAccion::CorregirDer, VelocidadAtaque, interior45(VelocidadAtaque));
+    // Visto solo a 45°: pivota sobre la rueda de ese lado (o curva); con PID lo
+    // decide el error (ver test_pid_*)
+    if (!UsarPID) {
+        assertAccionSimple(TipoAccion::CorregirIzq, interior45(VelocidadAtaque), VelocidadAtaque);
+        assertAccionSimple(TipoAccion::CorregirDer, VelocidadAtaque, interior45(VelocidadAtaque));
+    }
     if (GiroLateralEnRueda) {
         // La rueda del lado del enemigo se frena y hace de pivote
         assertAccionSimple(TipoAccion::DefensaIzq, 0, VelocidadRuedaPivote);
@@ -242,6 +245,9 @@ void test_giro_lateral_termina_por_tiempo(void) {
 
 
 void test_ajuste_centra_al_enemigo_sin_dejar_de_atacar(void) {
+    if (UsarPID) {
+        return;   // con PID el ajuste lo calcula el regulador (ver test_pid_*)
+    }
     assertAccionSimple(TipoAccion::AjusteIzq, VelocidadAtaque * PorcentajeAjuste / 100, VelocidadAtaque);
     assertAccionSimple(TipoAccion::AjusteDer, VelocidadAtaque, VelocidadAtaque * PorcentajeAjuste / 100);
 }
@@ -263,6 +269,9 @@ void test_se_acomoda_y_luego_va_con_todo(void) {
     assertMovimiento(m, VelocidadEmpuje, VelocidadEmpuje);
 
     // Ya lanzado, sigue con todo aunque el enemigo pase a un sensor de 45°
+    if (UsarPID) {
+        return;
+    }
     c.ejecutar({TipoAccion::CorregirDer}, m, alineado + 1);
     assertMovimiento(m, VelocidadEmpuje, interior45(VelocidadEmpuje));
     c.ejecutar({TipoAccion::AjusteDer}, m, alineado + 2);
@@ -844,7 +853,7 @@ void test_rutina_lado_sin_lateral_usa_el_dip3(void) {
 }
 
 void test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado(void) {
-    if (!Corregir45EnPivote) {
+    if (!Corregir45EnPivote || UsarPID) {
         return;
     }
     ControlMovimiento c(CLASICO);
@@ -914,6 +923,53 @@ void test_reiniciar_vuelve_al_estado_inicial(void) {
     assertGiroRound1(m, 1);
 }
 
+// --- PID de ataque ---
+static DecisionMovimiento conError(TipoAccion tipo, int error) {
+    return {tipo, false, false, false, error};
+}
+
+// Parte proporcional: frena la rueda del lado del rival según el error
+void test_pid_proporcional(void) {
+    if (!UsarPID) return;
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    const int error = -300;   // rival algo a la izquierda
+    c.ejecutar(conError(TipoAccion::AjusteIzq, error), m, 1000);
+    assertMovimiento(m, (int)(VelocidadAtaque * (1.0f + KpPID * error)), VelocidadAtaque);
+    // Error grande: corrección limitada a 1 (rueda parada, pivote)
+    c.ejecutar(conError(TipoAccion::CorregirDer, 1000000), m, 1001);
+    assertMovimiento(m, VelocidadAtaque, 0);
+}
+
+// Parte derivativa: un cambio brusco del error da un golpe de giro extra
+void test_pid_derivativo(void) {
+    if (!UsarPID) return;
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.ejecutar(conError(TipoAccion::AtaqueFrontal, 0), m, 1000);
+    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+    const int error = 100;
+    c.ejecutar(conError(TipoAccion::AjusteDer, error), m, 1010);
+    const float derivada = error / 10.0f / 1000.0f;
+    float u = KpPID * error + KdPID * derivada;
+    if (u > 1) u = 1;
+    TEST_ASSERT_INT_WITHIN(1, (int)(VelocidadAtaque * (1.0f - u)), m.der);
+    // Error estable: solo queda la parte proporcional
+    c.ejecutar(conError(TipoAccion::AjusteDer, error), m, 1020);
+    TEST_ASSERT_INT_WITHIN(1, (int)(VelocidadAtaque * (1.0f - KpPID * error)), m.der);
+}
+
+// Tras una pausa sin atacar, el PID no compara con un error viejo
+void test_pid_olvida_tras_una_pausa(void) {
+    if (!UsarPID) return;
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.ejecutar(conError(TipoAccion::AjusteDer, 100), m, 1000);
+    c.ejecutar(conError(TipoAccion::AjusteIzq, -100), m, 1000 + PausaReinicioPID + 1);
+    // La rueda derecha va a la velocidad de ataque (que ya ha subido algo)
+    TEST_ASSERT_INT_WITHIN(1, (int)(m.der * (1.0f - KpPID * 100)), m.izq);
+}
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_busqueda_tras_un_sensor_sigue_hacia_el_lado_del_escape);
@@ -962,5 +1018,8 @@ int main(int, char**) {
     RUN_TEST(test_round_1_mantiene_su_velocidad_tras_la_embestida);
     RUN_TEST(test_rutina_frente_espera_quieto_tras_avanzar);
     RUN_TEST(test_reiniciar_vuelve_al_estado_inicial);
+    RUN_TEST(test_pid_proporcional);
+    RUN_TEST(test_pid_derivativo);
+    RUN_TEST(test_pid_olvida_tras_una_pausa);
     return UNITY_END();
 }

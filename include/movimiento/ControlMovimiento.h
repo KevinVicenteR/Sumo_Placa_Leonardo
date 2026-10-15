@@ -20,6 +20,7 @@
 #include "movimiento/ParoPerdida.h"
 #include "movimiento/ControlAtaque.h"
 #include "movimiento/LimitadorBorde.h"
+#include "movimiento/ControlPID.h"
 #include "Parametros.h"
 
 class ControlMovimiento: public IControlMovimiento {
@@ -68,6 +69,7 @@ private:
     ParoPerdida paro;
     ControlAtaque ataque;
     LimitadorBorde limitadorBorde;
+    ControlPID pid;
     unsigned int numEvasiones = 0;
 };
 

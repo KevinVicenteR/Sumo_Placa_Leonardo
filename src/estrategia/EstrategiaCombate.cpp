@@ -1,4 +1,5 @@
 #include "estrategia/EstrategiaCombate.h"
+#include "Parametros.h"
 
 DecisionMovimiento EstrategiaCombate::decidir(const LecturasSensores& lecturas) {
     DecisionMovimiento decision = elegir(lecturas);
@@ -6,7 +7,14 @@ DecisionMovimiento EstrategiaCombate::decidir(const LecturasSensores& lecturas) 
     decision.cercaBorde = lecturas.cercaBorde;
     decision.ataqueDirecto = decision.tipo == TipoAccion::AtaqueFrontal &&
                             lecturas.c45Izq && lecturas.frontal && lecturas.c45Der;
+    decision.errorRival = errorRival(lecturas);
     return decision;
+}
+
+int EstrategiaCombate::errorRival(const LecturasSensores& lecturas) {
+    const int vistos = lecturas.c45Izq + lecturas.frontal + lecturas.c45Der;
+    if (vistos == 0) return 0;
+    return (lecturas.c45Der - lecturas.c45Izq) * PosicionSensor45PID / vistos;
 }
 
 DecisionMovimiento EstrategiaCombate::elegir(const LecturasSensores& lecturas) {

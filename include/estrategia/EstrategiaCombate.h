@@ -19,6 +19,8 @@ protected:
 
 private:
     DecisionMovimiento elegir(const LecturasSensores& lecturas);
+    // Posición del rival para el PID (ver DecisionMovimiento::errorRival)
+    static int errorRival(const LecturasSensores& lecturas);
 };
 
 #endif

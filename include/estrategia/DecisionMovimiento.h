@@ -23,6 +23,9 @@ struct DecisionMovimiento {
     bool enemigoFrente;   // el sensor central ve al rival
     bool cercaBorde;      // un sensor de piso empieza a ver claro
     bool ataqueDirecto;   // los tres sensores delanteros ven al rival
+    // Posición del rival según los sensores delanteros (para el PID): media de
+    // los que lo ven, con 45° izq = -1000, central = 0 y 45° der = +1000
+    int errorRival;
 };
 
 // --- Clasificación de acciones (la usan varias partes del movimiento) ---

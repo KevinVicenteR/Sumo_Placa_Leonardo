@@ -203,6 +203,7 @@ def main():
                     help="modos (1 y/o 3) en los que activar las dos redes tras su rutina de inicio, p. ej. 1,3")
     ap.add_argument("--muestras-final", type=int, default=0,
                     help="combates de la comprobación final en total (p. ej. 25000; sustituye a --n-final)")
+    ap.add_argument("--rumania", action="store_true", help="colocaciones de Rumania (bateria.ROUNDS_RUMANIA)")
     ap.add_argument("--guardar-candidatos", default="",
                     help="carpeta donde guardar los pesos de cada candidato validado (formato --red)")
     ap.add_argument("--prioridad", choices=("seguridad", "objetivo"), default="seguridad",
@@ -210,6 +211,8 @@ def main():
     a = ap.parse_args()
     global PRIORIDAD
     PRIORIDAD = a.prioridad
+    if a.rumania:
+        B.ROUNDS = B.ROUNDS_RUMANIA
     casillas_batería = len(B.ROUNDS) * len(B.RIVALES) * len(B.FACTORES)
     if a.muestras_final > 0:
         a.n_final = -(-a.muestras_final // casillas_batería)

@@ -141,6 +141,13 @@ code { font-family: var(--f-mono); font-size: 13px; }
             <button type="button" data-v="2,-1,5" aria-pressed="false">R2 rival izq</button>
             <button type="button" data-v="3,1,2" aria-pressed="false">R3 enfrentados</button>
           </div>
+          <span>Rumania (RoboChallenge: detrás de la línea de salida; DIP3 apagado = rival a la derecha)</span>
+          <div class="segmentado" id="rumania" role="group" aria-label="Colocación de Rumania">
+            <button type="button" data-v="4,1,0,0" aria-pressed="false">Modo 1 de frente</button>
+            <button type="button" data-v="4,1,1,0" aria-pressed="false">Modo 2 de frente</button>
+            <button type="button" data-v="4,1,2,90" aria-pressed="false">Modo 3 de lado</button>
+            <button type="button" data-v="4,1,3,180" aria-pressed="false">Modo 4 de espaldas</button>
+          </div>
         </div>
         <label class="fila" for="orientacion">
           <span>Orientación del robot: <b class="num" id="grados">0°</b></span>
@@ -251,8 +258,8 @@ code { font-family: var(--f-mono); font-size: 13px; }
       </div>
 
       <div class="grupo">
-        <h2>Validación: batería de 25 000 combates</h2>
-        <p class="ayuda">Batería de consola (<code>simulacion/bateria.py --muestras 25000</code>, que redondea a 60 combates por casilla: 25 200 en total): todos los rounds, rivales y factores externos, 30 s por combate. Las caídas propias son las que ocurren sin que el rival esté empujando.</p>
+        <h2>Validación: batería de consola</h2>
+        <p class="ayuda">Colocación de Rumania según el reglamento de RoboChallenge (<code>simulacion/bateria.py --rumania --muestras 30000</code>: 52 combates por casilla, 30 576 en total): cada modo en su colocación (1 de frente, 2 a 45°, 3 de lado, 4 de espaldas), todos los rivales y factores externos, 30 s por combate. Las caídas propias son las que ocurren sin que el rival esté empujando.</p>
         __VALIDACION__
       </div>
     </div>
@@ -305,8 +312,9 @@ function configurar(e) {
   const [reflejos, cegados] = p.sensores.split(",").map(Number);
   e.sim_fijar(12, reflejos); e.sim_fijar(13, cegados);
   e.sim_fijar(20, Number(p.retardo));
-  const [salida, lado, dip] = estado.ronda.split(",").map(Number);
+  const [salida, lado, dip, angulo = 0] = estado.ronda.split(",").map(Number);
   e.sim_round(salida, lado, dip);
+  e.sim_angulo_rumania(angulo);
 }
 const enRound = () => estado.ronda.split(",")[0] !== "0";
 
@@ -793,7 +801,10 @@ segmentado($("vista"), v => {
   dibujar();
 });
 segmentado($("enemigo"), v => { estado.modoEnemigo = Number(v); estado.reproducir = enRound(); if (enRound()) colocarRound(); else volverAColocar(); });
-segmentado($("ronda"), v => { estado.ronda = v; if (enRound()) colocarRound(); else { estado.reproducir = false; volverAColocar(); } });
+segmentado($("ronda"), v => { estado.ronda = v; desmarcar($("rumania")); if (enRound()) colocarRound(); else { estado.reproducir = false; volverAColocar(); } });
+// Colocaciones de Rumania: como un round, con el ángulo elegido
+segmentado($("rumania"), v => { estado.ronda = v; desmarcar($("ronda")); colocarRound(); });
+function desmarcar(grupo) { grupo.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", "false")); }
 
 // Coloca los robots en la posición de salida del round elegido (con un sorteo nuevo)
 async function colocarRound() {

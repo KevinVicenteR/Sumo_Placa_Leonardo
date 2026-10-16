@@ -41,8 +41,12 @@ def validacion():
     """Tabla por modo con la batería de 25 000 combates (simulacion/resultados/)."""
     import json
     carpeta = Path("../resultados")
-    versiones = [(nombre, carpeta / archivo) for nombre, archivo in
-                 (("Referencia", "referencia_25000.json"), ("Entrenada", "entrenada_25000.json"))]
+    # Rumania (colocación de RoboChallenge) si está medida; si no, los rounds
+    if (carpeta / "rumania_30000.json").exists():
+        pares = (("Antes (rutinas de siempre)", "rumania_referencia_30000.json"), ("Tácticas de Rumania", "rumania_30000.json"))
+    else:
+        pares = (("Referencia", "referencia_25000.json"), ("Entrenada", "entrenada_25000.json"))
+    versiones = [(nombre, carpeta / archivo) for nombre, archivo in pares]
     datos = [(n, json.loads(r.read_text())) for n, r in versiones if r.exists()]
     if not datos:
         return '<p class="ayuda">Aún no hay resultados: ejecuta la batería con --json.</p>'

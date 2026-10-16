@@ -311,9 +311,11 @@ int main(int argc, char** argv) {
         else if (a == "--driver") cfg.driverL298 = std::string(v) == "l298n";
         else if (a == "--salida") {
             const std::string m = v;
-            cfg.salida = m == "espalda" ? 1 : m == "lado" ? 2 : m == "frente" ? 3 : 0;
+            cfg.salida = m == "espalda" ? 1 : m == "lado" ? 2 : m == "frente" ? 3 : m == "rumania" ? 4 : 0;
         }
         else if (a == "--rival-lado") cfg.ladoRival = std::string(v) == "izq" ? -1 : 1;
+        else if (a == "--angulo-rumania") cfg.anguloRumania = std::atof(v);
+        else if (a == "--dist-rumania") cfg.distRumaniaMax = std::atof(v);
         else if (a == "--dip") cfg.dip = std::atoi(v);
         else if (a == "--fantasmas") cfg.fantasmasPorSegundo = std::atof(v);
         else if (a == "--saturacion") cfg.saturacionesPorSegundo = std::atof(v);

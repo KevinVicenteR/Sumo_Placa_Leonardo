@@ -1,0 +1,5455 @@
+{
+ "combates_por_casilla": 52,
+ "parametros": {
+  "TacticaModo1": "0",
+  "TacticaModo2": "0",
+  "TacticaModo3": "0",
+  "TacticaModo4": "5",
+  "VelocidadGiroTactica": "200",
+  "ColocacionLibre": "false"
+ },
+ "total": {
+  "combates": 30576,
+  "victorias": 13656,
+  "caidas": 10620,
+  "caidas_propias": 546
+ },
+ "por_modo": {
+  "1": {
+   "combates": 4368,
+   "victorias": 1817,
+   "caidas": 1711,
+   "caidas_propias": 57
+  },
+  "2": {
+   "combates": 8736,
+   "victorias": 4259,
+   "caidas": 2537,
+   "caidas_propias": 32
+  },
+  "3": {
+   "combates": 8736,
+   "victorias": 4094,
+   "caidas": 2820,
+   "caidas_propias": 302
+  },
+  "4": {
+   "combates": 8736,
+   "victorias": 3486,
+   "caidas": 3552,
+   "caidas_propias": 155
+  }
+ },
+ "por_rival": {
+  "solo": {
+   "combates": 4368,
+   "victorias": 0,
+   "caidas": 192,
+   "caidas_propias": 192
+  },
+  "quieto": {
+   "combates": 4368,
+   "victorias": 3834,
+   "caidas": 168,
+   "caidas_propias": 163
+  },
+  "deambula": {
+   "combates": 4368,
+   "victorias": 3865,
+   "caidas": 193,
+   "caidas_propias": 174
+  },
+  "embiste": {
+   "combates": 4368,
+   "victorias": 2352,
+   "caidas": 1692,
+   "caidas_propias": 5
+  },
+  "embiste rápido": {
+   "combates": 4368,
+   "victorias": 1110,
+   "caidas": 2780,
+   "caidas_propias": 1
+  },
+  "pesado 500 g": {
+   "combates": 4368,
+   "victorias": 15,
+   "caidas": 3984,
+   "caidas_propias": 6
+  },
+  "flanquea": {
+   "combates": 4368,
+   "victorias": 2480,
+   "caidas": 1611,
+   "caidas_propias": 5
+  }
+ },
+ "por_factor": {
+  "Ideal": {
+   "combates": 2548,
+   "victorias": 1516,
+   "caidas": 475,
+   "caidas_propias": 4
+  },
+  "LiPo casi descargada (6,7 V)": {
+   "combates": 2548,
+   "victorias": 1458,
+   "caidas": 495,
+   "caidas_propias": 5
+  },
+  "LiPo recién cargada (8,4 V)": {
+   "combates": 2548,
+   "victorias": 1559,
+   "caidas": 513,
+   "caidas_propias": 2
+  },
+  "Llantas gastadas (las dos)": {
+   "combates": 2548,
+   "victorias": 704,
+   "caidas": 1456,
+   "caidas_propias": 0
+  },
+  "Llanta izquierda gastada": {
+   "combates": 2548,
+   "victorias": 863,
+   "caidas": 942,
+   "caidas_propias": 77
+  },
+  "Dohyo con polvo (poco agarre)": {
+   "combates": 2548,
+   "victorias": 1311,
+   "caidas": 471,
+   "caidas_propias": 0
+  },
+  "Sensor de piso lento (40 ms)": {
+   "combates": 2548,
+   "victorias": 1485,
+   "caidas": 573,
+   "caidas_propias": 73
+  },
+  "Gente u objetos alrededor": {
+   "combates": 2548,
+   "victorias": 572,
+   "caidas": 1395,
+   "caidas_propias": 1
+  },
+  "Reflejos (detecciones falsas)": {
+   "combates": 2548,
+   "victorias": 1499,
+   "caidas": 677,
+   "caidas_propias": 2
+  },
+  "IR del rival (sensores cegados)": {
+   "combates": 2548,
+   "victorias": 1009,
+   "caidas": 1168,
+   "caidas_propias": 3
+  },
+  "Cortes en la señal de START": {
+   "combates": 2548,
+   "victorias": 1485,
+   "caidas": 612,
+   "caidas_propias": 15
+  },
+  "Todo junto (peor caso)": {
+   "combates": 2548,
+   "victorias": 195,
+   "caidas": 1843,
+   "caidas_propias": 364
+  }
+ },
+ "casillas": [
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "Ideal",
+   "victorias": 48,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "Ideal",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "Ideal",
+   "victorias": 44,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "Ideal",
+   "victorias": 7,
+   "caidas": 44,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "Ideal",
+   "victorias": 42,
+   "caidas": 10,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "Ideal",
+   "victorias": 49,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "Ideal",
+   "victorias": 23,
+   "caidas": 4,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 34,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "Ideal",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "Ideal",
+   "victorias": 34,
+   "caidas": 5,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "Ideal",
+   "victorias": 46,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "Ideal",
+   "victorias": 32,
+   "caidas": 6,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "Ideal",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "Ideal",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "Ideal",
+   "victorias": 29,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 4,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "Ideal",
+   "victorias": 49,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "Ideal",
+   "victorias": 33,
+   "caidas": 19,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "Ideal",
+   "victorias": 5,
+   "caidas": 40,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 45,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "Ideal",
+   "victorias": 45,
+   "caidas": 7,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "Ideal",
+   "victorias": 51,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "Ideal",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "Ideal",
+   "victorias": 48,
+   "caidas": 4,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "Ideal",
+   "victorias": 7,
+   "caidas": 32,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "Ideal",
+   "victorias": 0,
+   "caidas": 46,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "Ideal",
+   "victorias": 50,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 2
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 48,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 2
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 46,
+   "caidas": 6,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 14,
+   "caidas": 38,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 44,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 47,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 49,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 10,
+   "caidas": 3,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 25,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 48,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 31,
+   "caidas": 13,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 48,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 47,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 20,
+   "caidas": 5,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 13,
+   "caidas": 16,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 11,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 49,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 24,
+   "caidas": 28,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 3,
+   "caidas": 45,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 45,
+   "caidas": 7,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 49,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 1,
+   "caidas": 35,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 0,
+   "caidas": 40,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "LiPo casi descargada (6,7 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 50,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 50,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 8,
+   "caidas": 44,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 48,
+   "caidas": 4,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 51,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 32,
+   "caidas": 10,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 44,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 33,
+   "caidas": 9,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 37,
+   "caidas": 15,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 40,
+   "caidas": 12,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 51,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 31,
+   "caidas": 21,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 5,
+   "caidas": 42,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 2,
+   "caidas": 48,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 46,
+   "caidas": 6,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 50,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 40,
+   "caidas": 12,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 15,
+   "caidas": 33,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 0,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "LiPo recién cargada (8,4 V)",
+   "victorias": 47,
+   "caidas": 5,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 47,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 50,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 47,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 51,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 51,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 51,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 51,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "Llantas gastadas (las dos)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 8
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 38,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 8
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 44,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 8
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 13,
+   "caidas": 25,
+   "combates": 52,
+   "caidas_propias": 4
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 3,
+   "caidas": 48,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 4
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 11,
+   "caidas": 30,
+   "combates": 52,
+   "caidas_propias": 5
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 3,
+   "caidas": 3,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 14,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 43,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 30,
+   "caidas": 4,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 28,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 47,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 18,
+   "caidas": 21,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 3,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 26,
+   "caidas": 13,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 40,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 21,
+   "caidas": 14,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 3,
+   "caidas": 48,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 21,
+   "caidas": 24,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 10,
+   "combates": 52,
+   "caidas_propias": 10
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 33,
+   "caidas": 17,
+   "combates": 52,
+   "caidas_propias": 17
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 39,
+   "caidas": 13,
+   "combates": 52,
+   "caidas_propias": 13
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 2,
+   "caidas": 45,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 2,
+   "caidas": 46,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 11,
+   "caidas": 24,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 50,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 3,
+   "caidas": 11,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 0,
+   "caidas": 34,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "Llanta izquierda gastada",
+   "victorias": 9,
+   "caidas": 15,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 50,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 32,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 29,
+   "caidas": 18,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 3,
+   "caidas": 49,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 29,
+   "caidas": 3,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 49,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 36,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 13,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 2,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 14,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 23,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 34,
+   "caidas": 6,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 42,
+   "caidas": 3,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 47,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 32,
+   "caidas": 3,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 36,
+   "caidas": 12,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 24,
+   "caidas": 11,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 16,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 46,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 4,
+   "caidas": 48,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 27,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 24,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 18,
+   "caidas": 31,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 33,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 51,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 20,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 22,
+   "caidas": 19,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 1,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "Dohyo con polvo (poco agarre)",
+   "victorias": 42,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 50,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 13,
+   "caidas": 36,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 49,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 6,
+   "combates": 52,
+   "caidas_propias": 6
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 25,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 34,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 4,
+   "combates": 52,
+   "caidas_propias": 4
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 33,
+   "caidas": 6,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 8
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 50,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 32,
+   "caidas": 6,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 34,
+   "caidas": 3,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 4,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 11,
+   "combates": 52,
+   "caidas_propias": 11
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 44,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 8
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 43,
+   "caidas": 9,
+   "combates": 52,
+   "caidas_propias": 9
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 32,
+   "caidas": 20,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 5,
+   "caidas": 46,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 38,
+   "caidas": 14,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 11,
+   "combates": 52,
+   "caidas_propias": 11
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 44,
+   "caidas": 7,
+   "combates": 52,
+   "caidas_propias": 7
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 45,
+   "caidas": 7,
+   "combates": 52,
+   "caidas_propias": 7
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 32,
+   "caidas": 20,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 4,
+   "caidas": 40,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 0,
+   "caidas": 46,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "Sensor de piso lento (40 ms)",
+   "victorias": 30,
+   "caidas": 21,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 35,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 22,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 41,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 25,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 3,
+   "caidas": 49,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 14,
+   "caidas": 38,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 47,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 33,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 39,
+   "caidas": 13,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 1,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 1,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 47,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 31,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 29,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 27,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 51,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 37,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 2,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 49,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 36,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "Gente u objetos alrededor",
+   "victorias": 2,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 40,
+   "caidas": 12,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 13,
+   "caidas": 39,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 42,
+   "caidas": 9,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 48,
+   "caidas": 4,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 31,
+   "caidas": 21,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 48,
+   "caidas": 4,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 49,
+   "caidas": 3,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 39,
+   "caidas": 13,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 47,
+   "caidas": 5,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 50,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 31,
+   "caidas": 21,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 1,
+   "caidas": 48,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 47,
+   "caidas": 5,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 47,
+   "caidas": 5,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 26,
+   "caidas": 26,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 1,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 45,
+   "caidas": 7,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 32,
+   "caidas": 20,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 8,
+   "caidas": 44,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 46,
+   "caidas": 6,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 33,
+   "caidas": 19,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 10,
+   "caidas": 42,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "Reflejos (detecciones falsas)",
+   "victorias": 38,
+   "caidas": 14,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 13,
+   "caidas": 39,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 2,
+   "caidas": 49,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 12,
+   "caidas": 40,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 25,
+   "caidas": 27,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 13,
+   "caidas": 39,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 25,
+   "caidas": 27,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 22,
+   "caidas": 30,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 8,
+   "caidas": 44,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 24,
+   "caidas": 28,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 50,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 14,
+   "caidas": 38,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 17,
+   "caidas": 35,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 17,
+   "caidas": 35,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 50,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 50,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 15,
+   "caidas": 37,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 15,
+   "caidas": 37,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 16,
+   "caidas": 36,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 7,
+   "caidas": 45,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 4,
+   "caidas": 48,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 12,
+   "caidas": 40,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 51,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 12,
+   "caidas": 40,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 2,
+   "caidas": 50,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "IR del rival (sensores cegados)",
+   "victorias": 15,
+   "caidas": 37,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "Cortes en la señal de START",
+   "victorias": 48,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "Cortes en la señal de START",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "Cortes en la señal de START",
+   "victorias": 41,
+   "caidas": 11,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "Cortes en la señal de START",
+   "victorias": 3,
+   "caidas": 48,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "Cortes en la señal de START",
+   "victorias": 40,
+   "caidas": 12,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "Cortes en la señal de START",
+   "victorias": 49,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "Cortes en la señal de START",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "Cortes en la señal de START",
+   "victorias": 51,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "Cortes en la señal de START",
+   "victorias": 31,
+   "caidas": 11,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 41,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "Cortes en la señal de START",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "Cortes en la señal de START",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "Cortes en la señal de START",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "Cortes en la señal de START",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "Cortes en la señal de START",
+   "victorias": 30,
+   "caidas": 19,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "Cortes en la señal de START",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "Cortes en la señal de START",
+   "victorias": 46,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "Cortes en la señal de START",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "Cortes en la señal de START",
+   "victorias": 50,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "Cortes en la señal de START",
+   "victorias": 33,
+   "caidas": 14,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "Cortes en la señal de START",
+   "victorias": 50,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "Cortes en la señal de START",
+   "victorias": 48,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "Cortes en la señal de START",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "Cortes en la señal de START",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "Cortes en la señal de START",
+   "victorias": 29,
+   "caidas": 17,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 36,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "Cortes en la señal de START",
+   "victorias": 52,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 2
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "Cortes en la señal de START",
+   "victorias": 48,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "Cortes en la señal de START",
+   "victorias": 50,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 2
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "Cortes en la señal de START",
+   "victorias": 28,
+   "caidas": 24,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "Cortes en la señal de START",
+   "victorias": 4,
+   "caidas": 44,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "Cortes en la señal de START",
+   "victorias": 41,
+   "caidas": 11,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "Cortes en la señal de START",
+   "victorias": 0,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "Cortes en la señal de START",
+   "victorias": 50,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "Cortes en la señal de START",
+   "victorias": 50,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 2
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "Cortes en la señal de START",
+   "victorias": 44,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "Cortes en la señal de START",
+   "victorias": 6,
+   "caidas": 37,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "Cortes en la señal de START",
+   "victorias": 1,
+   "caidas": 48,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "Cortes en la señal de START",
+   "victorias": 47,
+   "caidas": 5,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "solo",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "quieto",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 11,
+   "caidas": 0,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "deambula",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 14,
+   "caidas": 7,
+   "combates": 52,
+   "caidas_propias": 3
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "embiste rápido",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "pesado 500 g",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU1 de frente",
+   "rival": "flanquea",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "solo",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 2
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "quieto",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 42,
+   "caidas": 2,
+   "combates": 52,
+   "caidas_propias": 2
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "deambula",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 17,
+   "caidas": 4,
+   "combates": 52,
+   "caidas_propias": 2
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "embiste rápido",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "pesado 500 g",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 der",
+   "rival": "flanquea",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "solo",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 1,
+   "combates": 52,
+   "caidas_propias": 1
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "quieto",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 31,
+   "caidas": 6,
+   "combates": 52,
+   "caidas_propias": 5
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "deambula",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 13,
+   "caidas": 12,
+   "combates": 52,
+   "caidas_propias": 7
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "embiste rápido",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "pesado 500 g",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU2 de frente, DIP3 izq",
+   "rival": "flanquea",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "solo",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 51,
+   "combates": 52,
+   "caidas_propias": 51
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "quieto",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 6,
+   "caidas": 45,
+   "combates": 52,
+   "caidas_propias": 41
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "deambula",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 5,
+   "caidas": 47,
+   "combates": 52,
+   "caidas_propias": 45
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "embiste rápido",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "pesado 500 g",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival der",
+   "rival": "flanquea",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "solo",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 52
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "quieto",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 52
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "deambula",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 51
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "embiste rápido",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "pesado 500 g",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU3 de lado, rival izq",
+   "rival": "flanquea",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "solo",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 8
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "quieto",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 17,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 8
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "deambula",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 10,
+   "caidas": 12,
+   "combates": 52,
+   "caidas_propias": 10
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "embiste rápido",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "pesado 500 g",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira der",
+   "rival": "flanquea",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "solo",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 8,
+   "combates": 52,
+   "caidas_propias": 8
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "quieto",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 21,
+   "caidas": 6,
+   "combates": 52,
+   "caidas_propias": 6
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "deambula",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 8,
+   "caidas": 12,
+   "combates": 52,
+   "caidas_propias": 9
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "embiste rápido",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "pesado 500 g",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  },
+  {
+   "round": "RU4 de espaldas, gira izq",
+   "rival": "flanquea",
+   "factor": "Todo junto (peor caso)",
+   "victorias": 0,
+   "caidas": 52,
+   "combates": 52,
+   "caidas_propias": 0
+  }
+ ]
+}

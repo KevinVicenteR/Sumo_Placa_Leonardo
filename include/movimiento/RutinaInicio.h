@@ -40,6 +40,11 @@ private:
                          unsigned long ahora, unsigned long t, ControlAtaque& ataque);
     bool explorar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                   unsigned long ahora, unsigned long t, ControlAtaque& ataque);
+    bool tacticaRapida(int tactica, const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
+                       unsigned long ahora, unsigned long t, ControlAtaque& ataque);
+    bool esquivando = false;
+    bool esquivado = false;
+    unsigned long inicioEsquiva = 0;
 
     int rutina = 0;
     int lado = 1;

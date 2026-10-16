@@ -36,6 +36,14 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
 
     const unsigned long t = ahora - inicio;
     bool sigue = false;
+    const int tactica = tacticaDeModo(rutina);
+    if (tactica != 0) {
+        if (!tacticaRapida(tactica, decision, mando, motor, ahora, t, ataque)) {
+            rutina = 0;
+            return false;
+        }
+        return true;
+    }
     // Ronda 2: el lado del giro lo decide el primer sensor lateral o de 45° que
     // vea al rival, también durante la esquiva (al avanzar, el rival queda atrás
     // y el sensor lateral deja de verlo)
@@ -126,47 +134,80 @@ bool RutinaInicio::avanzarAlCentro(const DecisionMovimiento& decision, MandoMoto
 // rutina: el control normal gira hacia él (laterales) o lo ataca (frontales).
 bool RutinaInicio::explorar(const DecisionMovimiento& decision, MandoMotores& mando,
                             IMotor& motor, unsigned long ahora, unsigned long t, ControlAtaque& ataque) {
-    if (EstrategiaLibre == 0) {
-        const bool confirmado = rivalVisto.actualizar(decision.tipo != TipoAccion::Busqueda, ahora);
-        const bool sigue = !confirmado && t < TiempoMaxGiroRound4;
-        if (sigue) {
-            mando.mover(motor, lado * VelocidadGiroRound4, -lado * VelocidadGiroRound4, true);
-        }
-        return sigue;
+    const bool confirmado = rivalVisto.actualizar(decision.tipo != TipoAccion::Busqueda, ahora);
+    const bool sigue = !confirmado && t < TiempoMaxGiroRound4;
+    if (sigue) {
+        mando.mover(motor, lado * VelocidadGiroRound4, -lado * VelocidadGiroRound4, true);
     }
-    // Maniobras a máxima velocidad (ver EstrategiaLibre en ParametrosModo4.h).
-    // En cualquier fase, el sensor frontal lo ve (confirmado): ataque a fondo.
-    // Se mira el sensor y no la decisión: en el modo 4 la red decide desde el
-    // principio y puede proponer girar aunque no vea nada.
+    return sigue;
+}
+
+// Tácticas rápidas de Rumania (ver TacticaModo1..4 en ParametrosModo4.h). En
+// cualquier fase, el sensor frontal lo ve (confirmado): ataque a fondo. Se mira
+// el sensor y no la decisión: la red puede proponer girar aunque no vea nada.
+bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision, MandoMotores& mando,
+                                 IMotor& motor, unsigned long ahora, unsigned long t, ControlAtaque& ataque) {
     if (rivalVisto.actualizar(decision.enemigoFrente, ahora)) {
-        ataque.iniciarAtaqueMaximo(ahora);
+        // Espera y esquiva: si lo ve pronto, viene embistiendo; primero se aparta
+        if (tactica == TacticaEsperaEsquiva && t < VentanaRivalRapidoTactica && !esquivado) {
+            esquivando = true;
+            esquivado = true;   // una sola esquiva por combate
+            inicioEsquiva = ahora;
+        } else if (!esquivando) {
+            ataque.iniciarAtaqueMaximo(ahora);
+            return false;
+        }
+    }
+    const bool espera = tactica == TacticaContragolpe || tactica == TacticaEsperaEsquiva;
+    if (t >= (espera ? TiempoMaxEsperaTactica : TiempoMaxTactica)) {
         return false;
     }
-    if (t >= TiempoMaxManiobraLibre) {
-        return false;
-    }
-    if (EstrategiaLibre == 1 && t < TiempoRetrocesoLibre) {
-        // 受け (henka): la rueda del lado de DIP3 atrás a fondo y la otra parada;
-        // se aparta en diagonal hacia atrás, fuera de la línea de embestida
-        mando.mover(motor, lado > 0 ? 0 : -VelocidadManiobraLibre, lado > 0 ? -VelocidadManiobraLibre : 0, true);
-        return true;
-    }
-    if (EstrategiaLibre == 2 && t < TiempoArcoLibre) {
-        // 斜め / 回り込み: arco hacia delante a fondo abriéndose hacia DIP3
-        mando.mover(motor, lado > 0 ? VelocidadManiobraLibre : VelocidadInteriorArcoLibre,
-                    lado > 0 ? VelocidadInteriorArcoLibre : VelocidadManiobraLibre, true);
-        return true;
-    }
-    // Giro rápido en el sitio hasta encararlo: hacia el sensor que lo ve; si no
-    // lo ve ninguno, tras el arco hacia dentro y si no hacia DIP3
-    int sentido = EstrategiaLibre == 2 ? -lado : lado;
-    // AjusteIzq/Der, CorregirIzq/Der y DefensaIzq/Der van seguidos en
-    // TipoAccion, alternando izquierda y derecha
+    // Lado en el que lo ve un sensor de 45° o lateral (0 = ninguno). AjusteIzq/Der,
+    // CorregirIzq/Der y DefensaIzq/Der van seguidos en TipoAccion, alternando lados
     const int k = (int)decision.tipo - (int)TipoAccion::AjusteIzq;
-    if (k >= 0 && k <= (int)TipoAccion::DefensaDer - (int)TipoAccion::AjusteIzq) {
-        sentido = k & 1 ? 1 : -1;
+    const int visto = k >= 0 && k <= (int)TipoAccion::DefensaDer - (int)TipoAccion::AjusteIzq ? (k & 1 ? 1 : -1) : 0;
+    const int v = VelocidadTactica;
+    if (esquivando) {
+        // Se aparta pivotando hacia DIP3 y después gira hacia el otro lado para pillarlo de lado
+        if (ahora - inicioEsquiva < TiempoEsquivaTactica) {
+            mando.mover(motor, lado > 0 ? v : 0, lado > 0 ? 0 : v, true);
+            return true;
+        }
+        if (ahora - inicioEsquiva < 2 * TiempoEsquivaTactica) {
+            mando.mover(motor, -lado * VelocidadGiroTactica, lado * VelocidadGiroTactica, true);
+            return true;
+        }
+        esquivando = false;   // sigue con el giro hacia el sensor que lo vea
     }
-    mando.mover(motor, sentido * VelocidadGiroLibre, -sentido * VelocidadGiroLibre, true);
+    int sentido = lado;
+    if (tactica == TacticaCarga && visto == 0) {
+        mando.mover(motor, v, v, true);                           // carga recta a fondo
+        return true;
+    }
+    if (espera && visto == 0) {
+        mando.mover(motor, 0, 0, true);                           // quieto hasta verlo
+        return true;
+    }
+    if (tactica == TacticaPivote && visto == 0) {
+        mando.mover(motor, lado > 0 ? v : 0, lado > 0 ? 0 : v, true);  // pivote hacia DIP3
+        return true;
+    }
+    if (tactica == TacticaArco) {
+        if (t < TiempoArcoLibre) {
+            // 斜め / 回り込み: arco a fondo abriéndose hacia DIP3
+            mando.mover(motor, lado > 0 ? v : VelocidadInteriorArcoLibre, lado > 0 ? VelocidadInteriorArcoLibre : v, true);
+            return true;
+        }
+        sentido = -lado;                                          // y después hacia dentro
+    }
+    if (tactica == TacticaHenka && t < TiempoRetrocesoLibre) {
+        // 受け: la rueda del lado de DIP3 atrás a fondo; sale de la línea de embestida
+        mando.mover(motor, lado > 0 ? 0 : -v, lado > 0 ? -v : 0, true);
+        return true;
+    }
+    // Giro rápido en el sitio hacia el sensor que lo ve (o hacia DIP3)
+    if (visto != 0) sentido = visto;
+    mando.mover(motor, sentido * VelocidadGiroTactica, -sentido * VelocidadGiroTactica, true);
     return true;
 }
 

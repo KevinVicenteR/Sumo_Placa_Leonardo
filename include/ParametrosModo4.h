@@ -18,26 +18,45 @@ constexpr bool UsarRedControlModo1 = true;
 // ganaba menos y se caía más (25 200 combates: 41,1/40,2 % frente a 50,1/31,4 %).
 constexpr bool UsarRedControlModo3 = true;
 constexpr bool EsquivarModo3 = false;
-// Modo 4 (salida libre): maniobra de inicio, todas a máxima velocidad. En
-// cualquier fase, si el frontal ve al rival, ataque a fondo (VelocidadEmpuje).
-//   0 = giro en el sitio a VelocidadGiroRound4 hasta verlo (la de siempre)
-//   1 = 受け (henka) y contraataque: retrocede en diagonal con la rueda del
-//       lado de DIP3 (TiempoRetrocesoLibre) para salir de la línea de su
-//       embestida y gira rápido hasta encararlo
-//   2 = 斜め / 回り込み: arco a fondo hacia DIP3 (TiempoArcoLibre) y giro
-//       rápido hacia dentro para atacarlo de lado
-//   3 = tornado: giro rápido en el sitio hasta verlo y carga a fondo
-// Elegida con el simulador (modo 4 colocado como en los rounds, 20 160 combates):
-// 2 gana 46,4 % y se cae 26,9 % (0: 38,8 % / 32,0 %). Colocado al azar (a veces
-// mirando al borde) es peor que 0: colócalo de cara al rival, con DIP3 hacia
-// el lado por el que quieras rodearlo.
-constexpr int EstrategiaLibre = 2;
-constexpr int VelocidadManiobraLibre = 255;
+// Rumania (RoboChallenge 4.1): cada robot detrás de su línea de salida y dentro
+// de su franja de 10 cm; con 10 x 10 cm solo caben colocaciones rectas. Cada
+// modo es una táctica rápida para una colocación: modo 1 de frente (ataque),
+// modo 2 de frente (espera), modo 3 de lado, modo 4 de espaldas (DIP3 apagado =
+// rival / giro a la derecha). En cualquier fase, si el sensor frontal ve al
+// rival, ataque a fondo (VelocidadEmpuje).
+//   0 = la rutina de inicio de siempre de ese modo
+//   1 = carga recta a fondo                 2 = contragolpe: quieto hasta verlo
+//   3 = pivote sobre una rueda hacia DIP3   4 = giro rápido en el sitio
+//   5 = 斜め / 回り込み: arco a fondo hacia DIP3 y giro hacia dentro
+//   6 = 受け (henka): atrás en diagonal y giro
+//   7 = espera y esquiva: si lo ve pronto (viene embistiendo) se aparta
+//       pivotando hacia DIP3 y gira para pillarlo de lado; si no, contragolpe
+// Con un sensor de 45° o lateral viéndolo, gira rápido hacia ese lado.
+constexpr int TacticaCarga = 1, TacticaContragolpe = 2, TacticaPivote = 3, TacticaGiro = 4;
+constexpr int TacticaArco = 5, TacticaHenka = 6, TacticaEsperaEsquiva = 7;
+// Elegidas con el simulador (colocación estricta del reglamento, todos los
+// rivales y factores; % de victorias / % de caídas):
+//   modo 1 arco         54,8 / 24,9 (rutina de siempre 41,0 / 39,5)
+//   modo 2 contragolpe  54,3 / 27,3 (rutina de siempre 48,8 / 28,8)
+//   modo 3 pivote       46,3 / 28,7 (rutina de siempre 45,5 / 34,3)
+//   modo 4 henka        50,0 / 28,6 (giro de siempre 47,7 / 28,5)
+constexpr int TacticaModo1 = TacticaArco;
+constexpr int TacticaModo2 = TacticaContragolpe;
+constexpr int TacticaModo3 = TacticaPivote;
+constexpr int TacticaModo4 = TacticaHenka;
+constexpr int tacticaDeModo(int modo) {
+    return modo == 1 ? TacticaModo1 : modo == 2 ? TacticaModo2 : modo == 3 ? TacticaModo3
+         : modo == 4 ? TacticaModo4 : 0;
+}
+constexpr int VelocidadTactica = 255;
+constexpr int VelocidadGiroTactica = 150;
 constexpr int VelocidadInteriorArcoLibre = 110;
-constexpr int VelocidadGiroLibre = 200;
 constexpr unsigned long TiempoRetrocesoLibre = 180;
 constexpr unsigned long TiempoArcoLibre = 200;
-constexpr unsigned long TiempoMaxManiobraLibre = 1500;
+constexpr unsigned long TiempoMaxTactica = 1500;
+constexpr unsigned long TiempoMaxEsperaTactica = 3000;
+constexpr unsigned long VentanaRivalRapidoTactica = 600;
+constexpr unsigned long TiempoEsquivaTactica = 120;
 // Ataque a fondo sin llegar a empujar durante este tiempo: pasa al ataque normal
 constexpr unsigned long TiempoMaxAtaqueLibre = 150;
 constexpr bool MejorarRecuperacionModo3 = false;

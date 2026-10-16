@@ -83,6 +83,11 @@ EXPORTAR("sim_round") void sim_round(int salida, int ladoRival, int dip) {
     sim::cfg.dip = dip;
 }
 
+// Rumania (salida 4): ángulo de nuestro robot respecto a mirar al rival (grados)
+EXPORTAR("sim_angulo_rumania") void sim_angulo_rumania(double grados) {
+    sim::cfg.anguloRumania = grados;
+}
+
 EXPORTAR("sim_robot") void sim_robot(double x, double y, double th) {
     sim::rob = {x, y, th, 0, 0};
 }

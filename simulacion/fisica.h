@@ -68,6 +68,14 @@ struct Config {
     // (mirando en sentidos opuestos), 3 enfrentados cerca de los bordes
     int salida = 0;
     int ladoRival = 1;            // round 2: +1 rival a la derecha, -1 a la izquierda
+    // Salida 4 (Rumania): cada uno coloca su robot donde quiere. Nuestro robot
+    // mira al rival con este ángulo (0 de frente, 45, 90 de lado, 180 de
+    // espaldas; el rival queda a la derecha con ladoRival = +1) y los centros
+    // quedan detrás de sus líneas de salida (ver colocarRumania).
+    double anguloRumania = 0;     // grados
+    double lineaRumania = 0.10;   // m del centro a cada línea de salida
+    double franjaRumania = 0.105; // m de ancho de la franja (línea de 10 cm + 5 %)
+    double distRumaniaMax = 0.30; // m del centro al centro de cada robot, como mucho
     int dip = 0;                  // interruptores DIP en ON (bit 0 = DIP1...)
     // Pines de los DIP (XMotion: 5, 6, 7) y si ON lee LOW; deben coincidir con
     // Pines.h y DipActivoBajo del firmware (aquí fijos para poder simular
@@ -571,6 +579,54 @@ inline void reiniciar(unsigned long long semilla) {
 // sobre la línea (lo prohíbe el reglamento y la calibración saldría mal).
 // Posiciones de salida de los rounds (orientación global al azar y pequeñas
 // imprecisiones al colocar los robots a mano)
+inline void colocarRound();
+
+// Rumania (reglamento de RoboChallenge, 4.1): cada robot entero detrás de su
+// línea de salida (Shikiri-Sen, a lineaRumania del centro) y dentro de la franja
+// de sus extremos (10 cm, con la tolerancia del 5 %), con la orientación que
+// elija su operador. Nuestro robot mira al rival girado anguloRumania (con
+// ladoRival = +1 el rival queda a la derecha); el rival nos mira. Se comprueban
+// las cuatro esquinas: con un robot de 10 x 10 cm solo caben colocaciones rectas
+// (0, 90 o 180 grados) y centradas.
+inline bool cuerpoEnFranja(double ux, double uy) {
+    const double xs[2] = {cfg.centroDelante - cfg.largo / 2, cfg.centroDelante + cfg.largo / 2};
+    const double ys[2] = {-cfg.ancho / 2, cfg.ancho / 2};
+    for (double rx : xs) {
+        for (double ry : ys) {
+            double wx, wy;
+            aMundo(rx, ry, wx, wy);
+            const double haciaRival = wx * ux + wy * uy, lateral = -wx * uy + wy * ux;
+            if (haciaRival > -cfg.lineaRumania || mat::fabs(lateral) > cfg.franjaRumania / 2) return false;
+        }
+    }
+    return true;
+}
+
+inline void colocarRumania() {
+    const double dMax = maximo(cfg.distRumaniaMax, cfg.lineaRumania + 0.08);
+    for (int intento = 0; intento < 2000; intento++) {
+        const double phi = azar.entre(-PI, PI);              // del centro hacia el rival
+        const double ux = mat::cos(phi), uy = mat::sin(phi);
+        const double px = -uy, py = ux;                      // a lo largo de la línea
+        // Centro del cuerpo detrás de la línea; centrado en la franja
+        const double sNos = azar.entre(cfg.lineaRumania + 0.05, dMax);
+        const double sEne = azar.entre(cfg.lineaRumania + 0.05, dMax);
+        const double lNos = azar.entre(-0.002, 0.002), lEne = azar.entre(-0.002, 0.002);
+        const double bx = -ux * sNos + px * lNos, by = -uy * sNos + py * lNos;   // nuestro cuerpo
+        const double ex = ux * sEne + px * lEne, ey = uy * sEne + py * lEne;
+        // Respecto a la línea entre las dos franjas (perpendicular a las líneas)
+        const double th = phi + cfg.ladoRival * cfg.anguloRumania * PI / 180 + azar.normal() * 0.01;
+        rob = {bx - mat::cos(th) * cfg.centroDelante, by - mat::sin(th) * cfg.centroDelante, th, 0, 0};
+        if (!cuerpoEnFranja(ux, uy) || maxRadioCuerpo() > cfg.radio - 0.002 || sensorPisoSobreBlanco()) continue;
+        ene.presente = modo != Modo::Ninguno;
+        if (ene.presente) {
+            ene = {true, ex, ey, phi + PI + azar.normal() * 0.03};
+        }
+        return;
+    }
+    colocarRound();
+}
+
 inline void colocarRound() {
     const double phi = azar.entre(-PI, PI);
     const double th = phi + azar.normal() * 0.14;
@@ -607,6 +663,10 @@ inline void colocarRound() {
 }
 
 inline void colocarAleatorio() {
+    if (cfg.salida == 4) {
+        colocarRumania();
+        return;
+    }
     if (cfg.salida > 0) {
         colocarRound();
         return;

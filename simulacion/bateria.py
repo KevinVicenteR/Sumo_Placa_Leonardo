@@ -48,6 +48,24 @@ ROUNDS = [
     ("Salida libre sin rutina", ["--dip", "3"]),
 ]
 
+# Rumania (RoboChallenge): cada robot detrás de su línea de salida, dentro de su
+# franja. Con 10 x 10 cm solo caben colocaciones rectas, así que cada modo es una
+# táctica para una colocación: modos 1 y 2 de frente (dos tácticas distintas),
+# modo 3 de lado, modo 4 de espaldas. DIP3 OFF = rival / giro a la derecha.
+def _rumania(angulo, lado, dip):
+    return ["--salida", "rumania", "--angulo-rumania", str(angulo), "--rival-lado", lado, "--dip", str(dip)]
+
+
+ROUNDS_RUMANIA = [
+    ("RU1 de frente", _rumania(0, "der", 0)),
+    ("RU2 de frente, DIP3 der", _rumania(0, "der", 1)),
+    ("RU2 de frente, DIP3 izq", _rumania(0, "izq", 5)),
+    ("RU3 de lado, rival der", _rumania(90, "der", 2)),
+    ("RU3 de lado, rival izq", _rumania(90, "izq", 6)),
+    ("RU4 de espaldas, gira der", _rumania(180, "der", 3)),
+    ("RU4 de espaldas, gira izq", _rumania(180, "izq", 7)),
+]
+
 # (nombre, modo del simulador, opciones). "solo" = sin rival: nunca debería caerse
 RIVALES = [
     ("solo", "ninguno", []),
@@ -155,6 +173,7 @@ def imprimir(res, titulo):
 # Modo del robot (DIP1 y DIP2) que usa cada round
 MODO_DE_ROUND = {"R1 espalda con espalda": 1, "R2 lado, rival a la der": 2, "R2 lado, rival a la izq": 2,
                  "R3 enfrentados": 3, "Salida libre sin rutina": 4}
+MODO_DE_ROUND.update({nombre: int(nombre[2]) for nombre, _ in ROUNDS_RUMANIA})
 
 
 def guardar_json(res, ruta, extra=None):
@@ -183,6 +202,7 @@ def main():
     ap.add_argument("--muestras", type=int, default=0,
                     help="combates en total como mínimo (se redondea hacia arriba a un número igual por casilla; sustituye a --n)")
     ap.add_argument("--json", help="guarda el resultado de cada casilla en este archivo")
+    ap.add_argument("--rumania", action="store_true", help="colocaciones de Rumania (ROUNDS_RUMANIA)")
     ap.add_argument("--red", help="pesos de las dos redes (formato de entrenar_redes.py) en vez de las tablas")
     ap.add_argument("--dur", type=float, default=30, help="s de combate")
     ap.add_argument("--param", action="append", default=[], help="Nombre=valor de Parametros.h")
@@ -194,6 +214,9 @@ def main():
     base = dict(p.split("=", 1) for p in a.param)
     if a.red:
         RED[:] = ["--red", str(Path(a.red).resolve())]
+    if a.rumania:
+        global ROUNDS
+        ROUNDS = ROUNDS_RUMANIA
     casillas = len(ROUNDS) * len(RIVALES) * len(FACTORES)
     if a.muestras > 0:
         a.n = -(-a.muestras // casillas)

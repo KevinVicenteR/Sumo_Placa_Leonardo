@@ -39,7 +39,7 @@ private:
     bool avanzarAlCentro(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                          unsigned long ahora, unsigned long t, ControlAtaque& ataque);
     bool explorar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-                  unsigned long ahora, unsigned long t);
+                  unsigned long ahora, unsigned long t, ControlAtaque& ataque);
 
     int rutina = 0;
     int lado = 1;

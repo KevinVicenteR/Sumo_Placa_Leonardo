@@ -1,4 +1,5 @@
 #include "movimiento/ControlAtaque.h"
+#include "ParametrosModo4.h"
 #include "Parametros.h"
 
 void ControlAtaque::actualizarContacto(const DecisionMovimiento& decision, bool evadiendo,
@@ -37,6 +38,19 @@ int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long a
     }
     if (ataqueDeRutina && !esAtaque(decision.tipo)) {
         ataqueDeRutina = false;
+    }
+    // Modo libre: a máxima velocidad mientras lo siga atacando
+    if (ataqueMaximo && !esAtaque(decision.tipo)) {
+        ataqueMaximo = false;
+    }
+    // Sin llegar a empujar en TiempoMaxAtaqueLibre: lo que ve puede estar lejos o
+    // fuera del dohyo (gente, reflejos); sigue con el ataque normal, que respeta
+    // el limitador de borde
+    if (ataqueMaximo && !empujandoRival && ahora - inicioAtaqueMaximo >= TiempoMaxAtaqueLibre) {
+        ataqueMaximo = false;
+    }
+    if (ataqueMaximo) {
+        return VelocidadEmpuje;
     }
     // Ronda 3: va contra el rival subiendo poco a poco desde la velocidad lenta
     // del avance hasta VelocidadEmpuje, mientras lo siga atacando

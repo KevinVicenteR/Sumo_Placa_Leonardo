@@ -6,16 +6,6 @@
 #include <avr/wdt.h>
 #endif
 
-namespace {
-// Sin módulo de arranque: espera tras encender antes de empezar. En el
-// simulador el START ya está dado en t = 0 (los dos robots salen a la vez).
-#if defined(__AVR__)
-constexpr unsigned long EsperaSinArrancador = TiempoInicioReglamentario;
-#else
-constexpr unsigned long EsperaSinArrancador = 0;
-#endif
-}
-
 ModoCombate::ModoCombate(PlacaXMotion& placaRef, DriverMotores& motoresRef, Percepcion& percepcionRef,
                          ControlMovimiento& controlRef, ControladorRobot& robotRef)
     : placa(placaRef), motores(motoresRef), percepcion(percepcionRef), controlMovimiento(controlRef),
@@ -32,8 +22,10 @@ void ModoCombate::iniciar() {
 #if defined(MONITOREO_COMBATE)
     Serial.begin(115200);
 #endif
-    // Sin módulo de arranque, el combate empieza EsperaSinArrancador ms después
-    // de encender (ver actualizar)
+    // Sin módulo de arranque, el combate empieza nada más encender
+    if (PIN_MODULO_ARRANQUE < 0) {
+        empezarCombate();
+    }
 }
 
 void ModoCombate::empezarCombate() {
@@ -65,15 +57,6 @@ void ModoCombate::empezarCombate() {
 }
 
 void ModoCombate::actualizar() {
-    // 0. Sin módulo de arranque: motores apagados hasta que pasa la espera
-    //    reglamentaria; entonces calibra el piso, lee los DIP y empieza
-    if (PIN_MODULO_ARRANQUE < 0 && !combateEmpezado) {
-        if (millis() < EsperaSinArrancador) {
-            motores.deshabilitar();
-            return;
-        }
-        empezarCombate();
-    }
     // 1. Módulo de arranque: sin RUN, motores apagados y nada más
     if (PIN_MODULO_ARRANQUE >= 0) {
         const bool alto = digitalRead((uint8_t)PIN_MODULO_ARRANQUE) == HIGH;

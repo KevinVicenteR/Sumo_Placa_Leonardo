@@ -80,9 +80,7 @@ constexpr int VelocidadCercaBorde = 100;
 
 // 4. Tiempos generales
 
-// Espera inicial del modo diagnóstico y, sin módulo de arranque
-// (PIN_MODULO_ARRANQUE = -1), del combate: tras encender, el robot no se mueve
-// hasta pasado este tiempo (5 s reglamentarios).
+// Espera inicial del modo diagnóstico (el de combate usa el módulo de arranque).
 constexpr unsigned long TiempoInicioReglamentario = 5000;
 
 // --- Frenado al perder al rival ---

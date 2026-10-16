@@ -32,9 +32,8 @@ constexpr uint8_t MA1B = 8;
 constexpr uint8_t MA2B = 12;
 
 // --- Módulo de arranque (control remoto del árbitro) ---
-// -1 = robot sin módulo: el combate empieza TiempoInicioReglamentario (5 s)
-// después de encender. Esta rama no usa el módulo (A0 queda libre).
-constexpr int PIN_MODULO_ARRANQUE = -1;
+// -1 = robot sin módulo: el combate empieza nada más encender.
+constexpr int PIN_MODULO_ARRANQUE = A0;
 
 // --- Interruptores DIP de la placa: eligen la rutina de inicio del round ---
 constexpr uint8_t DIP_1 = 5;

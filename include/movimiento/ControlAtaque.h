@@ -27,7 +27,7 @@ public:
     // Modo libre: ataque a máxima velocidad (VelocidadEmpuje) mientras lo ataque
     void iniciarAtaqueMaximo(unsigned long ahora) {
         ataqueMaximo = true;
-        inicioAtaqueMaximo = ahora;
+        inicioAtaqueMaximo = (unsigned int)ahora;
     }
     // Pierde el contacto (por ejemplo, al evadir el borde)
     void olvidarFrente() { viendoFrente = false; empujandoRival = false; }
@@ -47,7 +47,7 @@ private:
     unsigned long inicioAproximacion = 0;
     // Ataque a máxima velocidad del modo libre
     bool ataqueMaximo = false;
-    unsigned long inicioAtaqueMaximo = 0;
+    unsigned int inicioAtaqueMaximo = 0;   // 16 bits: basta para TiempoMaxAtaqueLibre
 };
 
 #endif

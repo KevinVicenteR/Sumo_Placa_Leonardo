@@ -14,6 +14,7 @@ bool ManiobraEvasion::iniciar(int sentido, unsigned long duracionRet, unsigned l
         // sin reiniciar el tiempo máximo
         if (unSensor && !lineaUnSensor) {
             unSensor = false;
+            if (mejorarRetroceso && duracionRet > duracionRetroceso) duracionRetroceso = duracionRet;
             duracionGiro = duracionGir;
             negroContinuo = false;
         }
@@ -122,7 +123,8 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
 
 bool ManiobraEvasion::rivalConfirmado(const DecisionMovimiento& decision, bool linea,
                                       unsigned long ahora) {
-    const bool rival = CortarEvasionAlVerRival && !linea && decision.tipo != TipoAccion::Busqueda;
+    const bool rival = CortarEvasionAlVerRival && !linea && decision.tipo != TipoAccion::Busqueda &&
+                       decision.rival != 0;
     if (!rival) {
         viendoRival = false;
         return false;

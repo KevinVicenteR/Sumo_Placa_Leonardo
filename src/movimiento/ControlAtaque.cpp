@@ -1,4 +1,5 @@
 #include "movimiento/ControlAtaque.h"
+#include "ParametrosModo4.h"
 #include "Parametros.h"
 
 void ControlAtaque::actualizarContacto(const DecisionMovimiento& decision, bool evadiendo,
@@ -38,9 +39,23 @@ int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long a
     if (ataqueDeRutina && !esAtaque(decision.tipo)) {
         ataqueDeRutina = false;
     }
+    // Modo libre: a máxima velocidad mientras lo siga atacando
+    if (ataqueMaximo && !esAtaque(decision.tipo)) {
+        ataqueMaximo = false;
+    }
+    // Sin llegar a empujar en TiempoMaxAtaqueLibre: lo que ve puede estar lejos o
+    // fuera del dohyo (gente, reflejos); sigue con el ataque normal, que respeta
+    // el limitador de borde
+    if (ataqueMaximo && !empujandoRival && (unsigned int)((unsigned int)ahora - inicioAtaqueMaximo) >= TiempoMaxAtaqueLibre) {
+        ataqueMaximo = false;
+    }
+    if (ataqueMaximo) {
+        return VelocidadEmpuje;
+    }
     // Dos o tres sensores delanteros lo ven: ataca ya, sin subida gradual
-    const bool variosFrontales = decision.ataqueDirecto || decision.tipo == TipoAccion::AjusteIzq ||
-                                 decision.tipo == TipoAccion::AjusteDer;
+    // (por los sensores, no por la acción: la red puede elegir AtaqueFrontal o Ajuste)
+    const bool variosFrontales = decision.ataqueDirecto ||
+        ((decision.rival & RivalFrontal) && (decision.rival & (Rival45Izq | Rival45Der)));
     if (variosFrontales && VelocidadAtaqueVariosFrontales > 0) {
         aproximacion = false;
         embestidaInicio = false;

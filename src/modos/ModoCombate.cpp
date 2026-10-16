@@ -6,6 +6,17 @@
 #include <avr/wdt.h>
 #endif
 
+namespace {
+// Tras el START de un combate nuevo, el robot espera los 5 s reglamentarios
+// (TiempoInicioReglamentario) con los motores apagados. En el simulador el
+// START ya marca la salida de los dos robots a la vez: sin espera.
+#if defined(__AVR__)
+constexpr unsigned long EsperaTrasStart = TiempoInicioReglamentario;
+#else
+constexpr unsigned long EsperaTrasStart = 0;
+#endif
+}
+
 ModoCombate::ModoCombate(PlacaXMotion& placaRef, DriverMotores& motoresRef, Percepcion& percepcionRef,
                          ControlMovimiento& controlRef, ControladorRobot& robotRef)
     : placa(placaRef), motores(motoresRef), percepcion(percepcionRef), controlMovimiento(controlRef),
@@ -82,6 +93,7 @@ void ModoCombate::actualizar() {
                 percepcion.leer();
             }
             enCombate = false;
+            esperandoInicio = false;   // un STOP durante la espera la cancela
             return;
         }
         if (!enCombate) {
@@ -94,6 +106,16 @@ void ModoCombate::actualizar() {
                 enCombate = true;
                 cajaNegra.anotarInterrupcion();
             } else {
+                // Combate nuevo: espera reglamentaria con los motores apagados
+                if (!esperandoInicio) {
+                    esperandoInicio = true;
+                    inicioEspera = millis();
+                }
+                if (millis() - inicioEspera < EsperaTrasStart) {
+                    motores.deshabilitar();
+                    return;
+                }
+                esperandoInicio = false;
                 empezarCombate();
             }
         }

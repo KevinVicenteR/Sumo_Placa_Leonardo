@@ -1,0 +1,52 @@
+{
+  "total": {
+    "combates": 30240,
+    "victorias": 10757,
+    "caidas": 7888,
+    "propias": 72,
+    "gana_pct": 35.57208994708995,
+    "cae_pct": 26.084656084656086
+  },
+  "ideal": {
+    "combates": 1440,
+    "victorias": 1072,
+    "caidas": 4,
+    "propias": 0,
+    "gana_pct": 74.44444444444444,
+    "cae_pct": 0.2777777777777778
+  },
+  "por_modo": {
+    "1": {
+      "combates": 6048,
+      "victorias": 2022,
+      "caidas": 1435,
+      "propias": 12,
+      "gana_pct": 33.432539682539684,
+      "cae_pct": 23.72685185185185
+    },
+    "2": {
+      "combates": 12096,
+      "victorias": 3652,
+      "caidas": 2805,
+      "propias": 17,
+      "gana_pct": 30.191798941798943,
+      "cae_pct": 23.189484126984127
+    },
+    "3": {
+      "combates": 6048,
+      "victorias": 2884,
+      "caidas": 1852,
+      "propias": 32,
+      "gana_pct": 47.68518518518518,
+      "cae_pct": 30.62169312169312
+    },
+    "4": {
+      "combates": 6048,
+      "victorias": 2199,
+      "caidas": 1796,
+      "propias": 11,
+      "gana_pct": 36.35912698412698,
+      "cae_pct": 29.695767195767196
+    }
+  }
+}

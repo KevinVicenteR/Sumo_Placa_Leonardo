@@ -26,6 +26,11 @@ public:
     void iniciarEmbestida(unsigned long ahora);
     // Ronda 3: el avance lento encontró al rival por delante
     void iniciarAproximacion(unsigned long ahora);
+    // Modo libre: ataque a máxima velocidad (VelocidadEmpuje) mientras lo ataque
+    void iniciarAtaqueMaximo(unsigned long ahora) {
+        ataqueMaximo = true;
+        inicioAtaqueMaximo = (unsigned int)ahora;
+    }
     // Pierde el contacto (por ejemplo, al evadir el borde)
     void olvidarFrente() { viendoFrente = false; empujandoRival = false; }
 
@@ -42,6 +47,9 @@ private:
     // Aproximación de la ronda 3
     bool aproximacion = false;
     unsigned long inicioAproximacion = 0;
+    // Ataque a máxima velocidad del modo libre
+    bool ataqueMaximo = false;
+    unsigned int inicioAtaqueMaximo = 0;   // 16 bits: basta para TiempoMaxAtaqueLibre
 };
 
 #endif

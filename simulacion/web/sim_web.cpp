@@ -13,6 +13,17 @@
 SerialSim Serial;
 
 // Soporte mínimo de C++ sin biblioteca estándar
+extern "C" void* memset(void* destino, int valor, __SIZE_TYPE__ n) {
+    volatile unsigned char* d = static_cast<volatile unsigned char*>(destino);
+    for (__SIZE_TYPE__ i = 0; i < n; ++i) d[i] = static_cast<unsigned char>(valor);
+    return destino;
+}
+extern "C" void* memcpy(void* destino, const void* origen, __SIZE_TYPE__ n) {
+    volatile unsigned char* d = static_cast<volatile unsigned char*>(destino);
+    const volatile unsigned char* o = static_cast<const volatile unsigned char*>(origen);
+    for (__SIZE_TYPE__ i = 0; i < n; ++i) d[i] = o[i];
+    return destino;
+}
 void operator delete(void*) noexcept {}
 void operator delete(void*, unsigned long) noexcept {}
 extern "C" void __cxa_pure_virtual() { __builtin_trap(); }
@@ -22,7 +33,7 @@ double inicioCombateUs = 0;
 }
 
 // Sumo X3: 400 rpm, ruedas JSUMO de 3 cm, 340 g y pala delantera; el rival
-// también lleva pala. Dohyo de 70 cm con línea de 2,5 cm.
+// también lleva pala. Dohyo de 77 cm con línea de 2,5 cm.
 EXPORTAR("sim_reiniciar") void sim_reiniciar(double semilla) {
     sim::cfg.rpm = 400;
     sim::cfg.parBloqueo = 0.8;
@@ -31,7 +42,7 @@ EXPORTAR("sim_reiniciar") void sim_reiniciar(double semilla) {
     sim::cfg.mu = 0.9;
     sim::cfg.pala = 0.3;
     sim::cfg.palaRival = 0.3;
-    sim::cfg.radio = 0.35;
+    sim::cfg.radio = 0.385;
     sim::cfg.borde = 0.025;
     sim::reiniciar((unsigned long long)semilla);
 }

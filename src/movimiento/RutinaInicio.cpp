@@ -1,4 +1,5 @@
 #include "movimiento/RutinaInicio.h"
+#include "ParametrosModo4.h"
 
 void RutinaInicio::iniciar(int rutinaElegida, int ladoElegido) {
     rutina = rutinaElegida;
@@ -54,7 +55,7 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
     } else if (rutina == 3) {
         sigue = avanzarAlCentro(decision, mando, motor, ahora, t, ataque);
     } else if (rutina == 4) {
-        sigue = explorar(decision, mando, motor, ahora, t);
+        sigue = explorar(decision, mando, motor, ahora, t, ataque);
     }
     if (!sigue) {
         rutina = 0;
@@ -124,13 +125,49 @@ bool RutinaInicio::avanzarAlCentro(const DecisionMovimiento& decision, MandoMoto
 // girar en el sitio buscando al rival. Cualquier sensor que lo vea termina la
 // rutina: el control normal gira hacia él (laterales) o lo ataca (frontales).
 bool RutinaInicio::explorar(const DecisionMovimiento& decision, MandoMotores& mando,
-                            IMotor& motor, unsigned long ahora, unsigned long t) {
-    const bool confirmado = rivalVisto.actualizar(decision.tipo != TipoAccion::Busqueda, ahora);
-    const bool sigue = !confirmado && t < TiempoMaxGiroRound4;
-    if (sigue) {
-        mando.mover(motor, lado * VelocidadGiroRound4, -lado * VelocidadGiroRound4, true);
+                            IMotor& motor, unsigned long ahora, unsigned long t, ControlAtaque& ataque) {
+    if (EstrategiaLibre == 0) {
+        const bool confirmado = rivalVisto.actualizar(decision.tipo != TipoAccion::Busqueda, ahora);
+        const bool sigue = !confirmado && t < TiempoMaxGiroRound4;
+        if (sigue) {
+            mando.mover(motor, lado * VelocidadGiroRound4, -lado * VelocidadGiroRound4, true);
+        }
+        return sigue;
     }
-    return sigue;
+    // Maniobras a máxima velocidad (ver EstrategiaLibre en ParametrosModo4.h).
+    // En cualquier fase, el sensor frontal lo ve (confirmado): ataque a fondo.
+    // Se mira el sensor y no la decisión: en el modo 4 la red decide desde el
+    // principio y puede proponer girar aunque no vea nada.
+    if (rivalVisto.actualizar(decision.enemigoFrente, ahora)) {
+        ataque.iniciarAtaqueMaximo(ahora);
+        return false;
+    }
+    if (t >= TiempoMaxManiobraLibre) {
+        return false;
+    }
+    if (EstrategiaLibre == 1 && t < TiempoRetrocesoLibre) {
+        // 受け (henka): la rueda del lado de DIP3 atrás a fondo y la otra parada;
+        // se aparta en diagonal hacia atrás, fuera de la línea de embestida
+        mando.mover(motor, lado > 0 ? 0 : -VelocidadManiobraLibre, lado > 0 ? -VelocidadManiobraLibre : 0, true);
+        return true;
+    }
+    if (EstrategiaLibre == 2 && t < TiempoArcoLibre) {
+        // 斜め / 回り込み: arco hacia delante a fondo abriéndose hacia DIP3
+        mando.mover(motor, lado > 0 ? VelocidadManiobraLibre : VelocidadInteriorArcoLibre,
+                    lado > 0 ? VelocidadInteriorArcoLibre : VelocidadManiobraLibre, true);
+        return true;
+    }
+    // Giro rápido en el sitio hasta encararlo: hacia el sensor que lo ve; si no
+    // lo ve ninguno, tras el arco hacia dentro y si no hacia DIP3
+    int sentido = EstrategiaLibre == 2 ? -lado : lado;
+    // Por los sensores y no por la acción: la red puede elegir otra cosa
+    const bool izq = decision.rival & (RivalLatIzq | Rival45Izq);
+    const bool der = decision.rival & (Rival45Der | RivalLatDer);
+    if (izq != der) {
+        sentido = der ? 1 : -1;
+    }
+    mando.mover(motor, sentido * VelocidadGiroLibre, -sentido * VelocidadGiroLibre, true);
+    return true;
 }
 
 // Ronda 2: un sensor lateral o de 45° que ve al rival fija el lado del giro (si

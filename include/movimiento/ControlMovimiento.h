@@ -21,6 +21,7 @@
 #include "movimiento/ControlAtaque.h"
 #include "movimiento/LimitadorBorde.h"
 #include "Parametros.h"
+#include "movimiento/ControlRedModo4.h"
 
 class ControlMovimiento: public IControlMovimiento {
 public:
@@ -33,9 +34,23 @@ public:
     void reiniciar();
     // Rutina del round (ver RutinaInicio) y lado del giro (1 der, -1 izq)
     void iniciarRutina(int rutinaInicio, int ladoInicio) {
+        competencia = rutinaInicio;
+        ++generacion;
+        controlRed.reiniciar();
+        evasion.configurarModo4(mejorasActivas());
         rutina.iniciar(rutinaInicio, ladoInicio);
         limitadorBorde.colocarSalida(rutinaInicio);
     }
+
+    void habilitarRedes() { redesHabilitadas = true; }
+    unsigned char modoCompetencia() const { return competencia; }
+    bool esModo4() const { return competencia == 4; }
+    // Las salidas 1–3 usan la ruta histórica hasta que termina su maniobra.
+    bool mejorasActivas() const {
+        return redesHabilitadas && (competencia == 4 ||
+               (competencia >= 1 && competencia <= 3 && rutina.actual() == 0));
+    }
+    unsigned char generacionCombate() const { return generacion; }
 
     // --- Consultas (telemetría, tests y simulador) ---
     int rutinaActual() const { return rutina.actual(); }
@@ -49,14 +64,18 @@ public:
 
 private:
     // Pasa a MandoMotores los límites de avance actuales de cada maniobra
-    void actualizarLimites(const DecisionMovimiento& decision);
+    __attribute__((noinline)) void actualizarLimites(const DecisionMovimiento& decision);
     // Empieza la evasión si la estrategia ve el borde
     void empezarEvasionSiHayBorde(const DecisionMovimiento& decision, unsigned long ahora);
     // Opción ResistirEnBorde: seguir empujando al rival al llegar a la línea
     bool resistirEnBorde(const DecisionMovimiento& decision, IMotor& motor);
     // Acción normal: atacar, girar hacia un lado o buscar
-    void ejecutarAccion(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora);
+    __attribute__((noinline)) void ejecutarAccion(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora);
 
+    unsigned char competencia = 0;
+    bool redesHabilitadas = false, mejorasEsteCiclo = false;
+    unsigned char generacion = 0;
+    ControlRedModo4 controlRed;
     int rampa;
     int patron;
 

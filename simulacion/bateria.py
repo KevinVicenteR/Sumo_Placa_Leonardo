@@ -13,6 +13,7 @@ señal de START... y todas juntas.
   python3 simulacion/bateria.py --comparar UsarFiltroBayesRival=true
 """
 import argparse
+from pathlib import Path
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -25,9 +26,9 @@ import simular
 # LiPo 2S (7,4 V) con motores de 6 V (batería 1,23) y pala delantera que le
 # quita al rival un 30 % de agarre (valor supuesto: no se ha medido). Dohyo negro
 # con borde blanco; fuera del dohyo (elevado) el sensor de piso no ve nada y lee
-# oscuro, como el negro: el caso más difícil. El dohyo mide 70 cm de diámetro.
+# oscuro, como el negro: el caso más difícil. El dohyo mide 77 cm de diámetro (línea de 2,5 cm incluida).
 ROBOT = ["--rpm", "400", "--diam", "0.03", "--masa", "0.34", "--par", "0.8", "--mu", "0.9",
-         "--bateria", "1.23", "--pala", "0.3", "--radio", "0.35",
+         "--bateria", "1.23", "--pala", "0.3", "--radio", "0.385",
          # Ruedas atrás (como en el video): el robot gira sobre el eje trasero; el
          # cuerpo empieza 3,3 cm por delante, los sensores de piso van a 7,8 cm
          # y el centro de masa se supone a 2 cm
@@ -46,6 +47,23 @@ ROUNDS = [
     ("R2 lado, rival a la izq", ["--salida", "lado", "--rival-lado", "izq", "--dip", "5"]),
     ("R3 enfrentados", ["--salida", "frente", "--dip", "2"]),
     ("Salida libre sin rutina", ["--dip", "3"]),
+]
+
+# Rumania: cada uno coloca su robot donde quiere (posición libre a 20-40 cm del
+# rival). Cada modo es una táctica para una colocación: modo 1 de frente,
+# modo 2 a 45°, modo 3 de lado, modo 4 de espaldas (DIP3 = lado del rival).
+def _rumania(angulo, lado, dip):
+    return ["--salida", "rumania", "--angulo-rumania", str(angulo), "--rival-lado", lado, "--dip", str(dip)]
+
+
+ROUNDS_RUMANIA = [
+    ("RU1 de frente", _rumania(0, "der", 0)),
+    ("RU2 a 45°, rival der", _rumania(45, "der", 1)),
+    ("RU2 a 45°, rival izq", _rumania(45, "izq", 5)),
+    ("RU3 de lado, rival der", _rumania(90, "der", 2)),
+    ("RU3 de lado, rival izq", _rumania(90, "izq", 6)),
+    ("RU4 de espaldas, gira der", _rumania(180, "der", 3)),
+    ("RU4 de espaldas, gira izq", _rumania(180, "izq", 7)),
 ]
 
 # (nombre, modo del simulador, opciones). "solo" = sin rival: nunca debería caerse
@@ -78,9 +96,13 @@ FACTORES = [
 ]
 
 
+# Pesos de las redes para el simulador (--red), si se pasan con --red
+RED = []
+
+
 def correr(binario, n, dur, ronda, rival, factor):
     """Una casilla de la tabla: n combates. Devuelve (victorias, caídas, n, caídas propias)."""
-    extra = ROBOT + ["--dur", str(dur)] + ronda[1] + rival[2] + factor[1]
+    extra = ROBOT + ["--dur", str(dur)] + RED + ronda[1] + rival[2] + factor[1]
     filas = simular.ejecutar(binario, rival[1], n, extra)
     victorias = sum(1 for f in filas if f["gano"] == "1")
     caidas = sum(1 for f in filas if f["cayo"] == "1")
@@ -148,9 +170,40 @@ def imprimir(res, titulo):
           f" (sin que lo empujen: {p})  empata {pct(n - v - c, n):.0f} %")
 
 
+# Modo del robot (DIP1 y DIP2) que usa cada round
+MODO_DE_ROUND = {"R1 espalda con espalda": 1, "R2 lado, rival a la der": 2, "R2 lado, rival a la izq": 2,
+                 "R3 enfrentados": 3, "Salida libre sin rutina": 4}
+MODO_DE_ROUND.update({nombre: int(nombre[2]) for nombre, _ in ROUNDS_RUMANIA})
+
+
+def guardar_json(res, ruta, extra=None):
+    """Resultado de cada casilla, más totales por modo, rival y factor."""
+    import json
+    from pathlib import Path
+
+    def total(filtro):
+        v, c, n = sumar(res, filtro)
+        return {"combates": n, "victorias": v, "caidas": c, "caidas_propias": caidas_propias(res, filtro)}
+
+    datos = dict(extra or {})
+    datos["total"] = total(lambda *_: True)
+    datos["por_modo"] = {str(m): total(lambda r, rv, f, m=m: MODO_DE_ROUND[r] == m) for m in (1, 2, 3, 4)}
+    datos["por_rival"] = {rv[0]: total(lambda r, x, f, k=rv[0]: x == k) for rv in RIVALES}
+    datos["por_factor"] = {f[0]: total(lambda r, rv, x, k=f[0]: x == k) for f in FACTORES}
+    datos["casillas"] = [{"round": r, "rival": rv, "factor": f, "victorias": x[0], "caidas": x[1],
+                          "combates": x[2], "caidas_propias": x[3]} for (r, rv, f), x in res.items()]
+    Path(ruta).parent.mkdir(parents=True, exist_ok=True)
+    Path(ruta).write_text(json.dumps(datos, ensure_ascii=False, indent=1))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=20, help="combates por casilla")
+    ap.add_argument("--muestras", type=int, default=0,
+                    help="combates en total como mínimo (se redondea hacia arriba a un número igual por casilla; sustituye a --n)")
+    ap.add_argument("--json", help="guarda el resultado de cada casilla en este archivo")
+    ap.add_argument("--rumania", action="store_true", help="colocaciones de Rumania (ROUNDS_RUMANIA)")
+    ap.add_argument("--red", help="pesos de las dos redes (formato de entrenar_redes.py) en vez de las tablas")
     ap.add_argument("--dur", type=float, default=30, help="s de combate")
     ap.add_argument("--param", action="append", default=[], help="Nombre=valor de Parametros.h")
     ap.add_argument("--comparar", action="append", default=[],
@@ -159,10 +212,20 @@ def main():
 
     simular.BUILD.mkdir(parents=True, exist_ok=True)
     base = dict(p.split("=", 1) for p in a.param)
-    total = len(ROUNDS) * len(RIVALES) * len(FACTORES) * a.n
+    if a.red:
+        RED[:] = ["--red", str(Path(a.red).resolve())]
+    if a.rumania:
+        global ROUNDS
+        ROUNDS = ROUNDS_RUMANIA
+    casillas = len(ROUNDS) * len(RIVALES) * len(FACTORES)
+    if a.muestras > 0:
+        a.n = -(-a.muestras // casillas)
+    total = casillas * a.n
     print(f"{len(ROUNDS)} rounds x {len(RIVALES)} rivales x {len(FACTORES)} factores x {a.n} = {total} combates")
     res = bateria(simular.compilar(base), a.n, a.dur)
     imprimir(res, "Firmware actual" + (f" {base}" if base else ""))
+    if a.json:
+        guardar_json(res, a.json, {"combates_por_casilla": a.n, "parametros": base})
 
     if a.comparar:
         cambio = dict(base, **dict(p.split("=", 1) for p in a.comparar))

@@ -1,0 +1,89 @@
+{
+  "semillas_emparejadas_por_casilla": true,
+  "combates_por_version": 30576,
+  "semillas_unicas_por_version": 30576,
+  "rango_semillas": [
+    1000001,
+    1030576
+  ],
+  "git_sin_cambios_fuera_codex": true,
+  "referencia_origen": "indice Git; blobs identicos al commit 39512ef, no existen en HEAD",
+  "resumen": {
+    "referencia": {
+      "Total": {
+        "combates": 30576,
+        "victorias": 12045,
+        "caidas": 9368,
+        "caidas_propias": 108
+      },
+      "Ideal": {
+        "combates": 1456,
+        "victorias": 1296,
+        "caidas": 8,
+        "caidas_propias": 1
+      },
+      "Modo 1": {
+        "combates": 4368,
+        "victorias": 1825,
+        "caidas": 1218,
+        "caidas_propias": 1
+      },
+      "Modo 2": {
+        "combates": 8736,
+        "victorias": 3778,
+        "caidas": 2713,
+        "caidas_propias": 60
+      },
+      "Modo 3": {
+        "combates": 8736,
+        "victorias": 3265,
+        "caidas": 2571,
+        "caidas_propias": 20
+      },
+      "Modo 4": {
+        "combates": 8736,
+        "victorias": 3177,
+        "caidas": 2866,
+        "caidas_propias": 27
+      }
+    },
+    "entrenada": {
+      "Total": {
+        "combates": 30576,
+        "victorias": 14601,
+        "caidas": 8911,
+        "caidas_propias": 106
+      },
+      "Ideal": {
+        "combates": 1456,
+        "victorias": 1451,
+        "caidas": 5,
+        "caidas_propias": 1
+      },
+      "Modo 1": {
+        "combates": 4368,
+        "victorias": 2225,
+        "caidas": 1171,
+        "caidas_propias": 2
+      },
+      "Modo 2": {
+        "combates": 8736,
+        "victorias": 4431,
+        "caidas": 2606,
+        "caidas_propias": 64
+      },
+      "Modo 3": {
+        "combates": 8736,
+        "victorias": 4117,
+        "caidas": 2394,
+        "caidas_propias": 16
+      },
+      "Modo 4": {
+        "combates": 8736,
+        "victorias": 3828,
+        "caidas": 2740,
+        "caidas_propias": 24
+      }
+    }
+  }
+}

@@ -1,6 +1,7 @@
 #include <unity.h>
 #include "movimiento/ControlMovimiento.h"
 #include "Parametros.h"
+#include "ParametrosModo4.h"
 #include "Arduino.h"
 
 // Comportamiento clásico: sin rampa y búsqueda con giro en el sitio
@@ -81,12 +82,12 @@ static void assertAvanceBusqueda(MotorMock& m) {
     assertMovimiento(m, VelocidadAvance, VelocidadAvance);
 }
 
-static void assertAccionSimple(TipoAccion accion, int izq, int der) {
+static void assertAccionSimple(TipoAccion accion, int izq, int der, unsigned char rival = 0) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     g_delayCallCount = 0;
 
-    c.ejecutar({accion}, m, 0);
+    c.ejecutar({accion, false, false, false, 0, rival}, m, 0);
 
     TEST_ASSERT_EQUAL_INT(1, m.calls);
     assertMovimiento(m, izq, der);
@@ -246,8 +247,16 @@ void test_giro_lateral_termina_por_tiempo(void) {
 void test_ajuste_centra_al_enemigo_sin_dejar_de_atacar(void) {
     // Central y un 45° ven al rival: ataca ya a VelocidadAtaqueVariosFrontales
     const int v = VelocidadAtaqueVariosFrontales > 0 ? VelocidadAtaqueVariosFrontales : VelocidadAtaque;
-    assertAccionSimple(TipoAccion::AjusteIzq, v * PorcentajeAjuste / 100, v);
-    assertAccionSimple(TipoAccion::AjusteDer, v, v * PorcentajeAjuste / 100);
+    assertAccionSimple(TipoAccion::AjusteIzq, v * PorcentajeAjuste / 100, v, RivalFrontal | Rival45Izq);
+    assertAccionSimple(TipoAccion::AjusteDer, v, v * PorcentajeAjuste / 100, RivalFrontal | Rival45Der);
+}
+
+void test_varios_frontales_por_sensores_y_no_por_la_accion(void) {
+    // La red elige AtaqueFrontal con el central y un 45°: también ataca ya
+    if (VelocidadAtaqueVariosFrontales > 0) {
+        assertAccionSimple(TipoAccion::AtaqueFrontal, VelocidadAtaqueVariosFrontales,
+                           VelocidadAtaqueVariosFrontales, RivalFrontal | Rival45Der);
+    }
 }
 
 void test_se_acomoda_y_luego_va_con_todo(void) {
@@ -361,15 +370,20 @@ void test_ver_al_rival_corta_la_evasion(void) {
     TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
     // Retrocediendo junto a la línea no la corta aunque vea al rival
     for (unsigned long t = 1010; t <= 1060; t += 5) {
-        c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
+        c.ejecutar({TipoAccion::AtaqueFrontal, true, false, false, 0, RivalFrontal}, m, t);
     }
     TEST_ASSERT_TRUE(m.izq < 0 && m.der < 0);
-    // Ya separado y girando: un reflejo breve no la corta...
-    const unsigned long giro = hastaGiroEvasion(c, m, 1060);
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, giro + 5);
+    // Ya separado y girando: una acción de la red sin ningún sensor viéndolo no la corta...
+    const unsigned long g0 = hastaGiroEvasion(c, m, 1060);
+    c.ejecutar({TipoAccion::AjusteIzq}, m, g0 + 5);
+    c.ejecutar({TipoAccion::AjusteIzq}, m, g0 + 5 + TiempoConfirmarRivalEnEvasion);
+    TEST_ASSERT_TRUE(m.izq == -m.der);
+    // ...ni un reflejo breve...
+    const unsigned long giro = hastaGiroEvasion(c, m, g0 + 5 + TiempoConfirmarRivalEnEvasion);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true, false, false, 0, RivalFrontal}, m, giro + 5);
     TEST_ASSERT_TRUE(m.izq == -m.der);
     // ...pero verlo TiempoConfirmarRivalEnEvasion ms seguidos sí: va contra él
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, giro + 5 + TiempoConfirmarRivalEnEvasion);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true, false, false, 0, RivalFrontal}, m, giro + 5 + TiempoConfirmarRivalEnEvasion);
     TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der);
 
     // Vuelve a la línea enseguida: esta evasión ya no se corta (no se queda
@@ -378,8 +392,8 @@ void test_ver_al_rival_corta_la_evasion(void) {
     c.ejecutar({TipoAccion::EvadirBordeAmbos}, m, otra);
     const unsigned long giro2 = hastaGiroEvasion(c, m, otra);
     TEST_ASSERT_TRUE(giro2 - giro < EsperaEntreCortesEvasion);
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, giro2 + 5);
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, giro2 + 5 + TiempoConfirmarRivalEnEvasion);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true, false, false, 0, RivalFrontal}, m, giro2 + 5);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true, false, false, 0, RivalFrontal}, m, giro2 + 5 + TiempoConfirmarRivalEnEvasion);
     TEST_ASSERT_TRUE(m.izq == -m.der);
 }
 
@@ -539,6 +553,7 @@ void test_arranque_no_dispara_aunque_tres_frontales_vean_enemigo() {
 }
 
 void test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro(void) {
+    if (tacticaDeModo(1) != 0) return;   // modo 1 con una táctica de Rumania (ver su test)
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(1, 1);
@@ -701,15 +716,43 @@ void test_rutina_libre_gira_hasta_ver_al_rival(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(4, -1);
-    // Sin ver nada: gira en el sitio hacia el lado de DIP3
+    if (TacticaModo4 == 0) {
+        // Sin ver nada: gira en el sitio hacia el lado de DIP3
+        c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+        assertMovimiento(m, -VelocidadGiroRound4, VelocidadGiroRound4);
+        TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
+        // Un lateral lo ve: termina la rutina y gira hacia él
+        c.ejecutar({TipoAccion::DefensaDer}, m, 1100);
+        c.ejecutar({TipoAccion::DefensaDer}, m, 1100 + 2 * ConfirmacionDeteccion);
+        TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+        TEST_ASSERT_TRUE(m.izq > m.der);
+        return;
+    }
+    if (TacticaModo4 != TacticaArco) {
+        return;
+    }
+    // 斜め / 回り込み: arco a fondo hacia DIP3 (izquierda)
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, -VelocidadGiroRound4, VelocidadGiroRound4);
+    assertMovimiento(m, VelocidadInteriorArcoLibre, VelocidadTactica);
     TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
-    // Un lateral lo ve: termina la rutina y gira hacia él
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1100);
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1100 + 2 * ConfirmacionDeteccion);
+    // Tras el arco, sin verlo: giro rápido en el sitio hacia dentro (derecha)
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoArcoLibre);
+    assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
+    // Un lateral lo ve: gira hacia ese lado sin terminar la rutina
+    c.ejecutar({TipoAccion::DefensaIzq, false, false, false, 0, RivalLatIzq}, m, 1000 + TiempoArcoLibre + 10);
+    assertMovimiento(m, -VelocidadGiroTactica, VelocidadGiroTactica);
+    TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
+    // La red elige AtaqueFrontal pero solo lo ve el lateral izquierdo: gira a la izquierda
+    c.ejecutar({TipoAccion::AtaqueFrontal, false, false, false, 0, RivalLatIzq}, m, 1000 + TiempoArcoLibre + 12);
+    assertMovimiento(m, -VelocidadGiroTactica, VelocidadGiroTactica);
+    // El frontal lo ve (confirmado): termina la rutina y ataca a fondo
+    const unsigned long t = 1000 + TiempoArcoLibre + 20;
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-    TEST_ASSERT_TRUE(m.izq > m.der);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion + 1);
+    TEST_ASSERT_EQUAL_INT(m.izq, m.der);
+    TEST_ASSERT_TRUE(m.izq > VelocidadAtaque);
 }
 
 void test_rutina_libre_termina_al_agotar_su_tiempo(void) {
@@ -717,7 +760,8 @@ void test_rutina_libre_termina_al_agotar_su_tiempo(void) {
     MotorMock m;
     c.iniciarRutina(4, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoMaxGiroRound4 + 1);
+    c.ejecutar({TipoAccion::Busqueda}, m,
+               1000 + (TacticaModo4 == 0 ? TiempoMaxGiroRound4 : TiempoMaxTactica) + 1);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
 }
 
@@ -772,6 +816,7 @@ void test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado(void) {
 }
 
 void test_round_1_mantiene_su_velocidad_tras_la_embestida(void) {
+    if (tacticaDeModo(1) != 0) return;   // modo 1 con una táctica de Rumania (ver su test)
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(1, 1);
@@ -826,6 +871,10 @@ void test_reiniciar_vuelve_al_estado_inicial(void) {
     // Tras reiniciar, una nueva rutina arranca normalmente
     c.iniciarRutina(1, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 5000);
+    if (tacticaDeModo(1) == TacticaArco) {
+        assertMovimiento(m, VelocidadTactica, VelocidadInteriorArcoLibre);   // arco hacia DIP3
+        return;
+    }
     c.ejecutar({TipoAccion::Busqueda}, m, 5000 + TiempoEsquivaRound1);
     assertGiroRound1(m, 1);
 }
@@ -850,6 +899,7 @@ int main(int, char**) {
     RUN_TEST(test_giro_lateral_sigue_hasta_ver_al_enemigo_de_frente);
     RUN_TEST(test_giro_lateral_termina_por_tiempo);
     RUN_TEST(test_ajuste_centra_al_enemigo_sin_dejar_de_atacar);
+    RUN_TEST(test_varios_frontales_por_sensores_y_no_por_la_accion);
     RUN_TEST(test_se_acomoda_y_luego_va_con_todo);
     RUN_TEST(test_el_empuje_empieza_de_cero_tras_perder_al_enemigo);
     RUN_TEST(test_avance_de_busqueda_en_pulsos);

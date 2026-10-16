@@ -20,17 +20,18 @@
 
 class ManiobraEvasion {
 public:
+    void configurarModo4(bool activar) { mejorarRetroceso = activar; }
     // La maniobra está en marcha
     bool activa() const { return fase != Fase::Libre; }
 
     // Empieza una evasión. Devuelve false si ya había una en marcha (en ese
     // caso solo la actualiza si ahora la línea la ven los dos sensores).
     // veniaAvanzando = false: sale girando en el sitio en vez de retroceder.
-    bool iniciar(int sentido, unsigned long duracionRetroceso, unsigned long duracionGiro,
+    __attribute__((noinline)) bool iniciar(int sentido, unsigned long duracionRetroceso, unsigned long duracionGiro,
                  unsigned long ahora, bool unSensor, bool veniaAvanzando = true);
 
     // Un ciclo de la maniobra. Devuelve true mientras siga en marcha.
-    bool continuar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
+    __attribute__((noinline)) bool continuar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                    unsigned long ahora, BusquedaRival& busqueda);
 
     // Al principio de cada ciclo: termina la salida suave cuando toca
@@ -50,6 +51,7 @@ private:
     // Ve al rival (fuera de la línea) el tiempo suficiente para cortar la maniobra
     bool rivalConfirmado(const DecisionMovimiento& decision, bool linea, unsigned long ahora);
 
+    bool mejorarRetroceso = false;
     Fase fase = Fase::Libre;
     // Desde cuándo ve al rival durante la maniobra
     bool viendoRival = false;

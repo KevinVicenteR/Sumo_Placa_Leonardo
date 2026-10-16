@@ -4,6 +4,7 @@ DecisionMovimiento EstrategiaCombate::decidir(const LecturasSensores& lecturas) 
     DecisionMovimiento decision = elegir(lecturas);
     // Datos extra que el control de movimiento necesita
     decision.cercaBorde = lecturas.cercaBorde;
+    decision.rival = bitsRival(lecturas);
     decision.ataqueDirecto = decision.tipo == TipoAccion::AtaqueFrontal &&
                             lecturas.c45Izq && lecturas.frontal && lecturas.c45Der;
     return decision;

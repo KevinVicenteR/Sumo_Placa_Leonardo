@@ -68,6 +68,12 @@ struct Config {
     // (mirando en sentidos opuestos), 3 enfrentados cerca de los bordes
     int salida = 0;
     int ladoRival = 1;            // round 2: +1 rival a la derecha, -1 a la izquierda
+    // Salida 4 (Rumania): cada uno coloca su robot donde quiere. Nuestro robot
+    // mira al rival con este ángulo (0 de frente, 45, 90 de lado, 180 de
+    // espaldas; el rival queda a la derecha con ladoRival = +1) y los centros
+    // quedan a una distancia al azar entre distRumaniaMin y distRumaniaMax.
+    double anguloRumania = 0;     // grados
+    double distRumaniaMin = 0.20, distRumaniaMax = 0.40;
     int dip = 0;                  // interruptores DIP en ON (bit 0 = DIP1...)
     // Pines de los DIP (XMotion: 5, 6, 7) y si ON lee LOW; deben coincidir con
     // Pines.h y DipActivoBajo del firmware (aquí fijos para poder simular
@@ -573,6 +579,38 @@ inline void reiniciar(unsigned long long semilla) {
 // sobre la línea (lo prohíbe el reglamento y la calibración saldría mal).
 // Posiciones de salida de los rounds (orientación global al azar y pequeñas
 // imprecisiones al colocar los robots a mano)
+inline void colocarRound();
+
+// Rumania: posición libre. Línea entre los dos robots en cualquier dirección y
+// en cualquier parte del dohyo; nuestro robot girado anguloRumania respecto a
+// mirar al rival y el rival mirándonos (con imprecisión al colocarlos).
+inline void colocarRumania() {
+    for (int intento = 0; intento < 200; intento++) {
+        // Sin pasar de la distancia que cabe en el dohyo (si no, colocarRound
+        // pondría en silencio otra salida)
+        const double maxima = 2 * (cfg.radio - 0.075);
+        double d = azar.entre(cfg.distRumaniaMin, cfg.distRumaniaMax);
+        if (d > maxima) d = maxima;
+        const double phi = azar.entre(-PI, PI);              // de nosotros al rival
+        const double ux = mat::cos(phi), uy = mat::sin(phi);
+        // Punto medio al azar dentro del dohyo, dejando sitio a los dos cuerpos
+        const double libre = cfg.radio - d / 2 - 0.07;
+        if (libre <= 0) continue;
+        const double rm = mat::sqrt(azar.uniforme()) * libre, am = azar.entre(-PI, PI);
+        const double mx = rm * mat::cos(am), my = rm * mat::sin(am);
+        const double th = phi + cfg.ladoRival * cfg.anguloRumania * PI / 180 + azar.normal() * 0.08;
+        const double bx = mx - ux * d / 2, by = my - uy * d / 2;   // nuestro cuerpo
+        rob = {bx - mat::cos(th) * cfg.centroDelante, by - mat::sin(th) * cfg.centroDelante, th, 0, 0};
+        if (maxRadioCuerpo() > cfg.radio - 0.002 || sensorPisoSobreBlanco()) continue;
+        ene.presente = modo != Modo::Ninguno;
+        if (ene.presente) {
+            ene = {true, mx + ux * d / 2, my + uy * d / 2, phi + PI + azar.normal() * 0.14};
+        }
+        return;
+    }
+    colocarRound();
+}
+
 inline void colocarRound() {
     const double phi = azar.entre(-PI, PI);
     const double th = phi + azar.normal() * 0.14;
@@ -609,6 +647,10 @@ inline void colocarRound() {
 }
 
 inline void colocarAleatorio() {
+    if (cfg.salida == 4) {
+        colocarRumania();
+        return;
+    }
     if (cfg.salida > 0) {
         colocarRound();
         return;
@@ -650,7 +692,8 @@ inline bool cayo() {
     if (mat::hypot(x, y) > cfg.radio) return true;
     if (!cfg.vuelcoPala) return false;
     const double fx = cfg.centroDelante + cfg.largo / 2, ly = cfg.ancho / 2;
-    for (double lado : {-1.0, 1.0}) {
+    for (int esquina = 0; esquina < 2; ++esquina) {
+        const double lado = esquina == 0 ? -1.0 : 1.0;
         double wx, wy;
         aMundo(fx, lado * ly, wx, wy);
         if (mat::hypot(wx, wy) <= cfg.radio) return false;  // esa esquina aún apoya

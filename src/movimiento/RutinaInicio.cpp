@@ -1,4 +1,5 @@
 #include "movimiento/RutinaInicio.h"
+#include "ParametrosModo4.h"
 
 void RutinaInicio::iniciar(int rutinaElegida, int ladoElegido) {
     rutina = rutinaElegida;
@@ -16,6 +17,7 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
     if (!enCurso) {
         enCurso = true;
         inicio = ahora;
+        faseEsquiva = 0;
         rivalVisto.reiniciar();
         ladoDecidido = false;
         busqueda.fijarSentido(lado);
@@ -35,6 +37,14 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
 
     const unsigned long t = ahora - inicio;
     bool sigue = false;
+    const int tactica = tacticaDeModo(rutina);
+    if (tactica != 0) {
+        if (!tacticaRapida(tactica, decision, mando, motor, ahora, t, ataque)) {
+            rutina = 0;
+            return false;
+        }
+        return true;
+    }
     // Ronda 2: el lado del giro lo decide el primer sensor lateral o de 45° que
     // vea al rival, también durante la esquiva (al avanzar, el rival queda atrás
     // y el sensor lateral deja de verlo)
@@ -54,7 +64,7 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
     } else if (rutina == 3) {
         sigue = avanzarAlCentro(decision, mando, motor, ahora, t, ataque);
     } else if (rutina == 4) {
-        sigue = explorar(decision, mando, motor, ahora, t);
+        sigue = explorar(decision, mando, motor, ahora, t, ataque);
     }
     if (!sigue) {
         rutina = 0;
@@ -124,13 +134,83 @@ bool RutinaInicio::avanzarAlCentro(const DecisionMovimiento& decision, MandoMoto
 // girar en el sitio buscando al rival. Cualquier sensor que lo vea termina la
 // rutina: el control normal gira hacia él (laterales) o lo ataca (frontales).
 bool RutinaInicio::explorar(const DecisionMovimiento& decision, MandoMotores& mando,
-                            IMotor& motor, unsigned long ahora, unsigned long t) {
+                            IMotor& motor, unsigned long ahora, unsigned long t, ControlAtaque& ataque) {
     const bool confirmado = rivalVisto.actualizar(decision.tipo != TipoAccion::Busqueda, ahora);
     const bool sigue = !confirmado && t < TiempoMaxGiroRound4;
     if (sigue) {
         mando.mover(motor, lado * VelocidadGiroRound4, -lado * VelocidadGiroRound4, true);
     }
     return sigue;
+}
+
+// Tácticas rápidas de Rumania (ver TacticaModo1..4 en ParametrosModo4.h). En
+// cualquier fase, el sensor frontal lo ve (confirmado): ataque a fondo. Se mira
+// el sensor y no la decisión: la red puede proponer girar aunque no vea nada.
+bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision, MandoMotores& mando,
+                                 IMotor& motor, unsigned long ahora, unsigned long t, ControlAtaque& ataque) {
+    if (rivalVisto.actualizar(decision.enemigoFrente, ahora)) {
+        // Espera y esquiva: si lo ve pronto, viene embistiendo; primero se aparta
+        // (una sola vez por rutina)
+        if (tactica == TacticaEsperaEsquiva && t < VentanaRivalRapidoTactica && faseEsquiva == 0) {
+            faseEsquiva = 1;
+            inicioEsquiva = ahora;
+        } else if (faseEsquiva != 1) {
+            ataque.iniciarAtaqueMaximo(ahora);
+            return false;
+        }
+    }
+    const bool espera = tactica == TacticaContragolpe || tactica == TacticaEsperaEsquiva;
+    if (t >= (espera ? TiempoMaxEsperaTactica : TiempoMaxTactica)) {
+        return false;
+    }
+    // Lado en el que lo ve un sensor de 45° o lateral (0 = ninguno o los dos lados).
+    // Por los sensores y no por la acción: la red puede elegir otra cosa
+    const bool izq = decision.rival & (RivalLatIzq | Rival45Izq);
+    const bool der = decision.rival & (Rival45Der | RivalLatDer);
+    const int visto = izq == der ? 0 : der ? 1 : -1;
+    const int v = VelocidadTactica;
+    if (faseEsquiva == 1 && ahora - inicioEsquiva < TiempoEsquivaTactica) {
+        // Se aparta pivotando hacia DIP3...
+        mando.mover(motor, lado > 0 ? v : 0, lado > 0 ? 0 : v, true);
+        return true;
+    }
+    if (faseEsquiva != 0) {
+        // ...y gira hacia el otro lado hasta pillarlo de lado (o hacia el sensor que lo ve)
+        faseEsquiva = 2;
+        const int s = visto != 0 ? visto : -lado;
+        mando.mover(motor, s * VelocidadGiroTactica, -s * VelocidadGiroTactica, true);
+        return true;
+    }
+    int sentido = lado;
+    if (tactica == TacticaCarga && visto == 0) {
+        mando.mover(motor, v, v, true);                           // carga recta a fondo
+        return true;
+    }
+    if (espera && visto == 0) {
+        mando.mover(motor, 0, 0, true);                           // quieto hasta verlo
+        return true;
+    }
+    if (tactica == TacticaPivote && visto == 0) {
+        mando.mover(motor, lado > 0 ? v : 0, lado > 0 ? 0 : v, true);  // pivote hacia DIP3
+        return true;
+    }
+    if (tactica == TacticaArco) {
+        if (t < TiempoArcoLibre) {
+            // 斜め / 回り込み: arco a fondo abriéndose hacia DIP3
+            mando.mover(motor, lado > 0 ? v : VelocidadInteriorArcoLibre, lado > 0 ? VelocidadInteriorArcoLibre : v, true);
+            return true;
+        }
+        sentido = -lado;                                          // y después hacia dentro
+    }
+    if (tactica == TacticaHenka && t < TiempoRetrocesoLibre) {
+        // 受け: la rueda del lado de DIP3 atrás a fondo; sale de la línea de embestida
+        mando.mover(motor, lado > 0 ? 0 : -v, lado > 0 ? -v : 0, true);
+        return true;
+    }
+    // Giro rápido en el sitio hacia el sensor que lo ve (o hacia DIP3)
+    if (visto != 0) sentido = visto;
+    mando.mover(motor, sentido * VelocidadGiroTactica, -sentido * VelocidadGiroTactica, true);
+    return true;
 }
 
 // Ronda 2: un sensor lateral o de 45° que ve al rival fija el lado del giro (si

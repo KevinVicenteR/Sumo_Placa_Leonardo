@@ -35,14 +35,16 @@ def compilar(params: dict, banderas: tuple = ()) -> Path:
         shutil.rmtree(inc)
     shutil.copytree(RAIZ / "include", inc)
 
-    ruta = inc / "Parametros.h"
-    texto = ruta.read_text()
     for nombre, valor in params.items():
-        # Solo en declaraciones (no en comentarios como "(PatronBusqueda = 0)")
-        texto, n = re.subn(rf"(constexpr[^=;\n]*\b{nombre}\s*=\s*)[^;]+;", rf"\g<1>{valor};", texto)
-        if n == 0:
-            sys.exit(f"Parámetro desconocido: {nombre}")
-    ruta.write_text(texto)
+        total = 0
+        for fichero in ("Parametros.h", "ParametrosModo4.h"):
+            ruta = inc / fichero
+            if not ruta.exists(): continue
+            texto, n = re.subn(rf"(constexpr[^=;\n]*\b{nombre}\s*=\s*)[^;]+;", rf"\g<1>{valor};", ruta.read_text())
+            if n: ruta.write_text(texto)
+            total += n
+        if total != 1:
+            sys.exit(f"Parámetro desconocido o duplicado: {nombre}")
 
     cmd = ["c++", "-std=c++17", "-O2", "-w", *banderas,
            f"-I{inc}", f"-I{RAIZ / 'simulacion' / 'support'}",

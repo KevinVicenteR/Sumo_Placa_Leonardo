@@ -2,6 +2,9 @@
 #include "Parametros.h"
 
 void LimitadorBorde::colocarSalida(int rutina) {
+    if (ColocacionLibre) {
+        return;
+    }
     if (rutina == 1 || rutina == 2) {
         // Espalda con espalda o lado a lado: junto al centro, rumbo cualquiera
         estimadorBorde.colocar(0, IncertSalidaCentro, false, 0);

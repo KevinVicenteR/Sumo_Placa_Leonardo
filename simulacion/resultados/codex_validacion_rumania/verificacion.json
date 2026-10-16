@@ -1,0 +1,16 @@
+{
+  "combates_por_version": 30576,
+  "casillas": 588,
+  "combates_por_casilla": 52,
+  "semillas": [
+    424242,
+    424293
+  ],
+  "mismas_claves_casilla_semilla": true,
+  "claves_unicas_por_version": 30576,
+  "fuentes_permanecen_iguales": true,
+  "cabeceras_iguales_salvo_dos_tablas_referencia": true,
+  "rama": "X3_pesos_neuronales_rumania",
+  "mejora_victorias_pp": 8.3823914181,
+  "cambio_caidas_pp": -1.9132653061
+}

@@ -1,6 +1,9 @@
 #include "movimiento/ControlMovimiento.h"
+#include "ParametrosModo4.h"
 
 void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
+    mejorasEsteCiclo = mejorasActivas();
+    evasion.configurarModo4(mejorasEsteCiclo && (competencia != 3 || MejorarRecuperacionModo3));
     // --- 1. Preparar el ciclo: actualizar el estado de cada maniobra ---
     evasion.actualizarSalidaSuave(ahora);
     mando.nuevoCiclo(ahora, rutina.elegida());
@@ -111,6 +114,10 @@ bool ControlMovimiento::resistirEnBorde(const DecisionMovimiento& decision, IMot
 
 void ControlMovimiento::ejecutarAccion(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     const int velocidad = ataque.velocidad(decision, ahora);
+    if (mejorasEsteCiclo && (esAtaque(decision.tipo) || esEsquiva(decision.tipo))) {
+        controlRed.ejecutar(decision, mando, motor, ahora, velocidad, ataque.empujando(), limitadorBorde.limite(), competencia);
+        return;
+    }
     // Rueda interior al corregir hacia un rival visto a 45°
     const int interior45 = Corregir45EnPivote ? 0 : VelocidadCurva * velocidad / VelocidadAtaque;
 
@@ -144,6 +151,10 @@ void ControlMovimiento::ejecutarAccion(const DecisionMovimiento& decision, IMoto
 }
 
 void ControlMovimiento::reiniciar() {
+    competencia = 0;
+    mejorasEsteCiclo = false;
+    ++generacion;
+    controlRed.reiniciar();
     mando = MandoMotores(rampa);
     evasion = ManiobraEvasion();
     rutina = RutinaInicio();

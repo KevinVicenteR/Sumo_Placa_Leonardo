@@ -178,8 +178,8 @@ constexpr unsigned long TiempoMaxGiroLateral = 400;
 constexpr bool UsarEstimadorBorde = true;
 // true = también limita la embestida si prevé el borde cerca.
 constexpr bool EstimadorLimitaEmbestida = true;
-// Geometría: dohyo de 70 cm de diámetro (el reglamentario mide 77 cm) y línea de 2,5 cm.
-constexpr float RadioDohyo = 0.35f;
+// Geometría: dohyo reglamentario de 77 cm de diámetro (línea incluida) y línea de 2,5 cm.
+constexpr float RadioDohyo = 0.385f;
 constexpr float AnchoLineaBorde = 0.025f;
 constexpr float DistanciaSensorPiso = 0.078f;     // por delante del eje de ruedas (ruedas atrás)
 constexpr float SeparacionSensoresPiso = 0.04f;   // a cada lado del centro
@@ -258,6 +258,9 @@ constexpr int RampaPwmPorMs = 1;
 // avance al verlo con cualquier sensor. Ver la línea cancela la rutina.
 // true = un interruptor en ON lee LOW (contra GND, con pull-up).
 constexpr bool DipActivoBajo = true;
+// Rumania: cada uno coloca su robot donde quiere. true = el estimador de borde
+// no supone la posición de salida de los rounds (empieza sin conocerla).
+constexpr bool ColocacionLibre = true;
 // Ronda 4 (salida libre): gira en el sitio hacia el lado de DIP3 a esta velocidad
 // hasta que cualquier sensor vea al rival (entonces gira hacia él y ataca) o
 // hasta TiempoMaxGiroRound4 (algo más de una vuelta); después busca como siempre.
@@ -279,7 +282,9 @@ constexpr unsigned long TiempoMaxGiroLado = 500;
 constexpr unsigned long TiempoEsquivaRound1 = 0;
 constexpr unsigned long TiempoEsquivaRound2 = 0;
 constexpr int VelocidadEsquiva = 160;
-// Ronda 2: true = pivota sobre una rueda; false = gira en el sitio.
+// Ronda 2: true = pivota sobre una rueda hacia el lado del sensor lateral que ve
+// al rival (si lo ve el izquierdo, la rueda izquierda queda parada y empuja la
+// derecha), avanzando a la vez contra él; false = gira en el sitio.
 constexpr bool PivoteRound2 = false;
 constexpr int VelocidadPivoteInicio = 180;
 // Ronda 3: avanza despacio y recto hacia delante hasta que cualquier sensor

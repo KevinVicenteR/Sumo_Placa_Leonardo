@@ -35,6 +35,29 @@ bool leerOdometria(float& avance, float& giro) {
 }
 #endif
 
+#include "estrategia/RedLogica.h"
+#include "movimiento/RedControl.h"
+#include <vector>
+bool cargarRedes(const char* ruta) {
+    FILE* f = std::fopen(ruta, "r");
+    if (!f) return false;
+    const int nl = redlogica::numParametros(), nc = redcontrol::numParametros();
+    std::vector<int8_t> pesos(nl + nc);
+    bool ok = true;
+    for (int i = 0; i < nl + nc; ++i) {
+        int v = 0;
+        if (std::fscanf(f, "%d", &v) != 1 || v < -127 || v > 127) { ok = false; break; }
+        pesos[i] = (int8_t)v;
+    }
+    int extra;
+    if (ok && std::fscanf(f, "%d", &extra) != EOF) ok = false;
+    std::fclose(f);
+    if (!ok) return false;
+    for (int i = 0; i < nl; ++i) redlogica::Parametros[i] = pesos[i];
+    for (int i = 0; i < nc; ++i) redcontrol::Parametros[i] = pesos[nl + i];
+    return true;
+}
+
 #ifdef ENTRENAMIENTO_POLITICA
 // ---------------------------------------------------------------- entrenamiento
 // El firmware pregunta qué acción tomar en cada estado (PoliticaAprendida); aquí
@@ -288,9 +311,11 @@ int main(int argc, char** argv) {
         else if (a == "--driver") cfg.driverL298 = std::string(v) == "l298n";
         else if (a == "--salida") {
             const std::string m = v;
-            cfg.salida = m == "espalda" ? 1 : m == "lado" ? 2 : m == "frente" ? 3 : 0;
+            cfg.salida = m == "espalda" ? 1 : m == "lado" ? 2 : m == "frente" ? 3 : m == "rumania" ? 4 : 0;
         }
         else if (a == "--rival-lado") cfg.ladoRival = std::string(v) == "izq" ? -1 : 1;
+        else if (a == "--angulo-rumania") cfg.anguloRumania = std::atof(v);
+        else if (a == "--dist-rumania") { cfg.distRumaniaMin = cfg.distRumaniaMax = std::atof(v); }
         else if (a == "--dip") cfg.dip = std::atoi(v);
         else if (a == "--fantasmas") cfg.fantasmasPorSegundo = std::atof(v);
         else if (a == "--saturacion") cfg.saturacionesPorSegundo = std::atof(v);
@@ -305,6 +330,7 @@ int main(int argc, char** argv) {
         else if (a == "--desgaste-der") cfg.desgasteDer = std::atof(v);
         else if (a == "--borde") cfg.borde = std::atof(v);
         else if (a == "--tray") rutaTray = v;
+        else if (a == "--red") { if (!cargarRedes(v)) { std::fprintf(stderr, "pesos invalidos: %s\n", v); return 1; } }
 #ifdef ENTRENAMIENTO_POLITICA
         else if (a == "--q") { if (!entrenamiento::cargar(v)) { std::fprintf(stderr, "no se pudo leer %s\n", v); return 1; } }
         else if (a == "--epsilon") entrenamiento::epsilon = std::atof(v);

@@ -166,8 +166,8 @@ constexpr unsigned long TiempoMaxGiroLateral = 400;
 constexpr bool UsarEstimadorBorde = true;
 // true = también limita la embestida si prevé el borde cerca.
 constexpr bool EstimadorLimitaEmbestida = true;
-// Geometría: dohyo de 70 cm de diámetro (el reglamentario mide 77 cm) y línea de 2,5 cm.
-constexpr float RadioDohyo = 0.35f;
+// Geometría: dohyo reglamentario de 77 cm de diámetro (línea incluida) y línea de 2,5 cm.
+constexpr float RadioDohyo = 0.385f;
 constexpr float AnchoLineaBorde = 0.025f;
 constexpr float DistanciaSensorPiso = 0.078f;     // por delante del eje de ruedas (ruedas atrás)
 constexpr float SeparacionSensoresPiso = 0.04f;   // a cada lado del centro

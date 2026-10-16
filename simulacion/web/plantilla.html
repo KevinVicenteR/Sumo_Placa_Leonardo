@@ -54,6 +54,13 @@ canvas[hidden] { display: none; }
 .estado b { color: var(--ink); font-weight: 500; }
 .chip { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--chip-bg); color: var(--ink); }
 .chip.cayo { color: var(--danger); }
+.validacion { width: 100%; border-collapse: collapse; font-size: 13px; }
+.validacion th, .validacion td { padding: 4px 6px; border-bottom: 1px solid var(--rule); text-align: right; }
+.validacion th:first-child, .validacion td:first-child { text-align: left; }
+.validacion th { color: var(--muted); font-weight: 600; }
+.validacion td { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.validacion .mejor { color: var(--ok); }
+.validacion .peor { color: var(--danger); }
 .chip.dentro { color: var(--ok); }
 .chip.aviso { color: var(--warn); }
 
@@ -81,7 +88,7 @@ code { font-family: var(--f-mono); font-size: 13px; }
 
 <div class="pagina">
   <header>
-    <div class="ceja">Mini sumo · dohyo Ø 70 cm · borde blanco 2,5 cm · 750 rpm · LiPo 2S · ruedas JSUMO 3 cm · 340 g · pala</div>
+    <div class="ceja">Mini sumo · dohyo Ø 77 cm · borde blanco 2,5 cm · 750 rpm · LiPo 2S · ruedas JSUMO 3 cm · 340 g · pala</div>
     <h1>Dohyo Sumo Leonardo</h1>
     <p class="lead">Arrastra tu robot (placa blanca, pala plateada) y el rival (rojo) a donde quieras. Las líneas que salen de tu robot son sus 5 sensores de enemigo: se ponen rojas cuando ven al rival. En la vista 3D, arrastra para girar la cámara y usa la rueda del ratón para acercarte. El enemigo pesa 300 g, lleva pala y resiste el empuje: gana quien saque al otro. Para girar el robot, arrastra el punto que tiene delante o usa el control de orientación. Lo que corre aquí es tu firmware real de <code>src/</code> compilado a WebAssembly, con la misma física que el simulador de consola.</p>
   </header>
@@ -242,6 +249,12 @@ code { font-family: var(--f-mono); font-size: 13px; }
         </div>
         <div class="resultado" id="resultado" aria-live="polite"></div>
       </div>
+
+      <div class="grupo">
+        <h2>Validación: batería de 25 000 combates</h2>
+        <p class="ayuda">Batería de consola (<code>simulacion/bateria.py --muestras 25000</code>, que redondea a 60 combates por casilla: 25 200 en total): todos los rounds, rivales y factores externos, 30 s por combate. Las caídas propias son las que ocurren sin que el rival esté empujando.</p>
+        __VALIDACION__
+      </div>
     </div>
   </div>
 </div>
@@ -253,7 +266,7 @@ const FIRMWARE = {
   nuevo: __SIM_NUEVO__,
   anterior: __SIM_ANTERIOR__,
 };
-const R = 0.35, BORDE = 0.025, LARGO = 0.10, SX = 0.045, SY = 0.04, DURACION = 30;
+const R = 0.385, BORDE = 0.025, LARGO = 0.10, SX = 0.045, SY = 0.04, DURACION = 30;
 const env = { sin: Math.sin, cos: Math.cos, atan2: Math.atan2, log: Math.log };
 
 const estado = {

@@ -22,7 +22,14 @@ public:
             red.reiniciar();
             generacion = control.generacionCombate();
         }
-        return red.decidir(l);
+        DecisionMovimiento d = red.decidir(l);
+        // Modo 3: de frente contra el rival; si la red quiere esquivar, decisión clásica
+        if (control.modoCompetencia() == 3 && !EsquivarModo3 && esEsquiva(d.tipo)) {
+            d = clasica.decidir(l);
+            const int vistos = l.c45Izq + l.frontal + l.c45Der;
+            d.errorRival = vistos ? (l.c45Der - l.c45Izq) * PosicionSensor45PID / vistos : 0;
+        }
+        return d;
     }
 private:
     IEstrategiaCombate& clasica;

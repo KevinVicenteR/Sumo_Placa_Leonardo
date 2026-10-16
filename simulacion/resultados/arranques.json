@@ -1,0 +1,12 @@
+{
+  "referencia": "f992600d61ceebbc04e138d253d3ff8505fa7b63",
+  "identicos": true,
+  "escenarios": 30,
+  "ciclos_inicio_comparados": 2536,
+  "ciclos_generados_por_version": 150000,
+  "por_modo": {
+    "1": 434,
+    "2": 430,
+    "3": 1672
+  }
+}

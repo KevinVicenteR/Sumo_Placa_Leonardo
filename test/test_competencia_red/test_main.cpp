@@ -40,7 +40,9 @@ void test_arranques_protegidos_y_mejoras_solo_al_terminar() {
         TEST_ASSERT_EQUAL_INT(0,c.rutinaActual());
         TEST_ASSERT_TRUE(c.mejorasActivas());
         const bool usaPolitica = UsarRedLogica && (modo != 1 || UsarRedLogicaModo1) && (modo != 3 || UsarRedLogicaModo3);
-        TEST_ASSERT_EQUAL_INT((int)(usaPolitica ? TipoAccion::EsquivarIzq : TipoAccion::AtaqueFrontal),
+        // En el modo 3 va de frente: sin EsquivarModo3, la esquiva pasa a la decisión clásica
+        const bool esquiva = usaPolitica && (modo != 3 || EsquivarModo3);
+        TEST_ASSERT_EQUAL_INT((int)(esquiva ? TipoAccion::EsquivarIzq : TipoAccion::AtaqueFrontal),
                               (int)estrategia.decidir(frontal()).tipo);
     }
 }
@@ -128,15 +130,20 @@ void test_primera_lectura_frontal_no_inventa_contacto_pasado() {
     g_millis=5000+ContactoFrontalMs;
     TEST_ASSERT_TRUE(esEsquiva(red.decidir(frontal()).tipo));
 }
-void test_control_modo3_no_cambia_al_entrenar_otros_modos() {
+void test_control_modo3_sigue_UsarRedControlModo3() {
     ControlRedModo4 anterior,nuevo;MandoMotores mandoA(0),mandoB(0);Motor a,b;
     DecisionMovimiento d{TipoAccion::AjusteIzq,true,false,false,-500};
     anterior.ejecutar(d,mandoA,a,1000,130,false,255,3);
     std::memset(redcontrol::Parametros,127,redcontrol::numParametros());
     nuevo.ejecutar(d,mandoB,b,1000,130,false,255,3);
-    TEST_ASSERT_EQUAL_INT(a.izq,b.izq);TEST_ASSERT_EQUAL_INT(a.der,b.der);
-    TEST_ASSERT_EQUAL_INT(130*PorcentajeAjuste/100,b.izq);
-    TEST_ASSERT_EQUAL_INT(130,b.der);
+    if (UsarRedControlModo3) {
+        // La red de control sí corrige las ruedas en el modo 3
+        TEST_ASSERT_TRUE(a.izq != b.izq || a.der != b.der);
+    } else {
+        TEST_ASSERT_EQUAL_INT(a.izq,b.izq);TEST_ASSERT_EQUAL_INT(a.der,b.der);
+        TEST_ASSERT_EQUAL_INT(130*PorcentajeAjuste/100,b.izq);
+        TEST_ASSERT_EQUAL_INT(130,b.der);
+    }
 }
 
 int main(int,char**) {
@@ -150,6 +157,6 @@ int main(int,char**) {
     RUN_TEST(test_segundo_sensor_amplia_solo_recuperacion_mejorada);
     RUN_TEST(test_pid_compacto_equivale_a_la_formula_anterior);
     RUN_TEST(test_primera_lectura_frontal_no_inventa_contacto_pasado);
-    RUN_TEST(test_control_modo3_no_cambia_al_entrenar_otros_modos);
+    RUN_TEST(test_control_modo3_sigue_UsarRedControlModo3);
     return UNITY_END();
 }

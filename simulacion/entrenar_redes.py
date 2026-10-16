@@ -124,12 +124,25 @@ class Evaluador:
         return obj, total
 
 
+# "seguridad" (por defecto): primero menos caídas en toda la batería.
+# "objetivo": primero 0 caídas y más victorias en las casillas objetivo, sin
+# empeorar las caídas ni las caídas propias de la batería entera.
+PRIORIDAD = "seguridad"
+
+
 def prioridad_validacion(obj, total):
+    if PRIORIDAD == "objetivo":
+        return (-round(obj[2], 1), round(obj[1], 1), -total[3], -total[2], total[1])
     # Primero seguridad en toda la batería; después capacidad de ganar.
     return (-total[3], -total[2], total[1], -(total[4] if len(total) > 4 else 30), -obj[2], obj[1])
 
 
 def mejora_segura(obj, total, base_obj, base_total):
+    if PRIORIDAD == "objetivo":
+        return (prioridad_validacion(obj, total) > prioridad_validacion(base_obj, base_total)
+                and obj[2] <= base_obj[2] and obj[1] >= base_obj[1]
+                and total[2] <= base_total[2] + 0.5 and total[3] <= base_total[3] + 0.1
+                and total[1] >= base_total[1] - 0.5)
     return (prioridad_validacion(obj, total) > prioridad_validacion(base_obj, base_total)
             and total[2] <= base_total[2]
             and total[1] >= base_total[1] - 2
@@ -139,10 +152,33 @@ def mejora_segura(obj, total, base_obj, base_total):
 def elegir_candidato(evaluaciones, obj0, total0, mejor_obj, mejor_total):
     # Filtrar antes de ordenar: un candidato muy conservador que deja de ganar
     # no debe ocultar a otro que sí mejora seguridad y conserva las victorias.
+    if PRIORIDAD == "objetivo":
+        # Las restricciones de seguridad se comprueban contra la partida; frente
+        # al mejor hasta ahora basta con tener más prioridad
+        validas = [x for x in evaluaciones
+                   if mejora_segura(x[1], x[2], obj0, total0)
+                   and prioridad_validacion(x[1], x[2]) > prioridad_validacion(mejor_obj, mejor_total)]
+        return max(validas, key=lambda x: prioridad_validacion(x[1], x[2])) if validas else None
     validas = [x for x in evaluaciones
                if mejora_segura(x[1], x[2], obj0, total0)
                and mejora_segura(x[1], x[2], mejor_obj, mejor_total)]
     return max(validas, key=lambda x: prioridad_validacion(x[1], x[2])) if validas else None
+
+
+PARAMETROS_MODO4 = simular.RAIZ / "include" / "ParametrosModo4.h"
+
+
+def parametros_con_modos(modos):
+    """ParametrosModo4.h con la red de lógica y la de control activas en estos
+    modos (1 y/o 3; solo actúan después de la rutina de inicio)."""
+    import re
+    texto = PARAMETROS_MODO4.read_text()
+    for m in modos:
+        for nombre in (f"UsarRedLogicaModo{m}", f"UsarRedControlModo{m}"):
+            texto, n = re.subn(rf"(constexpr bool {nombre}\s*=\s*)\w+;", r"\g<1>true;", texto)
+            if n != 1:
+                sys.exit(f"No se encontró {nombre} en ParametrosModo4.h")
+    return texto
 
 
 def redondear(theta):
@@ -163,7 +199,24 @@ def main():
     ap.add_argument("--continuar", action="store_true", help="partir de redes_mejor.txt")
     ap.add_argument("--no-escribir", action="store_true", help="no reescribir las tablas")
     ap.add_argument("--probar-esquivas", action="store_true", help="evaluar rutas laterales que el sesgo original mantiene inactivas")
+    ap.add_argument("--modos-red", default="",
+                    help="modos (1 y/o 3) en los que activar las dos redes tras su rutina de inicio, p. ej. 1,3")
+    ap.add_argument("--muestras-final", type=int, default=0,
+                    help="combates de la comprobación final en total (p. ej. 25000; sustituye a --n-final)")
+    ap.add_argument("--guardar-candidatos", default="",
+                    help="carpeta donde guardar los pesos de cada candidato validado (formato --red)")
+    ap.add_argument("--prioridad", choices=("seguridad", "objetivo"), default="seguridad",
+                    help="criterio para aceptar candidatos (ver PRIORIDAD)")
     a = ap.parse_args()
+    global PRIORIDAD
+    PRIORIDAD = a.prioridad
+    casillas_batería = len(B.ROUNDS) * len(B.RIVALES) * len(B.FACTORES)
+    if a.muestras_final > 0:
+        a.n_final = -(-a.muestras_final // casillas_batería)
+    modos = [int(m) for m in a.modos_red.split(",") if m.strip()]
+    if any(m not in (1, 3) for m in modos):
+        ap.error("--modos-red solo admite 1 y 3 (los modos 2 y 4 ya usan las redes)")
+    parametros_modo4 = parametros_con_modos(modos)
 
     if min(a.generaciones, a.parejas, a.n, a.validar, a.n_validar, a.n_final, a.resto) <= 0:
         ap.error("generaciones, parejas, n, validar, n-validar y resto deben ser positivos")
@@ -171,7 +224,14 @@ def main():
         ap.error("sigma y paso deben ser positivos")
 
     simular.BUILD.mkdir(parents=True, exist_ok=True)
-    binario = simular.compilar({}, banderas=("-DENTRENAMIENTO_REDES",))
+    activar = {f"UsarRed{red}Modo{m}": "true" for m in modos for red in ("Logica", "Control")}
+    binario = simular.compilar(activar, banderas=("-DENTRENAMIENTO_REDES",))
+    # Firmware de partida con su selección original de modos: la referencia de
+    # la comprobación final cuando se activan modos nuevos
+    binario_base = simular.compilar({}, banderas=("-DENTRENAMIENTO_REDES",)) if modos else binario
+    print(f"Redes activas también en los modos {modos} tras su rutina de inicio" if modos else
+          "Redes con la selección de modos de ParametrosModo4.h", flush=True)
+    print(f"Comprobación final: {a.n_final} combates por casilla = {a.n_final * casillas_batería} combates", flush=True)
     nl = R.num_parametros(R.LOGICA)
     checkpoint = CANDIDATO if CANDIDATO.exists() else GUARDADO
     if a.continuar and checkpoint.exists():
@@ -226,6 +286,12 @@ def main():
                 if a.probar_esquivas and g == min(a.validar, a.generaciones):
                     propuestas += [R.propuesta_esquiva(inicio[:nl], fuerza) + inicio[nl:] for fuerza in (64, 96)]
                 evaluaciones = [(p, *ev.validar(p[:nl], p[nl:], a.n_validar, 100000)) for p in propuestas]
+                if a.guardar_candidatos:
+                    carpeta_c = Path(a.guardar_candidatos)
+                    carpeta_c.mkdir(parents=True, exist_ok=True)
+                    for k, (pc, oc, tc) in enumerate(evaluaciones):
+                        nombre = f"g{g:03d}_{k}_obj{oc[1]:.1f}-{oc[2]:.1f}_bat{tc[1]:.1f}-{tc[2]:.1f}-{tc[3]:.2f}.red"
+                        R.guardar_pesos(carpeta_c / nombre, pc[:nl], pc[nl:])
                 elegida = elegir_candidato(evaluaciones, obj0, total0, mejor[2], mejor[3])
                 p, obj, total = elegida or max(evaluaciones, key=lambda x: prioridad_validacion(x[1], x[2]))
                 marca = ""
@@ -247,12 +313,24 @@ def main():
             o1, t1 = ev.validar(mejor[1][:nl], mejor[1][nl:], a.n_final, 900000)
         print(f"partida : objetivo gana {o0[1]:.1f}% cae {o0[2]:.1f}% | batería gana {t0_[1]:.1f}% cae {t0_[2]:.1f}% propias {t0_[3]:.2f}% | victoria media {t0_[4]:.2f}s")
         print(f"entrenada: objetivo gana {o1[1]:.1f}% cae {o1[2]:.1f}% | batería gana {t1[1]:.1f}% cae {t1[2]:.1f}% propias {t1[3]:.2f}% | victoria media {t1[4]:.2f}s")
-        if mejora_segura(o1, t1, o0, t0_) and not a.no_escribir:
+        segura = mejora_segura(o1, t1, o0, t0_)
+        if modos:
+            # Activar las redes en más modos solo si también mejora al firmware
+            # actual, que no las usa en esos modos
+            base = Evaluador(binario_base, carpeta)
+            ob, tb = base.validar(inicio[:nl], inicio[nl:], a.n_final, 900000)
+            print(f"firmware actual (modos originales): objetivo gana {ob[1]:.1f}% cae {ob[2]:.1f}% | "
+                  f"batería gana {tb[1]:.1f}% cae {tb[2]:.1f}% propias {tb[3]:.2f}%")
+            segura = segura and mejora_segura(o1, t1, ob, tb)
+        if segura and not a.no_escribir:
             GUARDADO.write_text(" ".join(map(str, mejor[1])) + "\n")
             R.escribir_logica(mejor[1][:nl])
             R.escribir_control(mejor[1][nl:])
             print("Escritas TablaRedLogica.h y TablaRedControl.h")
-        elif mejora_segura(o1, t1, o0, t0_):
+            if modos:
+                PARAMETROS_MODO4.write_text(parametros_modo4)
+                print(f"Escrito ParametrosModo4.h con las redes activas en los modos {modos}")
+        elif segura:
             print("Mejora segura en esta muestra; tablas conservadas por --no-escribir")
         else:
             print("Sin mejora segura confirmada en semillas nuevas: las tablas no se tocan")

@@ -160,11 +160,11 @@ bool RutinaInicio::explorar(const DecisionMovimiento& decision, MandoMotores& ma
     // Giro rápido en el sitio hasta encararlo: hacia el sensor que lo ve; si no
     // lo ve ninguno, tras el arco hacia dentro y si no hacia DIP3
     int sentido = EstrategiaLibre == 2 ? -lado : lado;
-    const TipoAccion tipo = decision.tipo;
-    if (tipo == TipoAccion::DefensaIzq || tipo == TipoAccion::CorregirIzq || tipo == TipoAccion::AjusteIzq) {
-        sentido = -1;
-    } else if (tipo == TipoAccion::DefensaDer || tipo == TipoAccion::CorregirDer || tipo == TipoAccion::AjusteDer) {
-        sentido = 1;
+    // AjusteIzq/Der, CorregirIzq/Der y DefensaIzq/Der van seguidos en
+    // TipoAccion, alternando izquierda y derecha
+    const int k = (int)decision.tipo - (int)TipoAccion::AjusteIzq;
+    if (k >= 0 && k <= (int)TipoAccion::DefensaDer - (int)TipoAccion::AjusteIzq) {
+        sentido = k & 1 ? 1 : -1;
     }
     mando.mover(motor, sentido * VelocidadGiroLibre, -sentido * VelocidadGiroLibre, true);
     return true;

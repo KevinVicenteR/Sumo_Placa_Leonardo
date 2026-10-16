@@ -46,7 +46,7 @@ int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long a
     // Sin llegar a empujar en TiempoMaxAtaqueLibre: lo que ve puede estar lejos o
     // fuera del dohyo (gente, reflejos); sigue con el ataque normal, que respeta
     // el limitador de borde
-    if (ataqueMaximo && !empujandoRival && ahora - inicioAtaqueMaximo >= TiempoMaxAtaqueLibre) {
+    if (ataqueMaximo && !empujandoRival && (unsigned int)((unsigned int)ahora - inicioAtaqueMaximo) >= TiempoMaxAtaqueLibre) {
         ataqueMaximo = false;
     }
     if (ataqueMaximo) {

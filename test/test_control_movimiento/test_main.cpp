@@ -1,6 +1,7 @@
 #include <unity.h>
 #include "movimiento/ControlMovimiento.h"
 #include "Parametros.h"
+#include "ParametrosModo4.h"
 #include "Arduino.h"
 
 // Comportamiento clásico: sin rampa y búsqueda con giro en el sitio
@@ -693,15 +694,40 @@ void test_rutina_libre_gira_hasta_ver_al_rival(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(4, -1);
-    // Sin ver nada: gira en el sitio hacia el lado de DIP3
+    if (EstrategiaLibre == 0) {
+        // Sin ver nada: gira en el sitio hacia el lado de DIP3
+        c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+        assertMovimiento(m, -VelocidadGiroRound4, VelocidadGiroRound4);
+        TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
+        // Un lateral lo ve: termina la rutina y gira hacia él
+        c.ejecutar({TipoAccion::DefensaDer}, m, 1100);
+        c.ejecutar({TipoAccion::DefensaDer}, m, 1100 + 2 * ConfirmacionDeteccion);
+        TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+        TEST_ASSERT_TRUE(m.izq > m.der);
+        return;
+    }
+    if (EstrategiaLibre != 2) {
+        return;
+    }
+    // 斜め / 回り込み: arco a fondo hacia DIP3 (izquierda)
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, -VelocidadGiroRound4, VelocidadGiroRound4);
+    assertMovimiento(m, VelocidadInteriorArcoLibre, VelocidadManiobraLibre);
     TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
-    // Un lateral lo ve: termina la rutina y gira hacia él
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1100);
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1100 + 2 * ConfirmacionDeteccion);
+    // Tras el arco, sin verlo: giro rápido en el sitio hacia dentro (derecha)
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoArcoLibre);
+    assertMovimiento(m, VelocidadGiroLibre, -VelocidadGiroLibre);
+    // Un lateral lo ve: gira hacia ese lado sin terminar la rutina
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoArcoLibre + 10);
+    assertMovimiento(m, -VelocidadGiroLibre, VelocidadGiroLibre);
+    TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
+    // El frontal lo ve (confirmado): termina la rutina y ataca a fondo
+    const unsigned long t = 1000 + TiempoArcoLibre + 20;
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-    TEST_ASSERT_TRUE(m.izq > m.der);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion + 1);
+    TEST_ASSERT_EQUAL_INT(m.izq, m.der);
+    TEST_ASSERT_TRUE(m.izq > VelocidadAtaque);
 }
 
 void test_rutina_libre_termina_al_agotar_su_tiempo(void) {
@@ -709,7 +735,8 @@ void test_rutina_libre_termina_al_agotar_su_tiempo(void) {
     MotorMock m;
     c.iniciarRutina(4, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoMaxGiroRound4 + 1);
+    c.ejecutar({TipoAccion::Busqueda}, m,
+               1000 + (EstrategiaLibre == 0 ? TiempoMaxGiroRound4 : TiempoMaxManiobraLibre) + 1);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
 }
 

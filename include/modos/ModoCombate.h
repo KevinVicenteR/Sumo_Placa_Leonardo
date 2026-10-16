@@ -42,6 +42,9 @@ private:
     bool combateEmpezado = false;
     unsigned long inicioCombate = 0;
     unsigned long inicioParada = 0;
+    // Espera reglamentaria tras el START de un combate nuevo
+    bool esperandoInicio = false;
+    unsigned long inicioEspera = 0;
 #if defined(MONITOREO_COMBATE)
     unsigned long cicloMaximo = 0;   // ciclo más lento (µs) desde la última traza
     unsigned long ultimaTraza = 0;

@@ -80,7 +80,8 @@ constexpr int VelocidadCercaBorde = 100;
 
 // 4. Tiempos generales
 
-// Espera inicial del modo diagnóstico (el de combate usa el módulo de arranque).
+// Espera reglamentaria: en el modo diagnóstico al empezar y, en combate, tras el
+// START de cada combate nuevo (el robot no se mueve hasta pasados estos 5 s).
 constexpr unsigned long TiempoInicioReglamentario = 5000;
 
 // --- Frenado al perder al rival ---

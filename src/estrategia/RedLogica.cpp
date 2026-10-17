@@ -3,11 +3,26 @@
 
 namespace redlogica {
 
-static_assert(NumEntradas == NumEntradasRed && NumSalidas == NumAcciones,
+static_assert(NumEntradas == NumEntradasRed && NumSalidas == NumAcciones && NumOcultas == NumOcultasRed &&
+              NumSubredes == NumSubredesRed,
               "TablaRedLogica.h no coincide con RedLogica.h");
 
+namespace {
+int ultimaSubred = 0;
+// Una neurona de salida: sesgo + suma de oculta * peso (fila en i)
+long neurona(int i, const int oculta[NumOcultas]) {
+    long suma = LEER_RED(Parametros, i + NumOcultas);
+    for (int j = 0; j < NumOcultas; j++) {
+        suma += (long)LEER_RED(Parametros, i + j) * oculta[j];
+    }
+    return suma;
+}
+}
+
+int subredElegida() { return ultimaSubred; }
+
 int elegir(const int8_t x[NumEntradasRed], int minima, long* sumas) {
-    // Capa oculta: ReLU(sesgo + suma de entrada * peso)
+    // Red principal: ReLU(sesgo + suma de entrada * peso)
     int oculta[NumOcultas];
     int i = 0;
     for (int j = 0; j < NumOcultas; j++) {
@@ -19,15 +34,28 @@ int elegir(const int8_t x[NumEntradasRed], int minima, long* sumas) {
         oculta[j] = suma > 0 ? suma : 0;
         i += NumEntradas + 1;
     }
-    // Salidas: gana la mayor suma
+    // Selector (tras la subred 0): elige la subred con la mayor suma
+    constexpr int Fila = NumOcultas + 1;
+    constexpr int Subred = NumSalidas * Fila;
+    const int inicioSubred0 = i;
+    const int inicioSelector = i + Subred;
+    int elegida = 0;
+    long mejorSelector = 0;
+    for (int k = 0; k < NumSubredes; k++) {
+        const long s = neurona(inicioSelector + k * Fila, oculta);
+        if (k == 0 || s > mejorSelector) {
+            elegida = k;
+            mejorSelector = s;
+        }
+    }
+    ultimaSubred = elegida;
+    i = elegida == 0 ? inicioSubred0 : inicioSelector + NumSubredes * Fila + (elegida - 1) * Subred;
+    // Subred elegida: gana la mayor suma
     int mejor = SalidaBusqueda;
     long mejorSuma = 0;
     for (int k = 0; k < NumSalidas; k++) {
-        long suma = LEER_RED(Parametros, i + NumOcultas);
-        for (int j = 0; j < NumOcultas; j++) {
-            suma += (long)LEER_RED(Parametros, i + j) * oculta[j];
-        }
-        i += NumOcultas + 1;
+        const long suma = neurona(i, oculta);
+        i += Fila;
         if (sumas) sumas[k] = suma;
         if (k == 0 || suma > mejorSuma) {
             mejor = k;

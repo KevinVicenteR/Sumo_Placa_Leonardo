@@ -235,7 +235,7 @@ def main():
     print(f"Redes activas también en los modos {modos} tras su rutina de inicio" if modos else
           "Redes con la selección de modos de ParametrosModo4.h", flush=True)
     print(f"Comprobación final: {a.n_final} combates por casilla = {a.n_final * casillas_batería} combates", flush=True)
-    nl = R.num_parametros(R.LOGICA)
+    nl = R.num_parametros_logica()
     checkpoint = CANDIDATO if CANDIDATO.exists() else GUARDADO
     if a.continuar and checkpoint.exists():
         v = [int(x) for x in checkpoint.read_text().split()]

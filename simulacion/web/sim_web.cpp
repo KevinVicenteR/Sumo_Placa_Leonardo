@@ -92,10 +92,10 @@ EXPORTAR("sim_robot") void sim_robot(double x, double y, double th) {
     sim::rob = {x, y, th, 0, 0};
 }
 
-// modo: 0 sin enemigo, 1 quieto, 2 se mueve, 3 embiste, 4 flanquea
+// modo: 0 sin enemigo, 1 quieto, 2 se mueve, 3 embiste, 4 flanquea, 5 tornado, 6 contragolpe,
+// 7 woodpecker, 8 esquivador (el mismo orden que sim::Modo)
 static sim::Modo modoDe(int modo) {
-    return modo == 4 ? sim::Modo::Flanqueo : modo == 3 ? sim::Modo::Agresivo : modo == 2 ? sim::Modo::Errante
-         : modo == 1 ? sim::Modo::Estatico : sim::Modo::Ninguno;
+    return modo >= 1 && modo <= 8 ? static_cast<sim::Modo>(modo) : sim::Modo::Ninguno;
 }
 
 EXPORTAR("sim_enemigo") void sim_enemigo(int modo, double x, double y, double th) {

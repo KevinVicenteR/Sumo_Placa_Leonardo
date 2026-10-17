@@ -27,6 +27,7 @@ inline double remainder(double x, double y) {
     const double n = __builtin_rint(x / y);
     return x - n * y;
 }
+inline double fmod(double x, double y) { return x - y * __builtin_trunc(x / y); }
 }  // namespace mat
 
 #else
@@ -37,6 +38,7 @@ namespace mat {
 using std::atan2;
 using std::cos;
 using std::fabs;
+using std::fmod;
 using std::log;
 using std::remainder;
 using std::sin;

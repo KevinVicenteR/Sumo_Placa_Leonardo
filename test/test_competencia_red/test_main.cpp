@@ -23,7 +23,7 @@ public: int izq=0,der=0;
 };
 static void forzarAccion(int k) {
     const int n=redlogica::numParametros(), e=redlogica::NumEntradasRed;
-    const int h=(n-redlogica::NumAcciones)/(e+1+redlogica::NumAcciones);
+    const int h=redlogica::NumOcultasRed;
     std::memset(redlogica::Parametros,0,n);
     redlogica::Parametros[h*(e+1)+k*(h+1)+h]=64;
 }
@@ -119,7 +119,7 @@ void test_pid_compacto_equivale_a_la_formula_anterior() {
 void test_primera_lectura_frontal_no_inventa_contacto_pasado() {
     std::memset(redlogica::Parametros,0,redlogica::numParametros());
     const int e=redlogica::NumEntradasRed, n=redlogica::numParametros();
-    const int h=(n-redlogica::NumAcciones)/(e+1+redlogica::NumAcciones);
+    const int h=redlogica::NumOcultasRed;
     redlogica::Parametros[8]=16;
     redlogica::Parametros[h*(e+1)+h]=1;
     redlogica::Parametros[h*(e+1)+8*(h+1)]=1;
@@ -146,8 +146,25 @@ void test_control_modo3_sigue_UsarRedControlModo3() {
     }
 }
 
+// Red principal + subredes: el selector elige la subred y manda su acción
+void test_selector_elige_la_subred() {
+    const int e=redlogica::NumEntradasRed, h=redlogica::NumOcultasRed, F=h+1;
+    std::memset(redlogica::Parametros,0,redlogica::numParametros());
+    redlogica::Parametros[0]=16;                         // oculta 0 = 16 x frontal
+    const int sub0=h*(e+1), sel=sub0+redlogica::NumAcciones*F, sub1=sel+redlogica::NumSubredesRed*F;
+    redlogica::Parametros[sub0+3*F]=1;                   // subred 0 prefiere la acción 3
+    redlogica::Parametros[sub1+5*F]=1;                   // subred 1 prefiere la acción 5
+    int8_t x[redlogica::NumEntradasRed]={1};
+    TEST_ASSERT_EQUAL_INT(3,redlogica::elegir(x,0));     // selector a cero: subred 0
+    TEST_ASSERT_EQUAL_INT(0,redlogica::subredElegida());
+    redlogica::Parametros[sel+1*F+h]=1;                  // sesgo del selector hacia la subred 1
+    TEST_ASSERT_EQUAL_INT(5,redlogica::elegir(x,0));
+    TEST_ASSERT_EQUAL_INT(1,redlogica::subredElegida());
+}
+
 int main(int,char**) {
     UNITY_BEGIN();
+    RUN_TEST(test_selector_elige_la_subred);
     RUN_TEST(test_arranques_protegidos_y_mejoras_solo_al_terminar);
     RUN_TEST(test_modo4_mejora_desde_inicio_y_no_se_pierde_al_cancelar_rutina);
     RUN_TEST(test_reinicio_olvida_esquiva_y_vuelve_a_proteger_arranque);

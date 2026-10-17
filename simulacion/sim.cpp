@@ -159,6 +159,10 @@ const char* nombreModo(Modo m) {
     case Modo::Errante: return "errante";
     case Modo::Agresivo: return "agresivo";
     case Modo::Flanqueo: return "flanqueo";
+    case Modo::Tornado: return "tornado";
+    case Modo::Contragolpe: return "contragolpe";
+    case Modo::Woodpecker: return "woodpecker";
+    case Modo::Esquivador: return "esquivador";
     default: return "ninguno";
     }
 }
@@ -280,7 +284,9 @@ int main(int argc, char** argv) {
         if (a == "--modo") {
             const std::string m = v;
             modo = m == "estatico" ? Modo::Estatico : m == "errante" ? Modo::Errante
-                 : m == "agresivo" ? Modo::Agresivo : m == "flanqueo" ? Modo::Flanqueo : Modo::Ninguno;
+                 : m == "agresivo" ? Modo::Agresivo : m == "flanqueo" ? Modo::Flanqueo
+                 : m == "tornado" ? Modo::Tornado : m == "contragolpe" ? Modo::Contragolpe
+                 : m == "woodpecker" ? Modo::Woodpecker : m == "esquivador" ? Modo::Esquivador : Modo::Ninguno;
         } else if (a == "--n") n = std::atoi(v);
         else if (a == "--semilla") semilla = std::atoi(v);
         else if (a == "--dur") cfg.duracion = std::atof(v);

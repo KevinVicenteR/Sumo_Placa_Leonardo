@@ -124,7 +124,13 @@ struct Config {
 };
 
 // Flanqueo: como Agresivo, pero primero rodea a nuestro robot para golpearlo de lado
-enum class Modo { Ninguno, Estatico, Errante, Agresivo, Flanqueo };
+// Rivales. Además de los clásicos, cuatro estilos de torneo (informe de Codex:
+// Predator/Robotic Arena 2019, Zaręba et al. 2021, revisión de la ULEAM 2024):
+//   Tornado      gira en el sitio hasta vernos y carga
+//   Contragolpe  espera orientándose y embiste cuando estamos cerca
+//   Woodpecker   avanza a pulsos (avance corto, pausa) y empuja de cerca
+//   Esquivador   espera; si cargamos de frente se aparta (henka) y ataca
+enum class Modo { Ninguno, Estatico, Errante, Agresivo, Flanqueo, Tornado, Contragolpe, Woodpecker, Esquivador };
 
 struct Robot {
     double x, y, th;  // posición del eje de ruedas y orientación (rad, antihorario)
@@ -178,6 +184,9 @@ inline double maximo(double a, double b) { return a > b ? a : b; }
 
 inline Config cfg;
 inline Modo modo = Modo::Ninguno;
+// Estado de los rivales con fases (tornado, contragolpe, esquivador)
+struct EstadoRival { int fase = 0; double t0 = 0; int lado = 1; bool esquivo = false; double rumbo = 0; };
+inline EstadoRival estRival;
 inline Robot rob;
 inline Enemigo ene;
 
@@ -442,10 +451,102 @@ inline void avanzarRobot(double dt) {
 // El enemigo intenta ir a su velocidad deseada (quieto o deambulando) con la
 // aceleración que le permiten sus ruedas; esa misma adherencia es la que se
 // opone a que lo empujen.
+// Lo que ve el rival de nosotros: distancia entre centros y ángulo respecto a su frente
+inline void vistaRival(double& d, double& ang) {
+    d = mat::hypot(rob.x - ene.x, rob.y - ene.y);
+    ang = mat::remainder(mat::atan2(rob.y - ene.y, rob.x - ene.x) - ene.th, 2 * PI);
+}
+inline bool rivalNosVe(double d, double ang) { return d < cfg.rangoEnemigo + 0.05 && mat::fabs(ang) < 1.2; }
+
+// Gira hacia "rumbo" con giro máximo y avanza a "vel"; cerca del borde, si no nos
+// está empujando, frena y gira hacia el centro (como el rival que embiste)
+inline void conducirRival(double rumbo, double vel, double giro, double dt, double& vdx, double& vdy) {
+    const double diff = mat::remainder(rumbo - ene.th, 2 * PI);
+    const double maxGiro = giro * dt;
+    ene.th += diff > maxGiro ? maxGiro : diff < -maxGiro ? -maxGiro : diff;
+    const double r = mat::hypot(ene.x, ene.y);
+    const double dRobot = mat::hypot(rob.x - ene.x, rob.y - ene.y);
+    const double radial = (ene.x * mat::cos(ene.th) + ene.y * mat::sin(ene.th)) / (r > 1e-9 ? r : 1);
+    if (vel > 0 && r > cfg.radio - 0.07 && radial > 0 && dRobot > cfg.radioChoque + cfg.radioEnemigo + 0.01) {
+        vel = 0;
+        const double haciaCentro = mat::atan2(-ene.y, -ene.x);
+        ene.th += mat::remainder(haciaCentro - ene.th, 2 * PI) * minimo(1.0, 8.0 * dt);
+    }
+    vdx = vel * mat::cos(ene.th);
+    vdy = vel * mat::sin(ene.th);
+}
+
+// Estilos de torneo. Devuelve false si el modo no es uno de ellos.
+inline bool avanzarRivalTorneo(double dt, double& vdx, double& vdy) {
+    const double t = tiempoUs / 1e6;
+    double d, ang;
+    vistaRival(d, ang);
+    const bool ve = rivalNosVe(d, ang);
+    const double haciaNos = ene.th + ang;
+    if (ve && mat::fabs(ang) > 0.05) estRival.lado = ang > 0 ? 1 : -1;
+    const double carga = cfg.velAgresivo;
+    if (modo == Modo::Tornado) {
+        if (ve && mat::fabs(ang) < 0.3) {
+            conducirRival(haciaNos, carga, cfg.giroAgresivo, dt, vdx, vdy);   // de frente: carga
+        } else {
+            // Gira en el sitio hacia el último lado visto (más rápido si nos ve de lado)
+            ene.th += estRival.lado * (ve ? 6.0 : 4.0) * dt;
+            vdx = vdy = 0;
+        }
+        return true;
+    }
+    if (modo == Modo::Woodpecker) {
+        // Avances de 170 ms con pausas de 50 ms; de cerca empuja sin parar
+        const bool pausa = d > 0.12 && mat::fmod(t, 0.22) > 0.17;
+        conducirRival(haciaNos, pausa ? 0 : carga * 0.8, cfg.giroAgresivo, dt, vdx, vdy);
+        return true;
+    }
+    if (modo == Modo::Contragolpe || modo == Modo::Esquivador) {
+        if (estRival.fase == 0) {
+            // Espera orientándose hacia nosotros
+            const bool cerca = ve && d < 0.22 && mat::fabs(ang) < 0.35;
+            if (modo == Modo::Esquivador && !estRival.esquivo && cerca) {
+                // Nos acercamos de frente y rápido: se aparta en arco (henka)
+                const double v = (rob.vl + rob.vr) / 2;
+                const double haciaEl = (mat::cos(rob.th) * (ene.x - rob.x) + mat::sin(rob.th) * (ene.y - rob.y)) / (d > 1e-9 ? d : 1);
+                if (v * haciaEl > 0.3) {
+                    estRival.fase = 2;
+                    estRival.esquivo = true;
+                    estRival.t0 = t;
+                    // Hacia el lado con más sitio (más lejos del borde)
+                    const double izq = ene.th + 1.1, der = ene.th - 1.1;
+                    const double ri = mat::hypot(ene.x + 0.1 * mat::cos(izq), ene.y + 0.1 * mat::sin(izq));
+                    const double rd = mat::hypot(ene.x + 0.1 * mat::cos(der), ene.y + 0.1 * mat::sin(der));
+                    estRival.rumbo = ri < rd ? izq : der;
+                }
+            }
+            if (estRival.fase == 0 && (modo == Modo::Contragolpe ? cerca : false)) estRival.fase = 1;
+            if (estRival.fase == 0 && t > 1.5) estRival.fase = 1;   // no espera para siempre
+            if (estRival.fase == 0) {
+                conducirRival(ve ? haciaNos : ene.th + estRival.lado * 0.5, 0, 2.5, dt, vdx, vdy);
+                return true;
+            }
+        }
+        if (estRival.fase == 2) {
+            if (t - estRival.t0 < 0.18) {
+                conducirRival(estRival.rumbo, carga * 0.8, 9.0, dt, vdx, vdy);
+                return true;
+            }
+            estRival.fase = 1;
+        }
+        // Fase 1: embiste como el rival agresivo
+        conducirRival(mat::atan2(rob.y - ene.y, rob.x - ene.x), carga, cfg.giroAgresivo, dt, vdx, vdy);
+        return true;
+    }
+    return false;
+}
+
 inline void avanzarEnemigo(double dt) {
     if (!ene.presente) return;
     double vdx = 0, vdy = 0;
-    if (modo == Modo::Errante) {
+    if (avanzarRivalTorneo(dt, vdx, vdy)) {
+        // velocidades ya calculadas
+    } else if (modo == Modo::Errante) {
         ene.th += azar.normal() * 3.0 * mat::sqrt(dt);
         const double r = mat::hypot(ene.x, ene.y);
         if (r > cfg.radio - 0.08) {
@@ -572,6 +673,7 @@ inline void reiniciar(unsigned long long semilla) {
     for (int i = 0; i < 5; i++) finFantasma[i] = ultimaRevisionFantasma[i] = 0;
     rob = {0, 0, 0, 0, 0};
     ene = {false, 0, 0, 0};
+    estRival = EstadoRival();
 }
 
 // Posición inicial uniforme dentro de radioInicio, con orientación aleatoria,

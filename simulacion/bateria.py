@@ -75,6 +75,12 @@ RIVALES = [
     ("embiste rápido", "agresivo", ["--vel-agresivo", "0.9", "--agarre-enemigo", "0.9"] + PALA_RIVAL),
     ("pesado 500 g", "agresivo", ["--masa-enemigo", "0.5", "--agarre-enemigo", "0.9"] + PALA_RIVAL),
     ("flanquea", "flanqueo", PALA_RIVAL),
+    # Estilos de torneo (informe de Codex): gira y carga, espera y embiste, a
+    # pulsos, y se aparta de lado cuando cargamos
+    ("tornado", "tornado", PALA_RIVAL),
+    ("contragolpe", "contragolpe", PALA_RIVAL),
+    ("woodpecker", "woodpecker", PALA_RIVAL),
+    ("esquivador", "esquivador", PALA_RIVAL),
 ]
 
 FACTORES = [

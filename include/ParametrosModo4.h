@@ -39,11 +39,13 @@ constexpr int TacticaArco = 5, TacticaHenka = 6, TacticaEsperaEsquiva = 7;
 //   modo 1 arco         54,8 / 24,9 (rutina de siempre 41,0 / 39,5)
 //   modo 2 contragolpe  54,3 / 27,3 (rutina de siempre 48,8 / 28,8)
 //   modo 3 pivote       46,3 / 28,7 (rutina de siempre 45,5 / 34,3)
-//   modo 4 henka        50,0 / 28,6 (giro de siempre 47,7 / 28,5)
+//   modo 4 contragolpe: con la red jerárquica, en RU4 (5 280 combates sin el
+//     rival de 500 g) 59,3 / 23,2 y 0/400 caídas en ideal, frente a henka
+//     58,0 / 24,1 y 12/400 (simulacion/barrido_modo4.py)
 constexpr int TacticaModo1 = TacticaArco;
 constexpr int TacticaModo2 = TacticaContragolpe;
 constexpr int TacticaModo3 = TacticaPivote;
-constexpr int TacticaModo4 = TacticaHenka;
+constexpr int TacticaModo4 = TacticaContragolpe;
 constexpr int tacticaDeModo(int modo) {
     return modo == 1 ? TacticaModo1 : modo == 2 ? TacticaModo2 : modo == 3 ? TacticaModo3
          : modo == 4 ? TacticaModo4 : 0;

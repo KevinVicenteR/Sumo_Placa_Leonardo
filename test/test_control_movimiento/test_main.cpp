@@ -741,7 +741,9 @@ void test_rutina_libre_termina_al_agotar_su_tiempo(void) {
     c.iniciarRutina(4, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
     c.ejecutar({TipoAccion::Busqueda}, m,
-               1000 + (TacticaModo4 == 0 ? TiempoMaxGiroRound4 : TiempoMaxTactica) + 1);
+               1000 + (TacticaModo4 == 0 ? TiempoMaxGiroRound4
+                       : TacticaModo4 == TacticaContragolpe || TacticaModo4 == TacticaEsperaEsquiva
+                           ? TiempoMaxEsperaTactica : TiempoMaxTactica) + 1);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
 }
 

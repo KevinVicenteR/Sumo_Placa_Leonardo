@@ -13,12 +13,16 @@ Error de una casilla (round × rival × factor), en puntos (0 = perfecto):
 El error de un candidato es la media de sus casillas.
 
 Para bajar el error:
-  - Currículum: etapa 1 en condiciones ideales con todos los rivales; etapa 2
-    añade todos los factores externos (averías, gente, IR...).
-  - Muestreo por error: las casillas de los rivales y modos con más error salen
-    más a menudo en la muestra de cada generación.
-  - Si el error de validación no mejora en --paciencia validaciones, sube σ
-    (más exploración) o pasa a la etapa siguiente.
+  - Solo se entrena en las casillas que se pueden mejorar (--base: batería de
+    referencia): fuera el rival de 500 g y las casillas que la red actual ya
+    gana siempre o pierde siempre (p. ej. las dos llantas gastadas).
+  - Cada generación usa una muestra nueva de esas casillas; todos los candidatos
+    de la generación, en los mismos combates.
+  - Validación pareada: la red de partida y los candidatos se miden en los
+    mismos combates (mismas semillas). Un candidato solo se acepta si baja el
+    error y no se cae más que la red de partida.
+  - σ con tope (--sigma-max). Si la validación no mejora en --paciencia
+    validaciones, se reinicia CMA-ES desde el mejor candidato con el σ inicial.
 
 Salida (simulacion/resultados/):
   entrenamiento.csv   una fila por generación (error de entrenamiento y validación)
@@ -235,7 +239,12 @@ def main():
     ap.add_argument("--validar", type=int, default=5, help="generaciones entre validaciones")
     ap.add_argument("--n-validar", type=int, default=3, help="combates por casilla en la validación")
     ap.add_argument("--paciencia", type=int, default=4, help="validaciones sin mejora antes de adaptar")
-    ap.add_argument("--etapa1", type=int, default=40, help="generaciones como mucho en la etapa 1")
+    ap.add_argument("--inicio", help="pesos de partida (.red) en vez de las tablas del firmware")
+    ap.add_argument("--fijas", action="store_true",
+                    help="cada generación incluye también las casillas ideales (sin el rival de 500 g)")
+    ap.add_argument("--sigma-max", type=float, default=5.0, help="tope de σ")
+    ap.add_argument("--base", default=str(RESULTADOS / "rumania11_antes_30000.json"),
+                    help="batería de referencia (JSON de bateria.py) para elegir las casillas mejorables")
     a = ap.parse_args()
 
     B.ROUNDS = B.ROUNDS_RUMANIA
@@ -243,19 +252,32 @@ def main():
     CANDIDATOS.mkdir(exist_ok=True)
     binario = simular.compilar({})
     nl = R.num_parametros_logica()
-    inicio = R.leer_tabla(R.TABLA_LOGICA) + R.leer_tabla(R.TABLA_CONTROL)
+    inicio = ([int(x) for x in Path(a.inicio).read_text().split()] if a.inicio
+              else R.leer_tabla(R.TABLA_LOGICA) + R.leer_tabla(R.TABLA_CONTROL))
     assert len(inicio) == nl + R.num_parametros(R.CONTROL), "la tabla de lógica no es jerárquica"
     rng = random.Random(2026)
     es = SepCMAES([float(x) for x in inicio], a.sigma, a.lam, rng)
 
-    ideal = B.FACTORES[0]
     todas = [(r, rv, f) for f in B.FACTORES for r in B.ROUNDS for rv in B.RIVALES]
-    ideales = [c for c in todas if c[2] is ideal]
-    # Validación fija: todas las casillas, semillas reservadas
-    val_casillas = todas
-    peso_grupo = {}           # error medio reciente por (rival, modo) para el muestreo
+    # Casillas mejorables según la batería de referencia
+    import json
+    base = {(c["round"], c["rival"], c["factor"]): c for c in json.load(open(a.base))["casillas"]}
+
+    def mejorable(c):
+        b = base[(c[0][0], c[1][0], c[2][0])]
+        if c[1][0] == "pesado 500 g" or b["caidas"] >= b["combates"] - 1:
+            return False
+        if c[1][1] == "ninguno":
+            return b["caidas"] > 0
+        return b["caidas"] > 0 or b["victorias"] < b["combates"] - 1
+
+    entreno = [c for c in todas if mejorable(c)]
+    fijas = [c for c in todas if a.fijas and c[2] is B.FACTORES[0] and c[1][0] != "pesado 500 g"]
+    # Validación fija: todas las casillas salvo el rival de 500 g, semillas reservadas
+    val_casillas = [c for c in todas if c[1][0] != "pesado 500 g"]
+    print(f"{len(entreno)} casillas mejorables de {len(todas)}; validación en {len(val_casillas)}", flush=True)
     filas, validaciones, por_rival, por_modo = [], [], [], []
-    etapa, sin_mejora = 1, 0
+    etapa, sin_mejora = 2, 0
     t_fin = time.time() + a.horas * 3600
 
     with tempfile.TemporaryDirectory() as carpeta, open(CSV, "w", newline="") as fcsv:
@@ -272,14 +294,11 @@ def main():
             err = error_total(res, val_casillas, 0)
             r = agrupar(res, val_casillas, 0, lambda c: c[1][0])
             m = agrupar(res, val_casillas, 0, lambda c: modo_de(c[0][0]))
-            for j, c in enumerate(val_casillas):
-                g = (c[1][0], modo_de(c[0][0]))
-                e = error_casilla(res, 0, j, c)
-                peso_grupo[g] = 0.5 * peso_grupo.get(g, e) + 0.5 * e
             return err, 100 * v / n, 100 * k / n, 100 * p / n, r, m
 
         err0, g0, c0, p0, r0, m0 = validar(inicio, 0)
         mejor = (err0, inicio)
+        caidas0 = c0
         validaciones.append({"gen": 0, "etapa": 1, "sigma": es.sigma, "err_val": err0, "gana": g0, "cae": c0, "propias": p0})
         por_rival.append({"errores": r0}); por_modo.append({"errores": m0})
         print(f"partida: error de validación {err0:.2f} (gana {g0:.1f} %, cae {c0:.1f} %, propias {p0:.2f} %)", flush=True)
@@ -289,19 +308,13 @@ def main():
         while time.time() < t_fin:
             gen += 1
             t0 = time.time()
-            # Casillas de esta generación: etapa 1 = ideales; etapa 2 = ideales + muestra por error
-            if etapa == 1:
-                casillas = ideales
-            else:
-                resto = [c for c in todas if c[2] is not ideal]
-                # Más muestra donde más error, con tope (el rival de 500 g casi no se puede ganar)
-                pesos = [min(peso_grupo.get((c[1][0], modo_de(c[0][0])), 50), 120) + 5 for c in resto]
-                casillas = ideales + rng.choices(resto, weights=pesos, k=a.muestra)
+            casillas = fijas + rng.sample([c for c in entreno if c not in fijas], min(a.muestra, len(entreno)))
             xs = es.pedir()
             cand = [redondear(x) for x in xs]
             res = ev.resultados(cand, casillas, a.n, 1000 + 37 * gen, nl)
             errores = [error_total(res, casillas, i) for i in range(len(cand))]
             es.actualizar(errores)
+            es.sigma = min(es.sigma, a.sigma_max)
             fila = {"gen": gen, "etapa": etapa, "sigma": es.sigma, "err_mejor": min(errores),
                     "err_media": sum(errores) / len(errores), "segundos": time.time() - t0}
             filas.append(fila)
@@ -315,7 +328,7 @@ def main():
                 for i, (q, *_rest) in enumerate(evals):
                     R.guardar_pesos(CANDIDATOS / f"g{gen:04d}_{i}_err{_rest[0]:.2f}.red", q[:nl], q[nl:])
                 marca = ""
-                if err < mejor[0] - 0.05:
+                if err < mejor[0] - 0.05 and c <= caidas0:
                     mejor = (err, p)
                     sin_mejora = 0
                     marca = "  <- mejor"
@@ -324,15 +337,8 @@ def main():
                     sin_mejora += 1
                     if sin_mejora >= a.paciencia:
                         sin_mejora = 0
-                        if etapa == 1:
-                            etapa = 2
-                            print("   adaptación: pasa a la etapa 2 (todos los factores)", flush=True)
-                        else:
-                            es.sigma = min(es.sigma * 1.5, 20)
-                            print(f"   adaptación: más exploración (σ = {es.sigma:.2f})", flush=True)
-                if etapa == 1 and gen >= a.etapa1:
-                    etapa = 2
-                    print("   currículum: pasa a la etapa 2 (todos los factores)", flush=True)
+                        es = SepCMAES([float(x) for x in mejor[1]], a.sigma, a.lam, rng)
+                        print(f"   adaptación: reinicio desde el mejor (σ = {a.sigma:.2f})", flush=True)
                 validaciones.append({"gen": gen, "etapa": etapa, "sigma": es.sigma, "err_val": err, "gana": g, "cae": c, "propias": pr})
                 por_rival.append({"errores": r}); por_modo.append({"errores": m})
                 escribir_html(filas, validaciones, por_rival, por_modo, err0, mejor[0])

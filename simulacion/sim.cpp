@@ -137,6 +137,10 @@ struct Resultado {
     bool empujado = false;       // cayó con el enemigo encima
     double vueltas = 0;          // vueltas completas giradas en total
     int tirones = 0;             // saltos de más de 100 de PWM en la orden de un motor
+    double angPrimerContacto = 999; // grados del rival respecto a nuestro frente al primer choque
+    double angContacto = 999;    // ídem en el último contacto antes de caer o terminar
+    double tContacto = 0;        // s en contacto con el rival
+    double velCaida = 0;         // m/s hacia delante al caer (negativo = nos hacen retroceder)
 };
 
 // Clasifica la orden de motores: avance, retroceso, giro en el sitio, curva o freno
@@ -150,7 +154,8 @@ const char* tipoOrden(int izq, int der) {
 
 void imprimirCabecera() {
     std::printf("semilla,modo,cayo,t_caida,margen_min_cm,max_salida_cuerpo_cm,evasiones,"
-                "t_primer_frontal,frac_frontal,distancia_m,gano,t_gano,causa,empujado,vueltas,tirones\n");
+                "t_primer_frontal,frac_frontal,distancia_m,gano,t_gano,causa,empujado,vueltas,tirones,"
+                "ang_primer_contacto,ang_contacto,t_contacto,vel_caida\n");
 }
 
 const char* nombreModo(Modo m) {
@@ -228,13 +233,21 @@ Resultado correr(int semilla, FILE* trayectoria) {
         // Contacto reciente con el enemigo: la caída pudo ser por empujón
         const double cuerpoX = rob.x + cfg.centroDelante * mat::cos(rob.th);
         const double cuerpoY = rob.y + cfg.centroDelante * mat::sin(rob.th);
-        if (ene.presente && mat::hypot(ene.x - cuerpoX, ene.y - cuerpoY) < cfg.radioChoque + cfg.radioEnemigo + 0.005)
+        if (ene.presente && mat::hypot(ene.x - cuerpoX, ene.y - cuerpoY) < cfg.radioChoque + cfg.radioEnemigo + 0.005) {
             ultimoContacto = t;
+            res.tContacto += dt;
+            double a = mat::atan2(ene.y - rob.y, ene.x - rob.x) - rob.th;
+            while (a > PI) a -= 2 * PI;
+            while (a < -PI) a += 2 * PI;
+            res.angContacto = a * 180 / PI;
+            if (res.angPrimerContacto > 900) res.angPrimerContacto = res.angContacto;
+        }
         if (cayo()) {
             res.cayo = true;
             res.tCaida = t;
             std::snprintf(res.causa, sizeof res.causa, "%s", tipoOrden(comandoIzq(), comandoDer()));
             res.empujado = t - ultimoContacto < 0.3;
+            res.velCaida = (rob.vl + rob.vr) / 2;
             break;
         }
         if (enemigoFuera()) {
@@ -356,10 +369,11 @@ int main(int argc, char** argv) {
             if (rutaTrayEstimador && i == 0) trayEstimador = std::fopen(rutaTrayEstimador, "w");
             const Resultado r = correr(s, tray);
             if (tray) std::fclose(tray);
-            std::printf("%d,%s,%d,%.3f,%.2f,%.2f,%d,%.3f,%.3f,%.2f,%d,%.3f,%s,%d,%.1f,%d\n", s, nombreModo(modo),
+            std::printf("%d,%s,%d,%.3f,%.2f,%.2f,%d,%.3f,%.3f,%.2f,%d,%.3f,%s,%d,%.1f,%d,%.0f,%.0f,%.2f,%.2f\n", s, nombreModo(modo),
                         r.cayo ? 1 : 0, r.tCaida, r.margenMin * 100, r.maxSalidaCuerpo * 100,
                         r.evasiones, r.tPrimerFrontal, r.fracFrontal, r.distancia,
-                        r.gano ? 1 : 0, r.tGano, r.causa, r.empujado ? 1 : 0, r.vueltas, r.tirones);
+                        r.gano ? 1 : 0, r.tGano, r.causa, r.empujado ? 1 : 0, r.vueltas, r.tirones,
+                        r.angPrimerContacto, r.angContacto, r.tContacto, r.velCaida);
 #ifdef ENTRENAMIENTO_POLITICA
             {
                 // Retorno de Monte Carlo de cada visita: recompensa final descontada

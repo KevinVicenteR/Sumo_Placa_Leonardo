@@ -1,0 +1,473 @@
+{
+ "solo": {
+  "combates": 924,
+  "victorias": 0,
+  "caidas": 16,
+  "empujado": 0,
+  "retrocede": 3,
+  "lado_contacto": {
+   "sin contacto": 16
+  },
+  "primer_contacto": {
+   "sin contacto": 16
+  },
+  "orden": {
+   "quieto": 1,
+   "retroceso": 2,
+   "curva": 13
+  },
+  "momento": {
+   "1-3 s": 1,
+   "<1 s": 2,
+   "3-10 s": 4,
+   ">10 s": 9
+  },
+  "por_round": {
+   "RU3 de lado, rival der": 4,
+   "RU2 de frente, DIP3 der": 3,
+   "RU2 de frente, DIP3 izq": 3,
+   "RU1 de frente": 3,
+   "RU4 de espaldas, gira der": 1,
+   "RU4 de espaldas, gira izq": 2
+  }
+ },
+ "quieto": {
+  "combates": 924,
+  "victorias": 854,
+  "caidas": 10,
+  "empujado": 0,
+  "retrocede": 2,
+  "lado_contacto": {
+   "sin contacto": 10
+  },
+  "primer_contacto": {
+   "sin contacto": 10
+  },
+  "orden": {
+   "retroceso": 2,
+   "curva": 8
+  },
+  "momento": {
+   "<1 s": 2,
+   "3-10 s": 2,
+   ">10 s": 6
+  },
+  "por_round": {
+   "RU2 de frente, DIP3 der": 2,
+   "RU2 de frente, DIP3 izq": 2,
+   "RU3 de lado, rival der": 2,
+   "RU4 de espaldas, gira der": 1,
+   "RU4 de espaldas, gira izq": 3
+  }
+ },
+ "deambula": {
+  "combates": 924,
+  "victorias": 835,
+  "caidas": 14,
+  "empujado": 7,
+  "retrocede": 1,
+  "lado_contacto": {
+   "espalda": 8,
+   "diagonal": 2,
+   "sin contacto": 2,
+   "frente": 1,
+   "costado": 1
+  },
+  "primer_contacto": {
+   "costado": 2,
+   "diagonal": 4,
+   "frente": 4,
+   "sin contacto": 2,
+   "espalda": 2
+  },
+  "orden": {
+   "curva": 12,
+   "retroceso": 2
+  },
+  "momento": {
+   "3-10 s": 4,
+   ">10 s": 10
+  },
+  "por_round": {
+   "RU2 de frente, DIP3 der": 3,
+   "RU2 de frente, DIP3 izq": 3,
+   "RU3 de lado, rival der": 1,
+   "RU3 de lado, rival izq": 2,
+   "RU4 de espaldas, gira der": 5
+  }
+ },
+ "embiste": {
+  "combates": 924,
+  "victorias": 596,
+  "caidas": 251,
+  "empujado": 251,
+  "retrocede": 109,
+  "lado_contacto": {
+   "frente": 106,
+   "espalda": 137,
+   "diagonal": 3,
+   "costado": 5
+  },
+  "primer_contacto": {
+   "frente": 107,
+   "diagonal": 35,
+   "espalda": 92,
+   "costado": 17
+  },
+  "orden": {
+   "curva": 99,
+   "retroceso": 109,
+   "quieto": 28,
+   "avance": 10,
+   "giro": 5
+  },
+  "momento": {
+   "1-3 s": 238,
+   "3-10 s": 8,
+   ">10 s": 2,
+   "<1 s": 3
+  },
+  "por_round": {
+   "RU1 de frente": 25,
+   "RU2 de frente, DIP3 der": 28,
+   "RU2 de frente, DIP3 izq": 28,
+   "RU3 de lado, rival der": 40,
+   "RU3 de lado, rival izq": 41,
+   "RU4 de espaldas, gira der": 45,
+   "RU4 de espaldas, gira izq": 44
+  }
+ },
+ "embiste rápido": {
+  "combates": 924,
+  "victorias": 420,
+  "caidas": 376,
+  "empujado": 376,
+  "retrocede": 196,
+  "lado_contacto": {
+   "frente": 153,
+   "espalda": 177,
+   "diagonal": 42,
+   "costado": 4
+  },
+  "primer_contacto": {
+   "diagonal": 98,
+   "frente": 163,
+   "espalda": 96,
+   "costado": 19
+  },
+  "orden": {
+   "retroceso": 200,
+   "curva": 121,
+   "giro": 9,
+   "quieto": 46
+  },
+  "momento": {
+   "3-10 s": 54,
+   ">10 s": 9,
+   "1-3 s": 175,
+   "<1 s": 138
+  },
+  "por_round": {
+   "RU3 de lado, rival izq": 55,
+   "RU4 de espaldas, gira izq": 57,
+   "RU1 de frente": 42,
+   "RU2 de frente, DIP3 der": 49,
+   "RU2 de frente, DIP3 izq": 49,
+   "RU3 de lado, rival der": 62,
+   "RU4 de espaldas, gira der": 62
+  }
+ },
+ "pesado 500 g": {
+  "combates": 924,
+  "victorias": 3,
+  "caidas": 853,
+  "empujado": 853,
+  "retrocede": 711,
+  "lado_contacto": {
+   "frente": 591,
+   "diagonal": 126,
+   "espalda": 116,
+   "costado": 20
+  },
+  "primer_contacto": {
+   "frente": 595,
+   "diagonal": 139,
+   "espalda": 99,
+   "costado": 20
+  },
+  "orden": {
+   "curva": 520,
+   "retroceso": 272,
+   "quieto": 53,
+   "giro": 7,
+   "avance": 1
+  },
+  "momento": {
+   "1-3 s": 546,
+   "<1 s": 258,
+   ">10 s": 10,
+   "3-10 s": 39
+  },
+  "por_round": {
+   "RU1 de frente": 131,
+   "RU2 de frente, DIP3 der": 132,
+   "RU2 de frente, DIP3 izq": 132,
+   "RU3 de lado, rival der": 109,
+   "RU3 de lado, rival izq": 129,
+   "RU4 de espaldas, gira der": 129,
+   "RU4 de espaldas, gira izq": 91
+  }
+ },
+ "flanquea": {
+  "combates": 924,
+  "victorias": 562,
+  "caidas": 272,
+  "empujado": 272,
+  "retrocede": 110,
+  "lado_contacto": {
+   "frente": 98,
+   "espalda": 157,
+   "diagonal": 12,
+   "costado": 5
+  },
+  "primer_contacto": {
+   "frente": 128,
+   "diagonal": 41,
+   "espalda": 40,
+   "costado": 63
+  },
+  "orden": {
+   "curva": 100,
+   "retroceso": 119,
+   "quieto": 32,
+   "giro": 20,
+   "avance": 1
+  },
+  "momento": {
+   "1-3 s": 245,
+   "3-10 s": 25,
+   ">10 s": 1,
+   "<1 s": 1
+  },
+  "por_round": {
+   "RU1 de frente": 38,
+   "RU2 de frente, DIP3 der": 37,
+   "RU2 de frente, DIP3 izq": 37,
+   "RU3 de lado, rival der": 39,
+   "RU3 de lado, rival izq": 38,
+   "RU4 de espaldas, gira der": 42,
+   "RU4 de espaldas, gira izq": 41
+  }
+ },
+ "tornado": {
+  "combates": 924,
+  "victorias": 592,
+  "caidas": 242,
+  "empujado": 240,
+  "retrocede": 109,
+  "lado_contacto": {
+   "frente": 102,
+   "espalda": 131,
+   "diagonal": 5,
+   "sin contacto": 2,
+   "costado": 2
+  },
+  "primer_contacto": {
+   "frente": 85,
+   "diagonal": 50,
+   "espalda": 82,
+   "costado": 23,
+   "sin contacto": 2
+  },
+  "orden": {
+   "curva": 102,
+   "retroceso": 97,
+   "quieto": 31,
+   "giro": 12
+  },
+  "momento": {
+   "1-3 s": 185,
+   "3-10 s": 52,
+   "<1 s": 3,
+   ">10 s": 2
+  },
+  "por_round": {
+   "RU1 de frente": 24,
+   "RU2 de frente, DIP3 der": 27,
+   "RU2 de frente, DIP3 izq": 27,
+   "RU3 de lado, rival der": 39,
+   "RU3 de lado, rival izq": 42,
+   "RU4 de espaldas, gira der": 42,
+   "RU4 de espaldas, gira izq": 41
+  }
+ },
+ "contragolpe": {
+  "combates": 924,
+  "victorias": 570,
+  "caidas": 248,
+  "empujado": 246,
+  "retrocede": 117,
+  "lado_contacto": {
+   "frente": 105,
+   "diagonal": 10,
+   "espalda": 128,
+   "costado": 3,
+   "sin contacto": 2
+  },
+  "primer_contacto": {
+   "frente": 98,
+   "diagonal": 41,
+   "espalda": 65,
+   "costado": 42,
+   "sin contacto": 2
+  },
+  "orden": {
+   "curva": 102,
+   "retroceso": 111,
+   "quieto": 22,
+   "avance": 7,
+   "giro": 6
+  },
+  "momento": {
+   "1-3 s": 181,
+   "3-10 s": 64,
+   ">10 s": 1,
+   "<1 s": 2
+  },
+  "por_round": {
+   "RU1 de frente": 25,
+   "RU2 de frente, DIP3 der": 29,
+   "RU2 de frente, DIP3 izq": 29,
+   "RU3 de lado, rival der": 41,
+   "RU3 de lado, rival izq": 43,
+   "RU4 de espaldas, gira der": 40,
+   "RU4 de espaldas, gira izq": 41
+  }
+ },
+ "woodpecker": {
+  "combates": 924,
+  "victorias": 545,
+  "caidas": 222,
+  "empujado": 219,
+  "retrocede": 63,
+  "lado_contacto": {
+   "frente": 80,
+   "espalda": 132,
+   "diagonal": 9,
+   "costado": 1
+  },
+  "primer_contacto": {
+   "frente": 88,
+   "diagonal": 29,
+   "costado": 23,
+   "espalda": 82
+  },
+  "orden": {
+   "avance": 39,
+   "curva": 65,
+   "quieto": 17,
+   "giro": 42,
+   "retroceso": 59
+  },
+  "momento": {
+   ">10 s": 64,
+   "3-10 s": 42,
+   "1-3 s": 116
+  },
+  "por_round": {
+   "RU1 de frente": 27,
+   "RU2 de frente, DIP3 der": 24,
+   "RU2 de frente, DIP3 izq": 24,
+   "RU3 de lado, rival der": 30,
+   "RU3 de lado, rival izq": 36,
+   "RU4 de espaldas, gira der": 42,
+   "RU4 de espaldas, gira izq": 39
+  }
+ },
+ "esquivador": {
+  "combates": 924,
+  "victorias": 494,
+  "caidas": 282,
+  "empujado": 278,
+  "retrocede": 80,
+  "lado_contacto": {
+   "frente": 68,
+   "diagonal": 10,
+   "espalda": 197,
+   "costado": 5,
+   "sin contacto": 2
+  },
+  "primer_contacto": {
+   "frente": 139,
+   "diagonal": 35,
+   "espalda": 64,
+   "costado": 42,
+   "sin contacto": 2
+  },
+  "orden": {
+   "curva": 68,
+   "retroceso": 156,
+   "giro": 12,
+   "quieto": 42,
+   "avance": 4
+  },
+  "momento": {
+   "3-10 s": 127,
+   "1-3 s": 152,
+   ">10 s": 1,
+   "<1 s": 2
+  },
+  "por_round": {
+   "RU1 de frente": 38,
+   "RU2 de frente, DIP3 der": 42,
+   "RU2 de frente, DIP3 izq": 42,
+   "RU3 de lado, rival der": 41,
+   "RU3 de lado, rival izq": 40,
+   "RU4 de espaldas, gira der": 40,
+   "RU4 de espaldas, gira izq": 39
+  }
+ },
+ "TOTAL": {
+  "combates": 10164,
+  "victorias": 5471,
+  "caidas": 2786,
+  "empujado": 2742,
+  "retrocede": 1501,
+  "lado_contacto": {
+   "frente": 1304,
+   "diagonal": 219,
+   "sin contacto": 34,
+   "espalda": 1183,
+   "costado": 46
+  },
+  "primer_contacto": {
+   "frente": 1407,
+   "diagonal": 472,
+   "sin contacto": 34,
+   "espalda": 622,
+   "costado": 251
+  },
+  "orden": {
+   "curva": 1210,
+   "retroceso": 1129,
+   "quieto": 272,
+   "giro": 113,
+   "avance": 62
+  },
+  "momento": {
+   "1-3 s": 1839,
+   "<1 s": 411,
+   "3-10 s": 421,
+   ">10 s": 115
+  },
+  "por_round": {
+   "RU1 de frente": 353,
+   "RU2 de frente, DIP3 der": 376,
+   "RU2 de frente, DIP3 izq": 376,
+   "RU3 de lado, rival der": 408,
+   "RU3 de lado, rival izq": 426,
+   "RU4 de espaldas, gira der": 449,
+   "RU4 de espaldas, gira izq": 398
+  }
+ }
+}

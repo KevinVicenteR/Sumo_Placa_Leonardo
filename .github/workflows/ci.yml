@@ -29,8 +29,12 @@ jobs:
         run: scripts/correr.sh simular
       - name: Regresión de Rumania por casilla
         run: |
+          # Ambas versiones usan el mismo compilador y plataforma del runner.
+          mkdir -p /tmp/sumo_base
+          git archive c8136d6 | tar -x -C /tmp/sumo_base
+          (cd /tmp/sumo_base && python3 simulacion/bateria.py --rumania --muestras 3000 --json /tmp/ref_antes.json)
           python3 simulacion/bateria.py --rumania --muestras 3000 --json /tmp/ref_despues.json
-          python3 scripts/verificar_invariantes.py --antes simulacion/resultados/refactor_referencia.json --despues /tmp/ref_despues.json
+          python3 scripts/verificar_invariantes.py --antes /tmp/ref_antes.json --despues /tmp/ref_despues.json
   web:
     runs-on: ubuntu-latest
     steps:

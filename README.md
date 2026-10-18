@@ -63,7 +63,7 @@ python3 scripts/verificar_invariantes.py --antes simulacion/resultados/refactor_
 python3 -m simulacion.python.verificar_arranques --referencia c8136d6
 ```
 
-La batería usa 7 colocaciones × 11 rivales × 12 factores = 924 casillas. Redondea 3.000 muestras a 4 combates por casilla: 3.696 combates. La referencia y el resultado del refactor coinciden íntegramente: **2.101 victorias, 1.010 caídas, 9 caídas propias**. El verificador compara el JSON completo, además de todas las cabeceras y fuentes C++ del firmware contra `c8136d6`; falla ante cualquier diferencia. Los arranques protegidos también mantienen sus 4.636 ciclos comparados.
+La batería usa 7 colocaciones × 11 rivales × 12 factores = 924 casillas. Redondea 3.000 muestras a 4 combates por casilla: 3.696 combates. La referencia y el resultado del refactor coinciden íntegramente: **2.101 victorias, 1.010 caídas, 9 caídas propias**. El verificador compara el JSON completo, además de todas las cabeceras y fuentes C++ del firmware contra `c8136d6`; falla ante cualquier diferencia. Los arranques protegidos también mantienen sus 4.636 ciclos comparados. Los números guardados se midieron en macOS ARM64; CI genera antes y después en el mismo runner para evitar diferencias numéricas entre compiladores o plataformas.
 
 `pio test -e native`: 94 casos, 83 correctos y 11 omitidos por tácticas desactivadas en la configuración actual. Las pruebas Python están en `test/python`; una prueba antigua dependía de pesos entrenados que ya no garantizaban su hipótesis, y ahora utiliza una red controlada sin modificar las tablas. Las pruebas WebAssembly verifican memoria independiente, repetibilidad, todos los modos/rivales, factores y movimiento antes de 5 segundos.
 

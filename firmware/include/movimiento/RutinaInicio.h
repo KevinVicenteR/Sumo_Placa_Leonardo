@@ -16,6 +16,11 @@
 #include "movimiento/BusquedaRival.h"
 #include "movimiento/ControlAtaque.h"
 #include "estrategia/DecisionMovimiento.h"
+#include "movimiento/modos/ModoDefensivo.h"
+#include "movimiento/modos/ModoContragolpe.h"
+#include "movimiento/modos/ModoLado.h"
+#include "movimiento/modos/ModoAgresivo.h"
+#include "movimiento/modos/ModoArco.h"
 
 class RutinaInicio {
 public:
@@ -40,11 +45,14 @@ private:
                          unsigned long ahora, unsigned long t, ControlAtaque& ataque);
     bool explorar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                   unsigned long ahora, unsigned long t, ControlAtaque& ataque);
-    bool tacticaRapida(int tactica, const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-                       unsigned long ahora, unsigned long t, ControlAtaque& ataque);
-    bool esquivando = false;
-    bool esquivado = false;
-    unsigned long inicioEsquiva = 0;
+    // Estilos de arranque (movimiento/modos/): cada uno en su archivo
+    bool estiloArranque(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
+                     unsigned long ahora, unsigned long t, ControlAtaque& ataque);
+    ModoDefensivo defensivo;
+    ModoContragolpe contragolpe;
+    ModoLado deLado;
+    ModoAgresivo agresivo;
+    ModoArco arco;
 
     int rutina = 0;
     int lado = 1;

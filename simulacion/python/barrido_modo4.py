@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Compara variantes de la táctica del modo 4 solo en las casillas RU4 (de
-espaldas) de la batería de Rumania, con todos los rivales y factores.
+"""Compara variantes de la táctica de un modo solo en sus casillas de la batería
+de Rumania (modo N = rounds RUN), con todos los rivales y factores.
 
-  python3 -m simulacion.python.barrido_modo4 --n 20 TacticaModo4=6 TacticaModo4=2 "TacticaModo4=6,TiempoRetrocesoLibre=120"
+  python3 -m simulacion.python.barrido_modo4 --modo 4 --n 20 Modo4VelocidadAvance=150 Modo4VelocidadAvance=120 "Modo4VelocidadAvance=120,Modo4VelocidadGiro=200"
 """
 import argparse
 import os
@@ -21,10 +21,11 @@ def correr(binario, n, casilla):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=20)
-    ap.add_argument("variantes", nargs="+", help="Nombre=valor[,Nombre=valor...] de ParametrosModo4.h / Parametros.h")
+    ap.add_argument("--modo", type=int, default=4, help="modo (1-4): se usan los rounds RU<modo>")
+    ap.add_argument("variantes", nargs="+", help="Nombre=valor[,Nombre=valor...] de cualquier .h (p. ej. movimiento/rumania/Modo4Agresivo.h) / Parametros.h")
     a = ap.parse_args()
     simular.BUILD.mkdir(parents=True, exist_ok=True)
-    casillas = [(r, rv, f) for f in B.FACTORES for r in B.ROUNDS_RUMANIA if r[0].startswith("RU4") for rv in B.RIVALES]
+    casillas = [(r, rv, f) for f in B.FACTORES for r in B.ROUNDS_RUMANIA if r[0].startswith(f"RU{a.modo}") for rv in B.RIVALES]
     for var in a.variantes:
         cambios = dict(p.split("=", 1) for p in var.split(","))
         binario = simular.compilar(cambios)

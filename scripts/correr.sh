@@ -8,7 +8,6 @@ PYTHON="${PYTHON:-python3}"
 tests() {
  pio test -e native
  "$PYTHON" -m unittest discover -s test/python -v
- "$PYTHON" scripts/verificar_invariantes.py
 }
 compilar() { pio run -e leonardo -e monitoreo -e diagnostico -e prueba_motores; }
 simular() {

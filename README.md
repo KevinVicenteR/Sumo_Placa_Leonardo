@@ -9,6 +9,9 @@ firmware/
     hardware/              XMotion, motores, módulo START y caja negra
     sensores/              Lectura, calibración y percepción
     movimiento/            Maniobras, control y límites del borde
+      modos/               Estilos de arranque de cada modo (DIP): sus velocidades y su lógica
+  include/movimiento/parametros/  Velocidades y tiempos de cada movimiento: motores,
+                           ataque, giro lateral, evasión, búsqueda, frenado y rutinas
     estrategia/            Reglas, política y redes neuronales
     modos/                 Combate, diagnóstico y prueba de motores
     robot/                 Ciclo percibir → decidir → actuar
@@ -82,7 +85,7 @@ Se ejecutan como módulos desde la raíz, sin modificar `sys.path`:
 python3 -m simulacion.python.simular --n 100
 python3 -m simulacion.python.bateria --rumania --muestras 3000
 python3 -m simulacion.python.diagnostico_caidas --muestras 1000
-python3 -m simulacion.python.barrido_modo4 --n 2 TacticaModo4=6
+python3 -m simulacion.python.barrido_modo4 --modo 4 --n 2 Modo4VelocidadAvance=120
 python3 -m simulacion.python.entrenar_jerarquica --help
 ```
 

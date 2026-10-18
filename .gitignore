@@ -6,7 +6,7 @@
 .vscode/tasks.json
 .vscode/settings.json
 .history
-.extensions.json    
+.extensions.json
 # Simulación
 simulacion/build
 __pycache__
@@ -19,3 +19,13 @@ web/dist/
 web/public/*.wasm
 web/*.tsbuildinfo
 .cache/
+
+# Sistema, editores y herramientas locales
+.DS_Store
+*.log
+.claude/
+
+# Salidas del entrenamiento y de la simulación (se regeneran)
+simulacion/resultados/**/candidatos*/
+simulacion/politica_q.txt
+simulacion/politica_n.txt

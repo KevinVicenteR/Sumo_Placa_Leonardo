@@ -7,63 +7,10 @@
 #ifndef PARAMETROS_H
 #define PARAMETROS_H
 
-// 1. Velocidades de movimiento
-
-// Límite absoluto que se manda a cada motor.
-constexpr int VelocidadMaxima = 255;
-// Ajuste fino de cada motor (% de la orden), para que avance recto: los dos
-// motores no empujan igual. Si al avanzar se desvía a la derecha, la rueda
-// izquierda empuja más: baja PorcentajeMotorIzquierdo (y al revés). Solo en el
-// robot real; el simulador modela los dos motores iguales.
-constexpr int PorcentajeMotorIzquierdo = 92;
-constexpr int PorcentajeMotorDerecho = 100;
-// Contramando al frenar: se limita para no dar golpes a PWM 255.
-constexpr int VelocidadFreno = 140;
-
-// --- Ataque ---
-// Velocidad al empezar a atacar; sube poco a poco hasta VelocidadEmpuje
-// durante TiempoEmbestida mientras tenga al rival de frente.
-constexpr int VelocidadAtaque = 130;
-constexpr int VelocidadEmpuje = 255;
-// Rival en los tres sensores delanteros a la vez: es un robot cercano (un reflejo
-// no ocupa tres sensores), así que ataca ya a esta velocidad (0 = sin efecto).
-constexpr int VelocidadAtaqueDirecto = 0;
-// Rival de frente y también en un sensor de 45°: la rueda de ese lado va a
-// este porcentaje de la otra para centrarlo sin dejar de empujar.
-constexpr int PorcentajeAjuste = 85;
-// Rival visto solo por un sensor de 45°: true = la rueda de ese lado se para y
-// hace de pivote; false = curva con las dos ruedas (la interior a VelocidadCurva).
-constexpr bool Corregir45EnPivote = true;
-constexpr int VelocidadCurva = 85;
-// true = al llegar a la línea empujando al rival, sigue empujando en vez de
-// retroceder (solo tras TiempoEmbestida empujándolo de frente).
-constexpr bool ResistirEnBorde = false;
-
-// --- Giros ---
-// true = todos los giros en el sitio (una rueda adelante y otra atrás) se hacen
-// pivotando sobre una llanta: la interior se para y la exterior avanza con la
-// suma de las dos velocidades (gira igual de rápido). La evasión del borde pivota
-// hacia atrás para no acercarse a la línea.
-constexpr bool GirarSobreUnaRueda = true;
-// true = solo pivota en el modo 4; los modos 1-3 giran en el sitio (como secihti)
-constexpr bool PivoteSoloModo4 = true;
-// true = la evasión del borde también pivota (hacia atrás); false = gira en el sitio
-constexpr bool PivoteEnEvasion = false;
-
-// --- Rival visto por un sensor lateral ---
-// true = la rueda de ese lado se frena y la otra gira a VelocidadRuedaPivote;
-// false = giro en el sitio a VelocidadPivoteLateral.
-constexpr bool GiroLateralEnRueda = false;
-constexpr int VelocidadRuedaPivote = 180;
-constexpr int VelocidadPivoteLateral = 220;
-
-// --- Evasión del borde ---
-constexpr int VelocidadRetroceso = 255;
-constexpr int VelocidadGiroEvasion = 75;
-
-// --- Búsqueda del rival ---
-constexpr int VelocidadAvance = 80;
-constexpr int VelocidadGiroBusqueda = 75;
+// 1. Movimientos: cada uno tiene su archivo en movimiento/parametros/ (motores,
+// ataque, giro lateral, evasión del borde, búsqueda, frenado y rutinas de
+// inicio), incluidos al final de este archivo. Los modos de Rumania están en
+// movimiento/modos/.
 
 // 2. Sensores de enemigo
 
@@ -104,82 +51,6 @@ constexpr unsigned long TiempoInicioReglamentario = 5000;
 // round). El piso se calibra al recibir START. 0 = sale al instante.
 // Solo en el robot real: en el simulador los dos robots salen a la vez.
 constexpr unsigned long EsperaInicioCombate = 5000;
-
-// --- Frenado al perder al rival ---
-// Cada rueda frena según su velocidad estimada (la orden filtrada con la
-// inercia TauRuedas). Por debajo de VelocidadMinimaFreno no hace falta frenar.
-constexpr unsigned long TiempoFrenadoRuedas = 80;
-constexpr unsigned long TauRuedas = 80;
-constexpr int VelocidadMinimaFreno = 20;
-// Duración máxima del frenado cuando el rival desaparece en pleno ataque.
-constexpr unsigned long TiempoParoPerdida = 150;
-
-// --- Evasión del borde ---
-// Solo la usan los tests y la simulación como referencia.
-constexpr unsigned long TiempoRetroceso = 180;
-// Retroceso mínimo con los dos sensores en blanco / con uno solo.
-constexpr unsigned long TiempoRetrocesoAmbos = 200;
-constexpr unsigned long TiempoRetrocesoUnSensor = 90;
-constexpr int VelocidadRetrocesoUnSensor = 118;
-// Tiempo viendo negro seguido antes de dejar de retroceder.
-constexpr unsigned long TiempoSeparacionBorde = 90;
-constexpr unsigned long TiempoSeparacionUnSensor = 50;
-// Tope de toda la maniobra (no hay sensores traseros que avisen).
-constexpr unsigned long TiempoMaximoRecuperacionBorde = 700;
-// true = si algún sensor ve al rival durante la evasión, corta la evasión y va
-// contra él. Solo después de separarse de la línea y frenar (mientras gira o en
-// la pausa final), nunca retrocediendo, y como mucho una vez cada
-// EsperaEntreCortesEvasion ms (si no, se queda atrapado en el borde cortando
-// evasiones). La detección debe durar TiempoConfirmarRivalEnEvasion ms seguidos.
-constexpr bool CortarEvasionAlVerRival = true;
-constexpr unsigned long TiempoConfirmarRivalEnEvasion = 20;
-constexpr unsigned long EsperaEntreCortesEvasion = 2000;
-// Si sigue viendo la línea parado más de este tiempo (por ejemplo, al agotar
-// TiempoMaximoRecuperacionBorde), vuelve a retroceder despacio durante
-// TiempoReintentoRetroceso: nunca se queda quieto sobre la línea. No gira: con
-// las ruedas atrás, girar junto al borde barre la pala hacia fuera y se sale.
-constexpr unsigned long TiempoMaxParadoEnLinea = 300;
-constexpr unsigned long TiempoReintentoRetroceso = 150;
-// Pausa con motores parados entre retroceso y giro, y después del giro.
-constexpr unsigned long TiempoFrenado = 80;
-constexpr unsigned long TiempoAsentamientoEvasion = 100;
-// Duración del giro con un sensor / con los dos sensores en blanco.
-constexpr unsigned long TiempoGiroEvasion = 240;
-constexpr unsigned long TiempoGiroEvasionAmbos = 300;
-// Al ver la línea, primero retrocede y después gira. true = si no venía
-// avanzando (velocidad media estimada < AvanceMinimoParaRetroceder, en PWM)
-// gira en el sitio sin retroceder. Desactivado: con las ruedas atrás el robot
-// pivota sobre el eje trasero y, en el robot real, girando junto al borde se sale.
-constexpr bool SalirGirandoSiNoAvanza = false;
-constexpr int AvanceMinimoParaRetroceder = 50;
-// Retroceso extra (ms) si llega a la línea a velocidad máxima (proporcional a la
-// velocidad). Con poco agarre el robot sigue deslizando hacia fuera al frenar y,
-// con el morro fuera del dohyo, los sensores de piso pueden leer "negro".
-constexpr unsigned long RetrocesoExtraAVelocidadMaxima = 300;
-// Tras evadir con un solo sensor, sale despacio durante este tiempo.
-constexpr unsigned long TiempoSalidaSuaveUnSensor = 500;
-constexpr int VelocidadSalidaUnSensor = 90;
-
-// --- Búsqueda en el sitio (PatronBusqueda = 0) ---
-// Ciclo: avanza, pausa, gira, pausa.
-constexpr unsigned long TiempoAvanceBusqueda = 1500;
-constexpr unsigned long TiempoGiroBusqueda = 150;
-constexpr unsigned long TiempoPausaBusqueda = 100;
-// Avance en pulsos: TiempoPulsoAvance empujando y TiempoPausaPulso parado
-// (0 = avance continuo).
-constexpr unsigned long TiempoPulsoAvance = 0;
-constexpr unsigned long TiempoPausaPulso = 40;
-// Zigzag durante el avance: arcos alternos de TiempoArcoZigzag con la rueda
-// interior a PorcentajeArcoZigzag de la exterior (100 = recto).
-constexpr int PorcentajeArcoZigzag = 100;
-constexpr unsigned long TiempoArcoZigzag = 0;
-
-// --- Ataque ---
-// Tiempo de la subida de VelocidadAtaque a VelocidadEmpuje. Vuelve a empezar
-// si pierde al rival de frente o evade el borde.
-constexpr unsigned long TiempoEmbestida = 2500;
-// Giro hacia un rival visto de lado: sigue hasta verlo de frente o este tiempo.
-constexpr unsigned long TiempoMaxGiroLateral = 400;
 
 // 5. Estimador de borde
 // Calcula dónde está el robot dentro del dohyo y limita la velocidad hacia
@@ -240,22 +111,7 @@ constexpr float IncertRumboConfiable = 0.8f;
 // las reglas escritas a mano.
 constexpr bool UsarPoliticaAprendida = false;
 
-// 7. Suavidad de los movimientos
-
-// Búsqueda: 0 = avance y giro en el sitio; 1 = arcos suaves que cambian de
-// lado cada TiempoArcoBusqueda (rueda interior a PorcentajeArcoBusqueda).
-constexpr int PatronBusqueda = 1;
-constexpr int PorcentajeArcoBusqueda = 50;
-constexpr unsigned long TiempoArcoBusqueda = 900;
-// La búsqueda arranca acelerando poco a poco durante este tiempo.
-constexpr unsigned long TiempoArranqueBusqueda = 400;
-// Sin rutina de inicio, todo avance se limita durante este tiempo al empezar.
-constexpr unsigned long TiempoArranqueSuave = 1000;
-// Rampa: cuánto puede subir la orden de cada motor por ms (0 = sin rampa).
-// Bajar la velocidad, frenar y escapar del borde son siempre inmediatos.
-constexpr int RampaPwmPorMs = 1;
-
-// 8. Rutinas de inicio (elegidas con los interruptores DIP)
+// 7. Interruptores DIP (eligen la rutina o el modo de Rumania)
 //   DIP1 DIP2  rutina
 //   off  off   1: espalda con espalda -> media vuelta en el sitio
 //   ON   off   2: lado a lado -> pivota hacia el lado donde un sensor lateral
@@ -271,64 +127,13 @@ constexpr bool DipActivoBajo = true;
 // Rumania: cada uno coloca su robot donde quiere. true = el estimador de borde
 // no supone la posición de salida de los rounds (empieza sin conocerla).
 constexpr bool ColocacionLibre = false;
-// Ronda 4 (salida libre): gira en el sitio hacia el lado de DIP3 a esta velocidad
-// hasta que cualquier sensor vea al rival (entonces gira hacia él y ataca) o
-// hasta TiempoMaxGiroRound4 (algo más de una vuelta); después busca como siempre.
-// Despacio para no pasar de largo al rival entre dos lecturas de los sensores.
-constexpr int VelocidadGiroRound4 = 120;
-constexpr unsigned long TiempoMaxGiroRound4 = 1000;
-// Rondas 1 y 2: giro inicial.
-// Ronda 1 (como en la rama con_control): media vuelta en el sitio a esta velocidad.
-constexpr int VelocidadGiroInicio = 180;
-// Giro de la ronda 2 (el rival está al lado: girar despacio le deja golpear)
-constexpr int VelocidadGiroRound2 = 150;
-constexpr unsigned long TiempoMaxGiroEspalda = 500;
-constexpr unsigned long TiempoMaxGiroLado = 500;
-// Rondas 1 y 2: antes de girar hacia el rival, avanza recto este tiempo a
-// VelocidadEsquiva para apartarse de su embestida y atacarlo de lado
-// (0 = gira enseguida). En el round 1 separa al robot del rival: están pegados
-// y, con las ruedas atrás, al girar las esquinas traseras barren unos 3,6 cm
-// hacia atrás, chocan con él y cortan el giro.
-constexpr unsigned long TiempoEsquivaRound1 = 0;
-constexpr unsigned long TiempoEsquivaRound2 = 0;
-constexpr int VelocidadEsquiva = 160;
-// Ronda 2: true = pivota sobre una rueda hacia el lado del sensor lateral que ve
-// al rival (si lo ve el izquierdo, la rueda izquierda queda parada y empuja la
-// derecha), avanzando a la vez contra él; false = gira en el sitio.
-constexpr bool PivoteRound2 = true;
-constexpr int VelocidadPivoteInicio = 180;
-// Ronda 3: avanza despacio y recto hacia delante hasta que cualquier sensor
-// (también los laterales) vea al rival (con EsperarRound3, tras
-// TiempoAvanceInicio se queda quieto esperándolo). Despacio porque con el
-// reparto de peso del robot, al ir rápido o acelerar de golpe se tuerce.
-// Por encima de ZonaMuertaPwm para que de verdad avance: con 40 (= la zona
-// muerta) casi no se movía. Ronda 3 (11 rivales x 12 factores, sin el de 500 g):
-// 40 gana 51,6 % / cae 37,7 %; 60 56,4 / 33,0; 80 57,8 / 31,2; 100 64,9 / 24,3.
-constexpr int VelocidadAvanceInicio = 100;
-constexpr unsigned long TiempoAvanceInicio = 4000;
-// Ronda 3: al ver al rival por delante, acelera de VelocidadAvanceInicio a
-// VelocidadEmpuje en este tiempo mientras lo ataca (suave para no torcerse).
-constexpr unsigned long TiempoAceleracionRound3 = 2500;
-constexpr bool EsperarRound3 = false;
-constexpr unsigned long TiempoEsperaRound3 = 3000;
-// Rondas 1 y 2: al encontrar al rival embiste durante TiempoEmbestidaInicio,
-// subiendo poco a poco de VelocidadEmbestidaInicio a VelocidadEmbestidaMaxima
-// mientras lo tenga delante; después mantiene VelocidadAtaqueRound12.
-constexpr int VelocidadEmbestidaInicio = 160;
-constexpr int VelocidadEmbestidaMaxima = 160;
-constexpr int VelocidadAtaqueRound12 = 160;
-constexpr unsigned long TiempoEmbestidaInicio = 800;
 
 // --- Protección contra detecciones falsas ---
 // Una detección solo termina una acción si dura ConfirmacionDeteccion ms y
 // nunca antes del tiempo mínimo de esa acción.
 constexpr unsigned long ConfirmacionDeteccion = 5;
-constexpr unsigned long TiempoMinimoGiroEspalda = 80;
-constexpr unsigned long TiempoMinimoGiroLado = 60;
-constexpr unsigned long TiempoMinimoAvanceInicio = 150;
-constexpr unsigned long TiempoMinimoGiroLateral = 60;
 
-// 9. Módulo de arranque
+// 8. Módulo de arranque
 constexpr bool ModuloArranqueActivoAlto = true;
 // RUN debe mantenerse estos ms seguidos para arrancar (descarta pulsos breves
 // del módulo, por ejemplo al pulsar PROG en el control remoto).
@@ -353,6 +158,11 @@ constexpr bool ReiniciarTrasParada = true;
 // pulsar PROG el módulo da pulsos breves de RUN (mientras parpadea su LED): el
 // START que se pulsa después debe empezar un combate nuevo, con su rutina.
 constexpr unsigned long TiempoMinimoParaReanudar = 1000;
+// PROG del control remoto sin STOP antes: el módulo da cortes breves de RUN
+// mientras parpadea, que parecerían interferencias y reanudarían el combate
+// anterior. Un segundo corte antes de este tiempo tras reanudar se toma como
+// PROG: reinicia la placa entera, como si no se hubiera combatido ese round.
+constexpr unsigned long VentanaProgramacionMs = 2000;
 
 // Rutina (1 espalda, 2 lado, 3 frente, 4 salida libre) según DIP1 (bit 0) y DIP2 (bit 1).
 constexpr int rutinaSegunInterruptores(int dip) {
@@ -365,8 +175,13 @@ constexpr int rutinaSegunInterruptores(int dip) {
 constexpr int RutinaForzada = -1;
 constexpr int LadoForzado = 0;
 
-// Si la curva fuera más rápida que el ataque, al corregir hacia un rival visto
-// a 45° la rueda interior iría más rápida y el robot giraría al revés.
-static_assert(VelocidadCurva <= VelocidadAtaque, "VelocidadCurva debe ser <= VelocidadAtaque");
+// Parámetros de cada movimiento, cada uno en su archivo (movimiento/parametros/)
+#include "movimiento/parametros/ParametrosMotores.h"
+#include "movimiento/parametros/ParametrosAtaque.h"
+#include "movimiento/parametros/ParametrosGiroLateral.h"
+#include "movimiento/parametros/ParametrosEvasion.h"
+#include "movimiento/parametros/ParametrosBusqueda.h"
+#include "movimiento/parametros/ParametrosFrenado.h"
+#include "movimiento/parametros/ParametrosRutinasInicio.h"
 
 #endif

@@ -13,9 +13,14 @@ ModoCombate::ModoCombate(PlacaXMotion& placaRef, DriverMotores& motoresRef, Perc
 
 void ModoCombate::iniciar() {
 #if defined(__AVR__)
-    // Tras un reinicio por watchdog, apagarlo para que no vuelva a reiniciar
+    // Tras un reinicio por watchdog (STOP o PROG), apagarlo para que no vuelva a
+    // reiniciar; el aviso de listo parpadea antes de quedarse encendido
+    reiniciadaPorParada = (MCUSR & _BV(WDRF)) != 0;
     MCUSR = 0;
     wdt_disable();
+    if (AvisoListoLed) {
+        TX_RX_LED_INIT;
+    }
 #endif
     placa.inicializarPines();
     motores.deshabilitar();
@@ -33,6 +38,7 @@ void ModoCombate::empezarCombate() {
     // combate anterior (sensores, maniobras, rutina), y en el modo de los DIP
     placa.inicializarPines();
     motores.deshabilitar();
+    avisoListo(false);
     percepcion = Percepcion();
     // Medir el negro con los motores apagados. Los sensores de enemigo NO se
     // calibran: el rival puede estar delante al empezar.
@@ -81,7 +87,9 @@ void ModoCombate::actualizar() {
                 reiniciarPlaca();
                 return;
             }
-            if (combateEmpezado) {
+            if (!combateEmpezado) {
+                actualizarAvisoListo();
+            } else {
                 // Sigue leyendo los sensores: si el robot se desliza hasta la
                 // línea durante una parada corta, al reanudar lo sabrá (la
                 // detección de línea se mantiene aunque el morro quede fuera)
@@ -115,7 +123,9 @@ void ModoCombate::actualizar() {
 }
 
 void ModoCombate::reiniciarPlaca() {
+    // Para todo: motores apagados y aviso apagado hasta que vuelva a estar lista
     motores.deshabilitar();
+    avisoListo(false);
 #if defined(__AVR__)
     // El watchdog reinicia el microcontrolador en 15 ms: se borra toda la RAM
     // (estado de sensores, maniobras, estrategia...) como al encenderlo
@@ -126,6 +136,31 @@ void ModoCombate::reiniciarPlaca() {
     // En el simulador: el siguiente RUN empieza un combate nuevo
     combateEmpezado = false;
 #endif
+}
+
+void ModoCombate::avisoListo(bool encendido) {
+#if defined(__AVR__)
+    if (!AvisoListoLed) {
+        return;
+    }
+    if (encendido) {
+        TXLED1;
+        RXLED1;
+    } else {
+        TXLED0;
+        RXLED0;
+    }
+#else
+    (void)encendido;
+#endif
+}
+
+void ModoCombate::actualizarAvisoListo() {
+    // Tras un reinicio por STOP o PROG parpadea ParpadeosListo veces; después,
+    // encendido fijo hasta el START
+    const unsigned long t = millis();
+    const bool parpadeando = reiniciadaPorParada && t < 2UL * ParpadeosListo * PeriodoParpadeoListo;
+    avisoListo(!parpadeando || (t / PeriodoParpadeoListo) % 2 == 0);
 }
 
 void ModoCombate::enviarTelemetria() {

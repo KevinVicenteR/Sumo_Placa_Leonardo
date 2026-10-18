@@ -158,6 +158,13 @@ constexpr unsigned long TiempoMinimoParaReanudar = 1000;
 // anterior. Un segundo corte antes de este tiempo tras reanudar se toma como
 // PROG: reinicia la placa entera, como si no se hubiera combatido ese round.
 constexpr unsigned long VentanaProgramacionMs = 2000;
+// Aviso de "listo" con los LED RX y TX de la placa (no ocupan pines): encendidos
+// mientras espera el START con todo reiniciado. Tras un reinicio por STOP o PROG,
+// antes parpadean ParpadeosListo veces (PeriodoParpadeoListo ms encendidos y
+// otros tantos apagados). Se apagan al empezar el combate. false = sin aviso.
+constexpr bool AvisoListoLed = true;
+constexpr int ParpadeosListo = 3;
+constexpr unsigned long PeriodoParpadeoListo = 150;
 
 // Rutina (1 espalda, 2 lado, 3 frente, 4 salida libre) según DIP1 (bit 0) y DIP2 (bit 1).
 constexpr int rutinaSegunInterruptores(int dip) {

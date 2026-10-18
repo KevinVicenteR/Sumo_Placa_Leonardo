@@ -29,7 +29,7 @@ Salida (simulacion/resultados/):
   entrenamiento.html  tabla y curva del error, por rival y por modo
   candidatos_jerarquica/  los pesos de cada validación (formato --red)
 
-  python3 simulacion/entrenar_jerarquica.py --horas 3.5
+  python3 -m simulacion.python.entrenar_jerarquica --horas 3.5
 """
 import argparse
 import csv
@@ -42,13 +42,12 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(__file__))
-import simular
-import bateria as B
-import redes as R
-from entrenar_redes import combatir
+from . import simular
+from . import bateria as B
+from . import redes as R
+from .entrenar_redes import combatir
 
-RESULTADOS = Path(__file__).parent / "resultados"
+RESULTADOS = Path(__file__).resolve().parents[1] / "resultados"
 CSV = RESULTADOS / "entrenamiento.csv"
 HTML = RESULTADOS / "entrenamiento.html"
 CANDIDATOS = RESULTADOS / "candidatos_jerarquica"

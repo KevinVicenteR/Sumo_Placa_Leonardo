@@ -11,8 +11,8 @@ la estrategia escrita a mano.
 Al acabar escribe include/estrategia/TablaPolitica.h (la mejor acción de cada estado) y
 simulacion/politica_q.txt (la tabla Q, para seguir entrenando con --continuar).
 
-  python3 simulacion/entrenar_politica.py --rondas 12 --n 40
-  python3 simulacion/simular.py --param UsarPoliticaAprendida=true   # evaluar
+  python3 -m simulacion.python.entrenar_politica --rondas 12 --n 40
+  python3 -m simulacion.python.simular --param UsarPoliticaAprendida=true   # evaluar
 """
 import argparse
 import os
@@ -22,8 +22,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(__file__))
-import simular
+from . import simular
 
 RAIZ = simular.RAIZ
 NE, NA = 64, 8
@@ -88,7 +87,7 @@ def guardar_tabla(Q, N, margen=0.0, visitas_min=0):
         mejor.append(b if Q[e][b] - Q[e][m] >= margen and N[e][b] >= visitas_min else m)
     filas = "\n".join("    " + ", ".join(str(v) for v in mejor[i:i + 8]) + "," for i in range(0, NE, 8))
     cambios = sum(1 for e in range(NE) if mejor[e] != accion_manual(e))
-    (RAIZ / "include" / "estrategia" / "TablaPolitica.h").write_text(f"""#ifndef TABLA_POLITICA_H
+    (RAIZ / "firmware" / "include" / "estrategia" / "TablaPolitica.h").write_text(f"""#ifndef TABLA_POLITICA_H
 #define TABLA_POLITICA_H
 
 #include <stdint.h>
@@ -115,8 +114,8 @@ def main():
     ap.add_argument("--visitas-min", type=int, default=0)
     a = ap.parse_args()
 
-    ruta_q = RAIZ / "simulacion" / "politica_q.txt"
-    ruta_n = RAIZ / "simulacion" / "politica_n.txt"
+    ruta_q = RAIZ / "simulacion" / "resultados" / "politica_q.txt"
+    ruta_n = RAIZ / "simulacion" / "resultados" / "politica_n.txt"
     if a.continuar and ruta_q.exists():
         Q = [list(map(float, l.split())) for l in ruta_q.read_text().splitlines()]
         N = [list(map(float, l.split())) for l in ruta_n.read_text().splitlines()]

@@ -10,7 +10,12 @@
 # Simulación
 simulacion/build
 __pycache__
-simulacion/web/sim.wasm
-simulacion/web/dohyo.html
-simulacion/politica_q.txt
-simulacion/politica_n.txt
+simulacion/resultados/politica_q.txt
+simulacion/resultados/politica_n.txt
+
+.venv/
+web/node_modules/
+web/dist/
+web/public/*.wasm
+web/*.tsbuildinfo
+.cache/

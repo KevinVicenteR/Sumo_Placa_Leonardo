@@ -2,10 +2,10 @@
 """Compila el firmware con el Arduino simulado y ejecuta lotes de combates.
 
 Ejemplos:
-  python3 simulacion/simular.py                       # resumen de los 3 escenarios
-  python3 simulacion/simular.py --vmax 1.2 --n 300
-  python3 simulacion/simular.py --param TiempoRetroceso=150 --param VelocidadAvance=120
-  python3 simulacion/simular.py --tray simulacion/salida  # guarda trayectorias de ejemplo
+  python3 -m simulacion.python.simular                       # resumen de los 3 escenarios
+  python3 -m simulacion.python.simular --vmax 1.2 --n 300
+  python3 -m simulacion.python.simular --param TiempoRetroceso=150 --param VelocidadAvance=120
+  python3 -m simulacion.python.simular --tray simulacion/salida  # guarda trayectorias de ejemplo
 """
 
 import argparse
@@ -20,9 +20,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parent.parent
+RAIZ = Path(__file__).resolve().parents[2]
 BUILD = RAIZ / "simulacion" / "build"
-FUENTES = sorted((RAIZ / "src").rglob("*.cpp")) + [RAIZ / "simulacion" / "sim.cpp"]
+FUENTES = sorted((RAIZ / "firmware" / "src").rglob("*.cpp")) + [RAIZ / "simulacion" / "nucleo" / "sim.cpp"]
 MODOS = ["ninguno", "estatico", "errante", "agresivo"]
 
 
@@ -33,7 +33,7 @@ def compilar(params: dict, banderas: tuple = ()) -> Path:
     binario = BUILD / f"sim_{clave}"
     if inc.exists():
         shutil.rmtree(inc)
-    shutil.copytree(RAIZ / "include", inc)
+    shutil.copytree(RAIZ / "firmware" / "include", inc)
 
     for nombre, valor in params.items():
         total = 0
@@ -47,7 +47,7 @@ def compilar(params: dict, banderas: tuple = ()) -> Path:
             sys.exit(f"Parámetro desconocido o duplicado: {nombre}")
 
     cmd = ["c++", "-std=c++17", "-O2", "-w", *banderas,
-           f"-I{inc}", f"-I{RAIZ / 'simulacion' / 'support'}",
+           f"-I{inc}", f"-I{RAIZ / 'simulacion' / 'nucleo' / 'support'}",
            *map(str, FUENTES), "-o", str(binario)]
     subprocess.run(cmd, check=True)
     return binario

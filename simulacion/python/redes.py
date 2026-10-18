@@ -14,7 +14,7 @@ oculta (sus pesos y al final su sesgo) y después una fila por salida.
 import re
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parent.parent
+RAIZ = Path(__file__).resolve().parents[2]
 
 ENTRADAS_LOGICA = ["Fr", "45I", "45D", "LatI", "LatD", "Lado", "Borde", "Perd", "Emp",
                    "BordeDelante", "Esquivando", "Rutina"]
@@ -33,8 +33,8 @@ NEURONA_BUSQUEDA = ACCIONES.index("Busqueda")
 # (las dos primeras partes son exactamente la red plana de antes).
 SUBREDES = 3
 
-TABLA_LOGICA = RAIZ / "include" / "estrategia" / "TablaRedLogica.h"
-TABLA_CONTROL = RAIZ / "include" / "movimiento" / "TablaRedControl.h"
+TABLA_LOGICA = RAIZ / "firmware" / "include" / "estrategia" / "TablaRedLogica.h"
+TABLA_CONTROL = RAIZ / "firmware" / "include" / "movimiento" / "TablaRedControl.h"
 
 
 def num_parametros(forma):

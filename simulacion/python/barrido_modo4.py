@@ -2,14 +2,14 @@
 """Compara variantes de la táctica del modo 4 solo en las casillas RU4 (de
 espaldas) de la batería de Rumania, con todos los rivales y factores.
 
-  python3 simulacion/barrido_modo4.py --n 20 TacticaModo4=6 TacticaModo4=2 "TacticaModo4=6,TiempoRetrocesoLibre=120"
+  python3 -m simulacion.python.barrido_modo4 --n 20 TacticaModo4=6 TacticaModo4=2 "TacticaModo4=6,TiempoRetrocesoLibre=120"
 """
 import argparse
 import os
 from concurrent.futures import ThreadPoolExecutor
 
-import bateria as B
-import simular
+from . import bateria as B
+from . import simular
 
 
 def correr(binario, n, casilla):

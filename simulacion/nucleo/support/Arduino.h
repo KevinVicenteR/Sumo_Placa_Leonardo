@@ -1,7 +1,7 @@
 #ifndef ARDUINO_H
 #define ARDUINO_H
 
-// Arduino simulado: las funciones las implementa simulacion/sim.cpp
+// Arduino simulado: las funciones las implementa simulacion/nucleo/sim.cpp
 
 #include <stdint.h>
 #include <stdlib.h>

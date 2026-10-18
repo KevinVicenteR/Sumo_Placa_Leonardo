@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """Compara órdenes de los arranques 1–3 con un ref Git (HEAD por defecto).
 
-python3 simulacion/verificar_arranques.py --referencia HEAD --salida informe.json
+python3 -m simulacion.python.verificar_arranques --referencia HEAD --salida informe.json
 No usa el robot ni escribe en la referencia. Compara 30 escenarios de sensores,
 ambos lados, cinco patrones por modo y dos binarios independientes.
 """
 import argparse, collections, csv, io, json, subprocess, tempfile
 from pathlib import Path
-RAIZ=Path(__file__).resolve().parent.parent
+RAIZ=Path(__file__).resolve().parents[2]
 
 def compilar(raiz, carpeta, nombre):
-    fuentes=sorted((raiz/'src/estrategia').glob('*.cpp'))+sorted((raiz/'src/movimiento').glob('*.cpp'))
+    firmware = raiz/'firmware' if (raiz/'firmware').exists() else raiz
+    fuentes=sorted((firmware/'src/estrategia').glob('*.cpp'))+sorted((firmware/'src/movimiento').glob('*.cpp'))
     fuentes += [raiz/'test/support/arduino_stubs.cpp']
-    flags=['-DPORT_MODO4'] if (raiz/'include/estrategia/EstrategiaCompetencia.h').exists() else []
+    flags=['-DPORT_MODO4'] if (firmware/'include/estrategia/EstrategiaCompetencia.h').exists() else []
     exe=carpeta/nombre
-    subprocess.run(['c++','-std=c++17','-O2',*flags,f'-I{raiz}/include',f'-I{raiz}/test/support',
-                    str(RAIZ/'simulacion/verificar_arranques.cpp'),*map(str,fuentes),'-o',str(exe)],check=True)
+    subprocess.run(['c++','-std=c++17','-O2',*flags,f'-I{firmware}/include',f'-I{raiz}/test/support',
+                    str(RAIZ/'test/simulacion/verificar_arranques.cpp'),*map(str,fuentes),'-o',str(exe)],check=True)
     datos=subprocess.check_output([str(exe)],text=True)
     inicios=[];terminados=set()
     for fila in csv.reader(io.StringIO(datos)):
@@ -31,7 +32,7 @@ def main():
     sha=subprocess.check_output(['git','rev-parse',args.referencia],cwd=RAIZ,text=True).strip()
     with tempfile.TemporaryDirectory() as tmp:
         carpeta=Path(tmp);base=carpeta/'base';base.mkdir()
-        archivo=subprocess.check_output(['git','archive',sha,'include','src','test/support'],cwd=RAIZ)
+        archivo=subprocess.check_output(['git','archive',sha,*( ['firmware','test/support'] if subprocess.call(['git','cat-file','-e',sha+':firmware'],cwd=RAIZ,stderr=subprocess.DEVNULL)==0 else ['include','src','test/support'])],cwd=RAIZ)
         subprocess.run(['tar','-x','-C',str(base)],input=archivo,check=True)
         antes=compilar(base,carpeta,'antes');despues=compilar(RAIZ,carpeta,'despues')
     if antes != despues:

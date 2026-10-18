@@ -2,17 +2,16 @@
 """Lista los combates de la batería en los que el robot se cae solo (sin que el
 rival lo empuje), para estudiarlos con --tray.
 
-  python3 simulacion/caidas_propias.py --semilla 1000 --n 8 [--param Nombre=valor ...]
+  python3 -m simulacion.python.caidas_propias --semilla 1000 --n 8 [--param Nombre=valor ...]
 """
 import argparse
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-sys.path.insert(0, os.path.dirname(__file__))
-import simular
-import bateria as B
-import optimizar as O
+from . import simular
+from . import bateria as B
+from . import optimizar as O
 
 
 def main():

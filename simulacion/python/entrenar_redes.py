@@ -21,8 +21,8 @@ entera) y guarda candidatos por caídas propias, caídas globales y victorias.
 Filtra primero las restricciones para que un candidato inválido no oculte otro. Al acabar,
 solo si confirma la mejora de seguridad en semillas nuevas, reescribe TablaRedLogica.h y TablaRedControl.h.
 
-  python3 simulacion/entrenar_redes.py --generaciones 150
-  python3 simulacion/entrenar_redes.py --continuar     # sigue desde redes_mejor.txt
+  python3 -m simulacion.python.entrenar_redes --generaciones 150
+  python3 -m simulacion.python.entrenar_redes --continuar     # sigue desde redes_mejor.txt
 """
 import argparse
 import math
@@ -34,17 +34,16 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(__file__))
-import simular
-import bateria as B
-import redes as R
+from . import simular
+from . import bateria as B
+from . import redes as R
 
 RIVALES_OBJETIVO = ["quieto", "deambula", "embiste", "flanquea"]
 PESO_RESTO = 1.0
 PENALIZACION_CAIDA = 20
 PENALIZACION_PROPIA = 60
-GUARDADO = Path(__file__).parent / "redes_mejor.txt"
-CANDIDATO = Path(__file__).parent / "redes_candidato.txt"
+GUARDADO = Path(__file__).resolve().parents[1] / "resultados" / "redes_mejor.txt"
+CANDIDATO = Path(__file__).resolve().parents[1] / "resultados" / "redes_candidato.txt"
 
 
 def casillas_objetivo():
@@ -165,7 +164,7 @@ def elegir_candidato(evaluaciones, obj0, total0, mejor_obj, mejor_total):
     return max(validas, key=lambda x: prioridad_validacion(x[1], x[2])) if validas else None
 
 
-PARAMETROS_MODO4 = simular.RAIZ / "include" / "ParametrosModo4.h"
+PARAMETROS_MODO4 = simular.RAIZ / "firmware" / "include" / "ParametrosModo4.h"
 
 
 def parametros_con_modos(modos):

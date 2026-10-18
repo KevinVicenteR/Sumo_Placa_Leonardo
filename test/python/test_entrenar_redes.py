@@ -1,7 +1,7 @@
 """Regresiones de selección: una victoria extra no justifica más caídas."""
 import unittest
-import redes as R
-from entrenar_redes import mejora_segura, prioridad_validacion, puntuar, elegir_candidato
+from simulacion.python import redes as R
+from simulacion.python.entrenar_redes import mejora_segura, prioridad_validacion, puntuar, elegir_candidato
 
 
 class SeleccionSegura(unittest.TestCase):
@@ -36,7 +36,10 @@ class SeleccionSegura(unittest.TestCase):
         self.assertEqual(elegida, mejora_aceptable)
 
     def test_propuesta_activa_esquiva_solo_tras_frontal_persistente(self):
-        p = R.propuesta_esquiva(R.leer_tabla(R.TABLA_LOGICA), 96)
+        # Una hipótesis se prueba con una red controlada: los pesos entrenados
+        # actuales pueden favorecer otras acciones y no garantizan esta salida.
+        plana = [0] * R.num_parametros(R.LOGICA)
+        p = R.propuesta_esquiva(R.a_jerarquica(plana), 96)
         x = [1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0]
         self.assertIn(R.accion(p, x), (8, 9))
         x[8] = 0

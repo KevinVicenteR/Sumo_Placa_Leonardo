@@ -3,7 +3,7 @@
 llegó el rival, qué orden llevaban los motores, si nos hacían retroceder y en
 qué momento del combate.
 
-  python3 simulacion/diagnostico_caidas.py --muestras 10000 [--red pesos.red] [--json salida.json]
+  python3 -m simulacion.python.diagnostico_caidas --muestras 10000 [--red pesos.red] [--json salida.json]
 """
 import argparse
 import json
@@ -12,8 +12,8 @@ from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-import bateria as B
-import simular
+from . import bateria as B
+from . import simular
 
 
 def lado(a):

@@ -26,7 +26,10 @@ constexpr bool ResistirEnBorde = false;
 
 // Tiempo de la subida de VelocidadAtaque a VelocidadEmpuje. Vuelve a empezar
 // si pierde al rival de frente o evade el borde.
-constexpr unsigned long TiempoEmbestida = 2500;
+// X3 (400 rpm): 0 = a fondo desde el primer momento. Con 2500 empujaba flojo
+// demasiado rato y, con el rival casi fuera, veía la línea y retrocedía
+// (simulador, 13 200 combates: gana 50 % / cae 34 % frente a 37 / 37).
+constexpr unsigned long TiempoEmbestida = 0;
 
 // Si la curva fuera más rápida que el ataque, al corregir hacia un rival visto
 // a 45° la rueda interior iría más rápida y el robot giraría al revés.

@@ -22,6 +22,10 @@ public:
     }
 };
 
+// Velocidad del primer ciclo de ataque: sin subida gradual (TiempoEmbestida = 0)
+// va a fondo desde el principio
+static const int AtaqueInicial = TiempoEmbestida == 0 ? VelocidadEmpuje : VelocidadAtaque;
+
 // Rueda del lado del enemigo cuando lo ve solo un sensor de 45°
 static int interior45(int ataque) {
     return Corregir45EnPivote ? 0 : VelocidadCurva * ataque / VelocidadAtaque;
@@ -107,7 +111,7 @@ static void assertAccionSimple(TipoAccion accion, int izq, int der) {
 }
 
 void test_acciones_simples_velocidades_correctas(void) {
-    assertAccionSimple(TipoAccion::AtaqueFrontal, VelocidadAtaque, VelocidadAtaque);
+    assertAccionSimple(TipoAccion::AtaqueFrontal, AtaqueInicial, AtaqueInicial);
     // Visto solo a 45°: pivota sobre la rueda de ese lado (o curva)
     assertAccionSimple(TipoAccion::CorregirIzq, interior45(VelocidadAtaque), VelocidadAtaque);
     assertAccionSimple(TipoAccion::CorregirDer, VelocidadAtaque, interior45(VelocidadAtaque));
@@ -194,7 +198,7 @@ void test_paro_se_cancela_si_vuelve_a_ver_al_enemigo(void) {
     const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
     c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
     c.ejecutar({TipoAccion::AtaqueFrontal}, m, t + 10);
-    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+    assertMovimiento(m, AtaqueInicial, AtaqueInicial);
 }
 
 static void assertGiroLateral(MotorMock& m, int sentido) {
@@ -222,7 +226,7 @@ void test_giro_lateral_sigue_hasta_ver_al_enemigo_de_frente(void) {
     c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1150);
     assertGiroLateral(m, -1);
     c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1150 + ConfirmacionDeteccion);
-    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+    assertMovimiento(m, AtaqueInicial, AtaqueInicial);
 }
 
 void test_giro_lateral_ignora_un_frontal_antes_del_giro_minimo(void) {
@@ -255,11 +259,17 @@ void test_giro_lateral_termina_por_tiempo(void) {
 
 
 void test_ajuste_centra_al_enemigo_sin_dejar_de_atacar(void) {
+    if (TiempoEmbestida == 0) {
+        TEST_IGNORE_MESSAGE("sin subida gradual: TiempoEmbestida = 0");
+    }
     assertAccionSimple(TipoAccion::AjusteIzq, VelocidadAtaque * PorcentajeAjuste / 100, VelocidadAtaque);
     assertAccionSimple(TipoAccion::AjusteDer, VelocidadAtaque, VelocidadAtaque * PorcentajeAjuste / 100);
 }
 
 void test_se_acomoda_y_luego_va_con_todo(void) {
+    if (TiempoEmbestida == 0) {
+        TEST_IGNORE_MESSAGE("sin subida gradual: TiempoEmbestida = 0");
+    }
     ControlMovimiento c(CLASICO);
     MotorMock m;
 
@@ -283,6 +293,9 @@ void test_se_acomoda_y_luego_va_con_todo(void) {
 }
 
 void test_el_empuje_empieza_de_cero_tras_perder_al_enemigo(void) {
+    if (TiempoEmbestida == 0) {
+        TEST_IGNORE_MESSAGE("sin subida gradual: TiempoEmbestida = 0");
+    }
     ControlMovimiento c(CLASICO);
     MotorMock m;
 
@@ -338,6 +351,9 @@ void test_cerca_del_borde_limita_tambien_el_ataque(void) {
 
 
 void test_ataque_sube_gradualmente_y_borde_lo_interrumpe() {
+    if (TiempoEmbestida == 0) {
+        TEST_IGNORE_MESSAGE("sin subida gradual: TiempoEmbestida = 0");
+    }
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.ejecutar({TipoAccion::AtaqueFrontal}, m, 1000);

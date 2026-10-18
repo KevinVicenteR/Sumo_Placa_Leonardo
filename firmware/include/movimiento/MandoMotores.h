@@ -51,7 +51,11 @@ public:
 
     LimitesAvance limites;
 
+    // Este ciclo los giros en el sitio se convierten en pivote (GirarSobreUnaRueda)
+    void fijarPivote(bool activo) { pivote = activo; }
+
 private:
+    bool pivote = GirarSobreUnaRueda;
     int conRampa(int actual, int objetivo) const;
     void estimarVelocidad(unsigned long ahora);
 

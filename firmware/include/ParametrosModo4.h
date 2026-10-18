@@ -9,14 +9,18 @@ constexpr bool UsarRedControl = true;
 constexpr bool UsarPIDRed = false;
 // Selección según pruebas por modo (25 200 combates a 77 cm). Las redes actúan
 // en los modos 1 y 3 solo después de su rutina de inicio; el modo 3 va de frente.
-constexpr bool UsarRedLogicaModo1 = true;
-constexpr bool UsarRedLogicaModo3 = true;
-constexpr bool UsarRedControlModo1 = true;
+// pesos_neuronales_rutina3v2: los modos 1-3 se comportan como en la rama
+// secihti (estrategia clásica todo el combate, giros en el sitio); las redes,
+// el control por red y el pivote solo actúan en el modo 4.
+constexpr bool MejorasEnModos1a3 = false;
+constexpr bool UsarRedLogicaModo1 = MejorasEnModos1a3;
+constexpr bool UsarRedLogicaModo3 = MejorasEnModos1a3;
+constexpr bool UsarRedControlModo1 = MejorasEnModos1a3;
 // Modo 3: después del arranque va de frente contra el rival: la red de lógica no
 // puede esquivar (si lo intenta, decide la estrategia clásica) y la red de
 // control solo ajusta las ruedas mientras ataca. Sin la red de control el modo 3
 // ganaba menos y se caía más (25 200 combates: 41,1/40,2 % frente a 50,1/31,4 %).
-constexpr bool UsarRedControlModo3 = true;
+constexpr bool UsarRedControlModo3 = MejorasEnModos1a3;
 constexpr bool EsquivarModo3 = false;
 // Rumania (RoboChallenge 4.1): cada robot detrás de su línea de salida y dentro
 // de su franja de 10 cm; con 10 x 10 cm solo caben colocaciones rectas. Cada

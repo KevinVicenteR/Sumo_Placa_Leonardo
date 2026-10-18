@@ -98,15 +98,10 @@ void ModoCombate::actualizar() {
         }
     }
 
-    // 2. Un ciclo de combate (midiendo su duración si hay telemetría)
-#if defined(MONITOREO_COMBATE)
-    const unsigned long inicioCiclo = micros();
-#endif
+    // 2. Un ciclo de combate
     robot.actualizar();
     cajaNegra.observar(robot.ultimasLecturas(), controlMovimiento.evasiones(), millis());
 #if defined(MONITOREO_COMBATE)
-    const unsigned long ciclo = micros() - inicioCiclo;
-    if (ciclo > cicloMaximo) cicloMaximo = ciclo;
     enviarTelemetria();
 #endif
 }
@@ -128,7 +123,7 @@ void ModoCombate::reiniciarPlaca() {
 void ModoCombate::enviarTelemetria() {
 #if defined(MONITOREO_COMBATE)
     // Una línea cada 100 ms, solo si cabe en el búfer (no bloquear el combate):
-    // P=piso izq,der  M=orden de motores izq,der  ENE=sensores 45I,F,45D  US=ciclo máximo
+    // P=piso izq,der  M=orden de motores izq,der  ENE=sensores 45I,F,45D
     if (Serial && millis() - ultimaTraza >= 100 && Serial.availableForWrite() >= 60) {
         ultimaTraza = millis();
         Serial.print(F("P=")); Serial.print(analogRead(S_PISO_IZQ));
@@ -138,9 +133,7 @@ void ModoCombate::enviarTelemetria() {
         Serial.print(F(" ENE="));
         Serial.print(digitalRead(S_FRONT_IZQ));
         Serial.print(digitalRead(S_FRONT_CEN));
-        Serial.print(digitalRead(S_FRONT_DER));
-        Serial.print(F(" US=")); Serial.println(cicloMaximo);
-        cicloMaximo = 0;
+        Serial.println(digitalRead(S_FRONT_DER));
     }
 #endif
 }

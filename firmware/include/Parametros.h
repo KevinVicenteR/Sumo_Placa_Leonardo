@@ -39,6 +39,8 @@ constexpr bool ResistirEnBorde = false;
 // suma de las dos velocidades (gira igual de rápido). La evasión del borde pivota
 // hacia atrás para no acercarse a la línea.
 constexpr bool GirarSobreUnaRueda = true;
+// true = solo pivota en el modo 4; los modos 1-3 giran en el sitio (como secihti)
+constexpr bool PivoteSoloModo4 = true;
 // true = la evasión del borde también pivota (hacia atrás); false = gira en el sitio
 constexpr bool PivoteEnEvasion = false;
 
@@ -192,8 +194,8 @@ constexpr float RadioSalidaEstimado = 0.15f;
 // sumo a IncertSalidaCentro), round 3 a RadioSalidaRound3 del centro mirándolo
 // (con IncertSalidaRound3 de error y IncertRumboRound3 rad de rumbo).
 constexpr float IncertSalidaCentro = 0.06f;
-constexpr float RadioSalidaRound3 = 0.295f;
-constexpr float IncertSalidaRound3 = 0.03f;
+constexpr float RadioSalidaRound3 = 0.33f;
+constexpr float IncertSalidaRound3 = 0.06f;
 constexpr float IncertRumboRound3 = 0.3f;
 // Cuánto crece la incertidumbre: fracción de lo recorrido, de lo girado y
 // deriva del rumbo (rad) por metro.

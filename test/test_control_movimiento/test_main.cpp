@@ -34,8 +34,9 @@ static void assertMotores(MotorMock& m, int izq, int der) {
 
 // Un giro en el sitio se convierte en pivote sobre una llanta (GirarSobreUnaRueda):
 // la rueda interior se para y la exterior va a la mayor de las dos velocidades
-static void assertMovimiento(MotorMock& m, int izq, int der) {
-    if (GirarSobreUnaRueda && (long)izq * der < 0) {
+// modo4 = el robot está en el modo 4 (con PivoteSoloModo4, el único que pivota)
+static void assertMovimiento(MotorMock& m, int izq, int der, bool modo4 = false) {
+    if (GirarSobreUnaRueda && (!PivoteSoloModo4 || modo4) && (long)izq * der < 0) {
         const int v = abs(izq) > abs(der) ? abs(izq) : abs(der);
         izq = izq < 0 ? 0 : v;
         der = der < 0 ? 0 : v;
@@ -713,7 +714,7 @@ void test_rutina_libre_gira_hasta_ver_al_rival(void) {
     if (TacticaModo4 == 0) {
         // Sin ver nada: gira en el sitio hacia el lado de DIP3
         c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-        assertMovimiento(m, -VelocidadGiroRound4, VelocidadGiroRound4);
+        assertMovimiento(m, -VelocidadGiroRound4, VelocidadGiroRound4, true);
         TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
         // Un lateral lo ve: termina la rutina y gira hacia él
         c.ejecutar({TipoAccion::DefensaDer}, m, 1100);
@@ -731,10 +732,10 @@ void test_rutina_libre_gira_hasta_ver_al_rival(void) {
     TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
     // Tras el arco, sin verlo: giro rápido en el sitio hacia dentro (derecha)
     c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoArcoLibre);
-    assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
+    assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica, true);
     // Un lateral lo ve: gira hacia ese lado sin terminar la rutina
     c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoArcoLibre + 10);
-    assertMovimiento(m, -VelocidadGiroTactica, VelocidadGiroTactica);
+    assertMovimiento(m, -VelocidadGiroTactica, VelocidadGiroTactica, true);
     TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
     // El frontal lo ve (confirmado): termina la rutina y ataca a fondo
     const unsigned long t = 1000 + TiempoArcoLibre + 20;
@@ -919,7 +920,7 @@ void test_tactica_arco_y_giro_hacia_dentro(void) {
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
     assertMovimiento(m, VelocidadTactica, VelocidadInteriorArcoLibre);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoArcoLibre);
-    assertMovimiento(m, -VelocidadGiroTactica, VelocidadGiroTactica);
+    assertMovimiento(m, -VelocidadGiroTactica, VelocidadGiroTactica, true);
     comprobarAtaqueAlVerlo(c, m, modo, 1000 + TiempoArcoLibre + 10);
 }
 

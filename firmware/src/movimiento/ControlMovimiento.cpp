@@ -7,6 +7,7 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
     // --- 1. Preparar el ciclo: actualizar el estado de cada maniobra ---
     evasion.actualizarSalidaSuave(ahora);
     mando.nuevoCiclo(ahora, rutina.elegida());
+    mando.fijarPivote(!PivoteSoloModo4 || competencia == 4);
     busqueda.recordarLadoEnemigo(decision.tipo);
     ataque.actualizarContacto(decision, evasion.activa(), ahora);
     if (UsarEstimadorBorde) {

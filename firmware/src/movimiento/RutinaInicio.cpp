@@ -200,8 +200,9 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
     }
     int sentido = lado;
     if (usaTactica(TacticaAgresiva) && tactica == TacticaAgresiva) {
-        // A fondo: recto si no lo ve, giro a fondo hacia el sensor que lo ve
-        mando.mover(motor, visto == 0 ? v : visto * v, visto == 0 ? v : -visto * v, true);
+        // Recto sin verlo (VelocidadTacticaSinVer), giro a fondo hacia el sensor que lo ve
+        const int vs = VelocidadTacticaSinVer;
+        mando.mover(motor, visto == 0 ? vs : visto * v, visto == 0 ? vs : -visto * v, true);
         return true;
     }
     if (usaTactica(TacticaFinta) && tactica == TacticaFinta && visto == 0) {
@@ -224,8 +225,8 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
         if (visto != 0) {
             // Intercepta: avanza en arco hacia el lado en que lo ve
             ultimoVisto = visto;
-            const int interior = VelocidadInteriorPrediccion;
-            mando.mover(motor, visto > 0 ? v : interior, visto > 0 ? interior : v, true);
+            const int interior = VelocidadInteriorPrediccion, vs = VelocidadTacticaSinVer;
+            mando.mover(motor, visto > 0 ? vs : interior, visto > 0 ? interior : vs, true);
             return true;
         }
         if (ultimoVisto != 0) sentido = ultimoVisto;              // hacia donde se fue
@@ -235,7 +236,9 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
         return true;
     }
     if (espera && visto == 0) {
-        mando.mover(motor, 0, 0, true);                           // quieto hasta verlo
+        // Quieto un rato esperándolo; si no aparece, avanza despacio a buscarlo
+        const int vel = t < TiempoQuietoTactica ? 0 : VelocidadAvanceEspera;
+        mando.mover(motor, vel, vel, true);
         return true;
     }
     if (tactica == TacticaPivote && visto == 0) {

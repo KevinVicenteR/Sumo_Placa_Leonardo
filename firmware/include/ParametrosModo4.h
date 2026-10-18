@@ -47,6 +47,13 @@ constexpr int TacticaAgresiva = 8, TacticaDefensiva = 9, TacticaFinta = 10, Tact
 constexpr unsigned long TiempoRecibirDefensa = 150;
 constexpr unsigned long TiempoFinta = 100;
 constexpr int VelocidadInteriorPrediccion = 60;
+// Sin ver al rival las tácticas no van a fondo: a 255 el robot real no llega a
+// frenar al ver la línea y se sale solo. A fondo solo al atacar con el frontal.
+constexpr int VelocidadTacticaSinVer = 150;
+// Las que esperan (contragolpe, defensiva): quietas como mucho este tiempo; si
+// no lo ven, avanzan despacio (VelocidadAvanceEspera) en vez de seguir paradas.
+constexpr unsigned long TiempoQuietoTactica = 800;
+constexpr int VelocidadAvanceEspera = 100;
 // Elegidas con el simulador (colocación estricta del reglamento, todos los
 // rivales y factores; % de victorias / % de caídas):
 //   modo 1 arco         54,8 / 24,9 (rutina de siempre 41,0 / 39,5)

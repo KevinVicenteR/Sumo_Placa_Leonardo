@@ -981,13 +981,28 @@ void test_tactica_agresiva_carga_y_gira_a_fondo(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(modo, 1);
-    // Sin verlo: recto a fondo
+    // Sin verlo: recto a VelocidadTacticaSinVer (a fondo se saldría solo)
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, VelocidadTactica, VelocidadTactica);
+    assertMovimiento(m, VelocidadTacticaSinVer, VelocidadTacticaSinVer);
     // Lo ve el lateral izquierdo: gira a fondo hacia él
     c.ejecutar({TipoAccion::DefensaIzq}, m, 1010);
     assertMovimiento(m, -VelocidadTactica, VelocidadTactica);
     comprobarAtaqueAlVerlo(c, m, modo, 1020);
+}
+
+void test_tactica_que_espera_avanza_lento_si_no_lo_ve(void) {
+    int modo = modoConTactica(TacticaDefensiva);
+    if (modo == 0) modo = modoConTactica(TacticaContragolpe);
+    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa una táctica que espera");
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(modo, 1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, 0, 0);
+    // Pasado TiempoQuietoTactica sin verlo: avanza despacio
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoQuietoTactica);
+    assertMovimiento(m, VelocidadAvanceEspera, VelocidadAvanceEspera);
+    TEST_ASSERT_EQUAL_INT(modo, c.rutinaActual());
 }
 
 void test_tactica_defensiva_recibe_parada_y_empuja(void) {
@@ -1024,7 +1039,7 @@ void test_tactica_predictiva_intercepta_y_recuerda_el_lado(void) {
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
     // Lo ve el lateral derecho: avanza en arco hacia la derecha
     c.ejecutar({TipoAccion::DefensaDer}, m, 1010);
-    assertMovimiento(m, VelocidadTactica, VelocidadInteriorPrediccion);
+    assertMovimiento(m, VelocidadTacticaSinVer, VelocidadInteriorPrediccion);
     // Lo pierde: gira hacia donde lo vio (derecha), no hacia DIP3
     c.ejecutar({TipoAccion::Busqueda}, m, 1020);
     assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
@@ -1080,6 +1095,7 @@ int main(int, char**) {
     RUN_TEST(test_tactica_henka_retrocede_y_gira);
     RUN_TEST(test_tactica_contragolpe_espera_y_ataca);
     RUN_TEST(test_tactica_agresiva_carga_y_gira_a_fondo);
+    RUN_TEST(test_tactica_que_espera_avanza_lento_si_no_lo_ve);
     RUN_TEST(test_tactica_defensiva_recibe_parada_y_empuja);
     RUN_TEST(test_tactica_predictiva_intercepta_y_recuerda_el_lado);
     return UNITY_END();

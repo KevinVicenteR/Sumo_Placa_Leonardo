@@ -574,7 +574,8 @@ void test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro(void) {
     assertGiroRound1(m, 1);
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion);
     // Frena el giro con un contragiro
-    TEST_ASSERT_TRUE(m.izq < 0 && m.der > 0);
+    // (pivotando, solo giraba la rueda izquierda)
+    TEST_ASSERT_TRUE(m.izq < 0 && (GirarSobreUnaRueda ? m.der >= 0 : m.der > 0));
     // Tras el freno, embiste
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion + TiempoFrenadoRuedas + 1);
     assertMovimiento(m, VelocidadEmbestidaInicio, VelocidadEmbestidaInicio);

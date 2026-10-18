@@ -26,7 +26,7 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
     if (frenandoGiro) {
         const bool sigue = ahora - inicioFreno < freno.duracion;
         if (sigue) {
-            mando.mover(motor, freno.izq, freno.der, true);
+            mando.mover(motor, freno.izq, freno.der, true, true);   // freno: sin pivote
         } else {
             frenandoGiro = false;
             rutina = 0;
@@ -89,7 +89,7 @@ bool RutinaInicio::girar(const DecisionMovimiento& decision, MandoMotores& mando
         if (mando.calcularFreno(TiempoFrenadoRuedas, freno)) {
             frenandoGiro = true;
             inicioFreno = ahora;
-            mando.mover(motor, freno.izq, freno.der, true);
+            mando.mover(motor, freno.izq, freno.der, true, true);   // freno: sin pivote
             return true;
         }
     }

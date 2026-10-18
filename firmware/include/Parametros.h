@@ -11,6 +11,12 @@
 
 // Límite absoluto que se manda a cada motor.
 constexpr int VelocidadMaxima = 255;
+// Ajuste fino de cada motor (% de la orden), para que avance recto: los dos
+// motores no empujan igual. Si al avanzar se desvía a la derecha, la rueda
+// izquierda empuja más: baja PorcentajeMotorIzquierdo (y al revés). Solo en el
+// robot real; el simulador modela los dos motores iguales.
+constexpr int PorcentajeMotorIzquierdo = 92;
+constexpr int PorcentajeMotorDerecho = 100;
 // Contramando al frenar: se limita para no dar golpes a PWM 255.
 constexpr int VelocidadFreno = 140;
 

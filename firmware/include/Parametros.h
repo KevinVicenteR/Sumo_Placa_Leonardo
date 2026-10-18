@@ -257,7 +257,7 @@ constexpr int RampaPwmPorMs = 1;
 constexpr bool DipActivoBajo = true;
 // Rumania: cada uno coloca su robot donde quiere. true = el estimador de borde
 // no supone la posición de salida de los rounds (empieza sin conocerla).
-constexpr bool ColocacionLibre = true;
+constexpr bool ColocacionLibre = false;
 // Ronda 4 (salida libre): gira en el sitio hacia el lado de DIP3 a esta velocidad
 // hasta que cualquier sensor vea al rival (entonces gira hacia él y ataca) o
 // hasta TiempoMaxGiroRound4 (algo más de una vuelta); después busca como siempre.

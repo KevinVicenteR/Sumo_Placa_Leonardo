@@ -42,10 +42,17 @@ constexpr int TacticaArco = 5, TacticaHenka = 6, TacticaEsperaEsquiva = 7;
 //   modo 4 contragolpe: con la red jerárquica, en RU4 (5 280 combates sin el
 //     rival de 500 g) 59,3 / 23,2 y 0/400 caídas en ideal, frente a henka
 //     58,0 / 24,1 y 12/400 (simulacion/barrido_modo4.py)
-constexpr int TacticaModo1 = TacticaArco;
-constexpr int TacticaModo2 = TacticaContragolpe;
-constexpr int TacticaModo3 = TacticaPivote;
-constexpr int TacticaModo4 = TacticaContragolpe;
+// pesos_neuronales_rutina3v2: rounds normales (no Rumania). Los modos 1-3 usan
+// su rutina de inicio de siempre; el modo 4 (salida libre) el arco 斜め / 回り込み,
+// como en pesos_neuronales_rutina3.
+constexpr int TacticaModo1 = 0;
+constexpr int TacticaModo2 = 0;
+constexpr int TacticaModo3 = 0;
+constexpr int TacticaModo4 = TacticaArco;
+// Alguno de los modos usa esta táctica (las que no se usan no ocupan Flash)
+constexpr bool usaTactica(int t) {
+    return TacticaModo1 == t || TacticaModo2 == t || TacticaModo3 == t || TacticaModo4 == t;
+}
 constexpr int tacticaDeModo(int modo) {
     return modo == 1 ? TacticaModo1 : modo == 2 ? TacticaModo2 : modo == 3 ? TacticaModo3
          : modo == 4 ? TacticaModo4 : 0;

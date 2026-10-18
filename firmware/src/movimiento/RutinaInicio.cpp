@@ -26,7 +26,7 @@ bool RutinaInicio::continuar(const DecisionMovimiento& decision, MandoMotores& m
     if (frenandoGiro) {
         const bool sigue = ahora - inicioFreno < freno.duracion;
         if (sigue) {
-            mando.mover(motor, freno.izq, freno.der, true);
+            mando.mover(motor, freno.izq, freno.der, true, true);   // freno: sin pivote
         } else {
             frenandoGiro = false;
             rutina = 0;
@@ -89,7 +89,7 @@ bool RutinaInicio::girar(const DecisionMovimiento& decision, MandoMotores& mando
         if (mando.calcularFreno(TiempoFrenadoRuedas, freno)) {
             frenandoGiro = true;
             inicioFreno = ahora;
-            mando.mover(motor, freno.izq, freno.der, true);
+            mando.mover(motor, freno.izq, freno.der, true, true);   // freno: sin pivote
             return true;
         }
     }
@@ -149,7 +149,7 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
                                  IMotor& motor, unsigned long ahora, unsigned long t, ControlAtaque& ataque) {
     if (rivalVisto.actualizar(decision.enemigoFrente, ahora)) {
         // Espera y esquiva: si lo ve pronto, viene embistiendo; primero se aparta
-        if (tactica == TacticaEsperaEsquiva && t < VentanaRivalRapidoTactica && !esquivado) {
+        if (usaTactica(TacticaEsperaEsquiva) && tactica == TacticaEsperaEsquiva && t < VentanaRivalRapidoTactica && !esquivado) {
             esquivando = true;
             esquivado = true;   // una sola esquiva por combate
             inicioEsquiva = ahora;
@@ -158,7 +158,8 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
             return false;
         }
     }
-    const bool espera = tactica == TacticaContragolpe || tactica == TacticaEsperaEsquiva;
+    const bool espera = (usaTactica(TacticaContragolpe) && tactica == TacticaContragolpe) ||
+                        (usaTactica(TacticaEsperaEsquiva) && tactica == TacticaEsperaEsquiva);
     if (t >= (espera ? TiempoMaxEsperaTactica : TiempoMaxTactica)) {
         return false;
     }
@@ -167,7 +168,7 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
     const int k = (int)decision.tipo - (int)TipoAccion::AjusteIzq;
     const int visto = k >= 0 && k <= (int)TipoAccion::DefensaDer - (int)TipoAccion::AjusteIzq ? (k & 1 ? 1 : -1) : 0;
     const int v = VelocidadTactica;
-    if (esquivando) {
+    if (usaTactica(TacticaEsperaEsquiva) && esquivando) {
         // Se aparta pivotando hacia DIP3 y después gira hacia el otro lado para pillarlo de lado
         if (ahora - inicioEsquiva < TiempoEsquivaTactica) {
             mando.mover(motor, lado > 0 ? v : 0, lado > 0 ? 0 : v, true);
@@ -180,7 +181,7 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
         esquivando = false;   // sigue con el giro hacia el sensor que lo vea
     }
     int sentido = lado;
-    if (tactica == TacticaCarga && visto == 0) {
+    if (usaTactica(TacticaCarga) && tactica == TacticaCarga && visto == 0) {
         mando.mover(motor, v, v, true);                           // carga recta a fondo
         return true;
     }
@@ -188,11 +189,11 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
         mando.mover(motor, 0, 0, true);                           // quieto hasta verlo
         return true;
     }
-    if (tactica == TacticaPivote && visto == 0) {
+    if (usaTactica(TacticaPivote) && tactica == TacticaPivote && visto == 0) {
         mando.mover(motor, lado > 0 ? v : 0, lado > 0 ? 0 : v, true);  // pivote hacia DIP3
         return true;
     }
-    if (tactica == TacticaArco) {
+    if (usaTactica(TacticaArco) && tactica == TacticaArco) {
         if (t < TiempoArcoLibre) {
             // 斜め / 回り込み: arco a fondo abriéndose hacia DIP3
             mando.mover(motor, lado > 0 ? v : VelocidadInteriorArcoLibre, lado > 0 ? VelocidadInteriorArcoLibre : v, true);
@@ -200,7 +201,7 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
         }
         sentido = -lado;                                          // y después hacia dentro
     }
-    if (tactica == TacticaHenka && t < TiempoRetrocesoLibre) {
+    if (usaTactica(TacticaHenka) && tactica == TacticaHenka && t < TiempoRetrocesoLibre) {
         // 受け: la rueda del lado de DIP3 atrás a fondo; sale de la línea de embestida
         mando.mover(motor, lado > 0 ? 0 : -v, lado > 0 ? -v : 0, true);
         return true;

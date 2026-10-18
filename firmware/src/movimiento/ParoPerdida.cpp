@@ -17,6 +17,6 @@ bool ParoPerdida::continuar(const DecisionMovimiento& decision, MandoMotores& ma
         frenando = false;
         return false;
     }
-    mando.mover(motor, freno.izq, freno.der, true);
+    mando.mover(motor, freno.izq, freno.der, true, true);   // freno: sin pivote
     return true;
 }

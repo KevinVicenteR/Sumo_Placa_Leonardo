@@ -48,9 +48,9 @@ void ModoCombate::empezarCombate() {
     combateEmpezado = true;
     inicioCombate = millis();
 #if defined(MONITOREO_COMBATE)
-    // DIP y negro calibrado de los sensores de piso (izq,der)
+    // DIP y negro calibrado de los sensores de piso (N=izq,der)
     Serial.print(F("DIP=")); Serial.print(dip);
-    Serial.print(F(" NEGRO=")); Serial.print(percepcion.negroIzquierdo());
+    Serial.print(F(" N=")); Serial.print(percepcion.negroIzquierdo());
     Serial.print(','); Serial.println(percepcion.negroDerecho());
 #endif
 }
@@ -127,12 +127,13 @@ void ModoCombate::reiniciarPlaca() {
 
 void ModoCombate::enviarTelemetria() {
 #if defined(MONITOREO_COMBATE)
-    // Una línea cada 100 ms, solo si cabe en el búfer (no bloquear el combate)
+    // Una línea cada 100 ms, solo si cabe en el búfer (no bloquear el combate):
+    // P=piso izq,der  M=orden de motores izq,der  ENE=sensores 45I,F,45D  US=ciclo máximo
     if (Serial && millis() - ultimaTraza >= 100 && Serial.availableForWrite() >= 60) {
         ultimaTraza = millis();
-        Serial.print(F("PISO=")); Serial.print(analogRead(S_PISO_IZQ));
+        Serial.print(F("P=")); Serial.print(analogRead(S_PISO_IZQ));
         Serial.print(','); Serial.print(analogRead(S_PISO_DER));
-        Serial.print(F(" PWM=")); Serial.print(controlMovimiento.ordenIzquierda());
+        Serial.print(F(" M=")); Serial.print(controlMovimiento.ordenIzquierda());
         Serial.print(','); Serial.print(controlMovimiento.ordenDerecha());
         Serial.print(F(" ENE="));
         Serial.print(digitalRead(S_FRONT_IZQ));

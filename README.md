@@ -10,6 +10,8 @@ firmware/
     sensores/              Lectura, calibración y percepción
     movimiento/            Maniobras, control y límites del borde
       rumania/             Modos 1-4 de Rumania: cada uno con sus velocidades y su lógica
+  include/movimiento/parametros/  Velocidades y tiempos de cada movimiento: motores,
+                           ataque, giro lateral, evasión, búsqueda, frenado y rutinas
     estrategia/            Reglas, política y redes neuronales
     modos/                 Combate, diagnóstico y prueba de motores
     robot/                 Ciclo percibir → decidir → actuar

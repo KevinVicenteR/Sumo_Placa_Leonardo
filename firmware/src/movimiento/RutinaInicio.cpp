@@ -147,7 +147,25 @@ bool RutinaInicio::explorar(const DecisionMovimiento& decision, MandoMotores& ma
 // el sensor y no la decisión: la red puede proponer girar aunque no vea nada.
 bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision, MandoMotores& mando,
                                  IMotor& motor, unsigned long ahora, unsigned long t, ControlAtaque& ataque) {
-    if (rivalVisto.actualizar(decision.enemigoFrente, ahora)) {
+    const bool deFrente = rivalVisto.actualizar(decision.enemigoFrente, ahora);
+    if (usaTactica(TacticaDefensiva) && tactica == TacticaDefensiva) {
+        if (!deFrente) {
+            recibiendo = false;
+        } else {
+            // 受け: lo recibe parada con la pala y después empuja a fondo
+            if (!recibiendo) {
+                recibiendo = true;
+                inicioRecibir = ahora;
+            }
+            if (ahora - inicioRecibir < TiempoRecibirDefensa) {
+                mando.mover(motor, 0, 0, true);
+                return true;
+            }
+            ataque.iniciarAtaqueMaximo(ahora);
+            return false;
+        }
+    }
+    if (deFrente) {
         // Espera y esquiva: si lo ve pronto, viene embistiendo; primero se aparta
         if (tactica == TacticaEsperaEsquiva && t < VentanaRivalRapidoTactica && !esquivado) {
             esquivando = true;
@@ -158,7 +176,8 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
             return false;
         }
     }
-    const bool espera = tactica == TacticaContragolpe || tactica == TacticaEsperaEsquiva;
+    const bool espera = tactica == TacticaContragolpe || tactica == TacticaEsperaEsquiva ||
+                        (usaTactica(TacticaDefensiva) && tactica == TacticaDefensiva);
     if (t >= (espera ? TiempoMaxEsperaTactica : TiempoMaxTactica)) {
         return false;
     }
@@ -180,6 +199,37 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
         esquivando = false;   // sigue con el giro hacia el sensor que lo vea
     }
     int sentido = lado;
+    if (usaTactica(TacticaAgresiva) && tactica == TacticaAgresiva) {
+        // A fondo: recto si no lo ve, giro a fondo hacia el sensor que lo ve
+        mando.mover(motor, visto == 0 ? v : visto * v, visto == 0 ? v : -visto * v, true);
+        return true;
+    }
+    if (usaTactica(TacticaFinta) && tactica == TacticaFinta && visto == 0) {
+        if (t < TiempoFinta) {
+            mando.mover(motor, v, v, true);                       // amago hacia delante
+            return true;
+        }
+        if (t < 2 * TiempoFinta) {
+            mando.mover(motor, -v, -v, true);                     // vuelve a su sitio
+            return true;
+        }
+        if (t < 2 * TiempoFinta + TiempoArcoLibre) {
+            // Arco a fondo hacia DIP3 para pillarlo de lado cuando embista
+            mando.mover(motor, lado > 0 ? v : VelocidadInteriorArcoLibre, lado > 0 ? VelocidadInteriorArcoLibre : v, true);
+            return true;
+        }
+        sentido = -lado;                                          // y después hacia dentro
+    }
+    if (usaTactica(TacticaPredictiva) && tactica == TacticaPredictiva) {
+        if (visto != 0) {
+            // Intercepta: avanza en arco hacia el lado en que lo ve
+            ultimoVisto = visto;
+            const int interior = VelocidadInteriorPrediccion;
+            mando.mover(motor, visto > 0 ? v : interior, visto > 0 ? interior : v, true);
+            return true;
+        }
+        if (ultimoVisto != 0) sentido = ultimoVisto;              // hacia donde se fue
+    }
     if (tactica == TacticaCarga && visto == 0) {
         mando.mover(motor, v, v, true);                           // carga recta a fondo
         return true;

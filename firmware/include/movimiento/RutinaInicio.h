@@ -45,6 +45,11 @@ private:
     bool esquivando = false;
     bool esquivado = false;
     unsigned long inicioEsquiva = 0;
+    // Táctica defensiva: lo está recibiendo con el frontal y desde cuándo
+    bool recibiendo = false;
+    unsigned long inicioRecibir = 0;
+    // Táctica predictiva: último lado en que lo vio un sensor de 45° o lateral
+    int ultimoVisto = 0;
 
     int rutina = 0;
     int lado = 1;

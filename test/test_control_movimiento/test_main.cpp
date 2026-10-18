@@ -932,7 +932,7 @@ void test_tactica_termina_al_agotar_su_tiempo(void) {
         MotorMock m;
         c.iniciarRutina(modo, 1);
         c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-        const bool espera = t == TacticaContragolpe || t == TacticaEsperaEsquiva;
+        const bool espera = t == TacticaContragolpe || t == TacticaEsperaEsquiva || t == TacticaDefensiva;
         c.ejecutar({TipoAccion::Busqueda}, m, 1000 + (espera ? TiempoMaxEsperaTactica : TiempoMaxTactica) + 1);
         TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
     }
@@ -968,6 +968,67 @@ void test_tactica_contragolpe_espera_y_ataca(void) {
     c.ejecutar({TipoAccion::DefensaDer}, m, 1500);
     assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
     comprobarAtaqueAlVerlo(c, m, modo, 1510);
+}
+
+static int modoConTactica(int tactica) {
+    for (int k = 1; k <= 4; k++) if (tacticaDeModo(k) == tactica) return k;
+    return 0;
+}
+
+void test_tactica_agresiva_carga_y_gira_a_fondo(void) {
+    const int modo = modoConTactica(TacticaAgresiva);
+    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(modo, 1);
+    // Sin verlo: recto a fondo
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, VelocidadTactica, VelocidadTactica);
+    // Lo ve el lateral izquierdo: gira a fondo hacia él
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1010);
+    assertMovimiento(m, -VelocidadTactica, VelocidadTactica);
+    comprobarAtaqueAlVerlo(c, m, modo, 1020);
+}
+
+void test_tactica_defensiva_recibe_parada_y_empuja(void) {
+    const int modo = modoConTactica(TacticaDefensiva);
+    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(modo, 1);
+    // Sin verlo: quieta; con un lateral, se encara
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, 0, 0);
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1500);
+    assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
+    // El frontal lo ve (confirmado): lo recibe parada con la pala
+    const unsigned long t = 1510;
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion);
+    assertMovimiento(m, 0, 0);
+    TEST_ASSERT_EQUAL_INT(modo, c.rutinaActual());
+    // Pasado TiempoRecibirDefensa, empuja a fondo
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion + TiempoRecibirDefensa);
+    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion + TiempoRecibirDefensa + 1);
+    TEST_ASSERT_EQUAL_INT(m.izq, m.der);
+    TEST_ASSERT_TRUE(m.izq > VelocidadAtaque);
+}
+
+void test_tactica_predictiva_intercepta_y_recuerda_el_lado(void) {
+    const int modo = modoConTactica(TacticaPredictiva);
+    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(modo, -1);   // DIP3 a la izquierda
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    // Lo ve el lateral derecho: avanza en arco hacia la derecha
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1010);
+    assertMovimiento(m, VelocidadTactica, VelocidadInteriorPrediccion);
+    // Lo pierde: gira hacia donde lo vio (derecha), no hacia DIP3
+    c.ejecutar({TipoAccion::Busqueda}, m, 1020);
+    assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
+    comprobarAtaqueAlVerlo(c, m, modo, 1030);
 }
 
 int main(int, char**) {
@@ -1018,5 +1079,8 @@ int main(int, char**) {
     RUN_TEST(test_tactica_termina_al_agotar_su_tiempo);
     RUN_TEST(test_tactica_henka_retrocede_y_gira);
     RUN_TEST(test_tactica_contragolpe_espera_y_ataca);
+    RUN_TEST(test_tactica_agresiva_carga_y_gira_a_fondo);
+    RUN_TEST(test_tactica_defensiva_recibe_parada_y_empuja);
+    RUN_TEST(test_tactica_predictiva_intercepta_y_recuerda_el_lado);
     return UNITY_END();
 }

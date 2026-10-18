@@ -15,6 +15,10 @@ constexpr int Modo3VelocidadArco = 150;
 constexpr int Modo3VelocidadArcoInterior = 60;
 constexpr int Modo3VelocidadBarrido = 100;       // barrido sin verlo
 // --- Tiempos (ms) ---
+// Siempre hace primero su maniobra (barrido hacia DIP3) durante este tiempo,
+// aunque los sensores vean algo; solo la línea del borde la interrumpe
+// (simulador, RU3: con 500 ms gana 52,1 % / cae 31,4 %; sin ella 50,5 / 32,2)
+constexpr unsigned long Modo3TiempoMinimo = 500;
 constexpr unsigned long Modo3TiempoMax = 1500;   // duración máxima del modo
 
 class Modo3Predictivo {

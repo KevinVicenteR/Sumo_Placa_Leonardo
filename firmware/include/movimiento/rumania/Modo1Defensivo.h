@@ -9,12 +9,16 @@
 #include "movimiento/rumania/PasoModo.h"
 
 // --- Velocidades (PWM 0-255) ---
-constexpr int Modo1VelocidadGiro = 150;          // giro hacia el sensor que lo ve
-constexpr int Modo1VelocidadAvanceEspera = 100;  // avance lento si no aparece
+constexpr int Modo1VelocidadGiro = 200;          // giro hacia el sensor que lo ve
+constexpr int Modo1VelocidadAvanceEspera = 50;  // avance lento si no aparece
 // --- Tiempos (ms) ---
-constexpr unsigned long Modo1TiempoQuieto = 800;    // quieto antes de avanzar
-constexpr unsigned long Modo1TiempoRecibir = 150;   // parado con la pala al verlo de frente
-constexpr unsigned long Modo1TiempoMax = 3000;      // duración máxima del modo
+// Maniobra obligatoria al empezar (quieto sin mirar los sensores). 0: en el
+// simulador, 1000 ms subía las caídas del modo 1 del 25 % al 43 % (el rival
+// embiste y lo saca mientras está ciego)
+constexpr unsigned long Modo1TiempoMinimo = 0;
+constexpr unsigned long Modo1TiempoQuieto = 1000;    // quieto antes de avanzar
+constexpr unsigned long Modo1TiempoRecibir = 200;   // parado con la pala al verlo de frente
+constexpr unsigned long Modo1TiempoMax = 9000;      // duración máxima del modo
 
 class Modo1Defensivo {
 public:

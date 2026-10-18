@@ -862,16 +862,19 @@ void test_modo1_defensivo_espera_recibe_y_empuja(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(1, 1);
-    // Sin verlo: quieto; pasado Modo1TiempoQuieto, avanza despacio
+    // Al empezar: quieto (con maniobra obligatoria, aunque el frontal lo vea)
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
     assertMovimiento(m, 0, 0);
+    TEST_ASSERT_EQUAL_INT(1, c.rutinaActual());
+    // Sin verlo: pasado Modo1TiempoQuieto, avanza despacio
     c.ejecutar({TipoAccion::Busqueda}, m, 1000 + Modo1TiempoQuieto);
     assertMovimiento(m, Modo1VelocidadAvanceEspera, Modo1VelocidadAvanceEspera);
     // Lo ve el lateral derecho: se encara
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1900);
+    const unsigned long d = 1000 + (Modo1TiempoMinimo > Modo1TiempoQuieto ? Modo1TiempoMinimo : Modo1TiempoQuieto) + 10;
+    c.ejecutar({TipoAccion::DefensaDer}, m, d);
     assertMovimiento(m, Modo1VelocidadGiro, -Modo1VelocidadGiro);
     // El frontal lo ve (confirmado): lo recibe parado con la pala
-    const unsigned long t = 1910;
+    const unsigned long t = d + 10;
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion);
     assertMovimiento(m, 0, 0);
@@ -889,15 +892,17 @@ void test_modo2_contragolpe_espera_y_ataca(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(2, 1);
-    // Sin verlo: quieto; pasado Modo2TiempoQuieto, avanza despacio
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    // Primero, siempre quieto: aunque un lateral lo vea, no gira
+    c.ejecutar(Modo2TiempoMinimo > 0 ? DecisionMovimiento{TipoAccion::DefensaDer} : DecisionMovimiento{TipoAccion::Busqueda}, m, 1000);
     assertMovimiento(m, 0, 0);
+    // Sin verlo: pasado Modo2TiempoQuieto, avanza despacio
     c.ejecutar({TipoAccion::Busqueda}, m, 1000 + Modo2TiempoQuieto);
     assertMovimiento(m, Modo2VelocidadAvanceEspera, Modo2VelocidadAvanceEspera);
-    // Lo ve el lateral derecho: gira hacia él
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1900);
+    // Tras la maniobra inicial, lo ve el lateral derecho: gira hacia él
+    const unsigned long d = 1000 + (Modo2TiempoMinimo > Modo2TiempoQuieto ? Modo2TiempoMinimo : Modo2TiempoQuieto) + 10;
+    c.ejecutar({TipoAccion::DefensaDer}, m, d);
     assertMovimiento(m, Modo2VelocidadGiro, -Modo2VelocidadGiro);
-    comprobarAtaqueAlVerlo(c, m, 2, 1910);
+    comprobarAtaqueAlVerlo(c, m, 2, d + 10);
 }
 
 void test_modo3_predictivo_intercepta_y_recuerda_el_lado(void) {
@@ -905,16 +910,17 @@ void test_modo3_predictivo_intercepta_y_recuerda_el_lado(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(3, -1);   // DIP3 a la izquierda
-    // Sin verlo: barre hacia DIP3
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    // Primero, siempre barre hacia DIP3, aunque un lateral lo vea
+    c.ejecutar(Modo3TiempoMinimo > 0 ? DecisionMovimiento{TipoAccion::DefensaDer} : DecisionMovimiento{TipoAccion::Busqueda}, m, 1000);
     assertMovimiento(m, -Modo3VelocidadBarrido, Modo3VelocidadBarrido);
-    // Lo ve el lateral derecho: avanza en arco hacia la derecha
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1010);
+    // Tras la maniobra inicial, lo ve el lateral derecho: avanza en arco hacia la derecha
+    const unsigned long d = 1000 + Modo3TiempoMinimo;
+    c.ejecutar({TipoAccion::DefensaDer}, m, d);
     assertMovimiento(m, Modo3VelocidadArco, Modo3VelocidadArcoInterior);
     // Lo pierde: barre hacia donde lo vio (derecha), no hacia DIP3
-    c.ejecutar({TipoAccion::Busqueda}, m, 1020);
+    c.ejecutar({TipoAccion::Busqueda}, m, d + 10);
     assertMovimiento(m, Modo3VelocidadBarrido, -Modo3VelocidadBarrido);
-    comprobarAtaqueAlVerlo(c, m, 3, 1030);
+    comprobarAtaqueAlVerlo(c, m, 3, d + 20);
 }
 
 void test_modo4_agresivo_avanza_y_gira_a_fondo(void) {
@@ -922,13 +928,14 @@ void test_modo4_agresivo_avanza_y_gira_a_fondo(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(4, 1);
-    // Sin verlo: recto a Modo4VelocidadAvance
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    // Primero, recto a Modo4VelocidadAvance (con maniobra obligatoria, aunque un lateral lo vea)
+    c.ejecutar(Modo4TiempoMinimo > 0 ? DecisionMovimiento{TipoAccion::DefensaIzq} : DecisionMovimiento{TipoAccion::Busqueda}, m, 1000);
     assertMovimiento(m, Modo4VelocidadAvance, Modo4VelocidadAvance);
-    // Lo ve el lateral izquierdo: gira a fondo hacia él
-    c.ejecutar({TipoAccion::DefensaIzq}, m, 1010);
+    // Tras la maniobra inicial, lo ve el lateral izquierdo: gira a fondo hacia él
+    const unsigned long d = 1000 + Modo4TiempoMinimo + 10;
+    c.ejecutar({TipoAccion::DefensaIzq}, m, d);
     assertMovimiento(m, -Modo4VelocidadGiro, Modo4VelocidadGiro);
-    comprobarAtaqueAlVerlo(c, m, 4, 1020);
+    comprobarAtaqueAlVerlo(c, m, 4, d + 10);
 }
 
 void test_modos_terminan_al_agotar_su_tiempo(void) {

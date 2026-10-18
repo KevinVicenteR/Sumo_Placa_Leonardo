@@ -8,8 +8,10 @@
 //   ON   ON    4: de espaldas, agresivo  (Modo4Agresivo.h)
 //   DIP3: lado del rival / del giro (off = derecha, ON = izquierda)
 // Cada archivo de modo tiene sus velocidades, sus tiempos y su lógica. Los
-// modos solo dirigen el arranque: en cuanto el sensor frontal ve al rival
-// (confirmado) o se agota su tiempo, el combate sigue con la estrategia normal.
+// modos solo dirigen el arranque. Durante ModoNTiempoMinimo cada modo hace
+// siempre su maniobra sin mirar los sensores de rival (solo la línea del borde
+// la interrumpe); después, en cuanto el frontal ve al rival (confirmado) o se
+// agota su tiempo, el combate sigue con la estrategia normal.
 #ifndef PASO_MODO_H
 #define PASO_MODO_H
 

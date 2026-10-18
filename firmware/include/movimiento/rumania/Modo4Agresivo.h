@@ -13,6 +13,9 @@
 constexpr int Modo4VelocidadAvance = 150;
 constexpr int Modo4VelocidadGiro = 255;          // giro hacia el sensor que lo ve
 // --- Tiempos (ms) ---
+// Maniobra obligatoria al empezar (avance recto sin mirar los sensores). 0: en
+// el simulador, incluso 200 ms subían las caídas del modo 4 del 27 % al 39 %
+constexpr unsigned long Modo4TiempoMinimo = 0;
 constexpr unsigned long Modo4TiempoMax = 1500;   // duración máxima del modo
 
 class Modo4Agresivo {

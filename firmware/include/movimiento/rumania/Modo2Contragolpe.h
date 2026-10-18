@@ -12,6 +12,11 @@
 constexpr int Modo2VelocidadGiro = 150;          // giro hacia el sensor que lo ve
 constexpr int Modo2VelocidadAvanceEspera = 100;  // avance lento si no aparece
 // --- Tiempos (ms) ---
+// Siempre hace primero su maniobra (quieto) durante este tiempo, aunque los
+// sensores vean algo; solo la línea del borde la interrumpe
+// (simulador, RU2: con 300 ms gana 63,2 % / cae 23,5 %; sin ella 61,4 / 23,8;
+// con 800 ms 51,6 / 37,3)
+constexpr unsigned long Modo2TiempoMinimo = 300;
 constexpr unsigned long Modo2TiempoQuieto = 800;    // quieto antes de avanzar
 constexpr unsigned long Modo2TiempoMax = 3000;      // duración máxima del modo
 

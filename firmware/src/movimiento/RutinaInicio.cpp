@@ -150,9 +150,16 @@ bool RutinaInicio::modoRumania(const DecisionMovimiento& decision, MandoMotores&
     // Lado en el que lo ve un sensor de 45° o lateral (0 = ninguno). AjusteIzq/Der,
     // CorregirIzq/Der y DefensaIzq/Der van seguidos en TipoAccion, alternando lados
     const int k = (int)decision.tipo - (int)TipoAccion::AjusteIzq;
-    const int visto = k >= 0 && k <= (int)TipoAccion::DefensaDer - (int)TipoAccion::AjusteIzq ? (k & 1 ? 1 : -1) : 0;
-    const PasoModo p{decision, mando, motor, ahora, t, lado, visto,
-                     rivalVisto.actualizar(decision.enemigoFrente, ahora)};
+    int visto = k >= 0 && k <= (int)TipoAccion::DefensaDer - (int)TipoAccion::AjusteIzq ? (k & 1 ? 1 : -1) : 0;
+    bool deFrente = rivalVisto.actualizar(decision.enemigoFrente, ahora);
+    // Primero, siempre la maniobra del modo: sin mirar los sensores de rival
+    const unsigned long minimo = rutina == 1 ? Modo1TiempoMinimo : rutina == 2 ? Modo2TiempoMinimo
+                               : rutina == 3 ? Modo3TiempoMinimo : Modo4TiempoMinimo;
+    if (t < minimo) {
+        visto = 0;
+        deFrente = false;
+    }
+    const PasoModo p{decision, mando, motor, ahora, t, lado, visto, deFrente};
     const ResultadoModo r = rutina == 1 ? modo1.paso(p) : rutina == 2 ? modo2.paso(p)
                           : rutina == 3 ? modo3.paso(p) : modo4.paso(p);
     if (r == ResultadoModo::Ataca) {

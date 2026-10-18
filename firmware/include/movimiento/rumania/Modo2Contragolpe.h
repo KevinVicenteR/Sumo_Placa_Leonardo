@@ -17,8 +17,8 @@ constexpr int Modo2VelocidadAvanceEspera = 100;  // avance lento si no aparece
 // (simulador, RU2: con 300 ms gana 63,2 % / cae 23,5 %; sin ella 61,4 / 23,8;
 // con 800 ms 51,6 / 37,3)
 constexpr unsigned long Modo2TiempoMinimo = 300;
-constexpr unsigned long Modo2TiempoQuieto = 800;    // quieto antes de avanzar
-constexpr unsigned long Modo2TiempoMax = 3000;      // duración máxima del modo
+constexpr unsigned long Modo2TiempoQuieto = 3000;    // quieto antes de avanzar
+constexpr unsigned long Modo2TiempoMax = 6000;      // duración máxima del modo
 
 class Modo2Contragolpe {
 public:

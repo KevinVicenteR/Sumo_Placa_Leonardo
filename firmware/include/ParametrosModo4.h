@@ -18,81 +18,8 @@ constexpr bool UsarRedControlModo1 = true;
 // ganaba menos y se caía más (25 200 combates: 41,1/40,2 % frente a 50,1/31,4 %).
 constexpr bool UsarRedControlModo3 = true;
 constexpr bool EsquivarModo3 = false;
-// Rumania (RoboChallenge 4.1): cada robot detrás de su línea de salida y dentro
-// de su franja de 10 cm; con 10 x 10 cm solo caben colocaciones rectas. Cada
-// modo es una táctica rápida para una colocación: modo 1 de frente (ataque),
-// modo 2 de frente (espera), modo 3 de lado, modo 4 de espaldas (DIP3 apagado =
-// rival / giro a la derecha). En cualquier fase, si el sensor frontal ve al
-// rival, ataque a fondo (VelocidadEmpuje).
-//   0 = la rutina de inicio de siempre de ese modo
-//   1 = carga recta a fondo                 2 = contragolpe: quieto hasta verlo
-//   3 = pivote sobre una rueda hacia DIP3   4 = giro rápido en el sitio
-//   5 = 斜め / 回り込み: arco a fondo hacia DIP3 y giro hacia dentro
-//   6 = 受け (henka): atrás en diagonal y giro
-//   7 = espera y esquiva: si lo ve pronto (viene embistiendo) se aparta
-//       pivotando hacia DIP3 y gira para pillarlo de lado; si no, contragolpe
-// Con un sensor de 45° o lateral viéndolo, gira rápido hacia ese lado.
-constexpr int TacticaCarga = 1, TacticaContragolpe = 2, TacticaPivote = 3, TacticaGiro = 4;
-constexpr int TacticaArco = 5, TacticaHenka = 6, TacticaEsperaEsquiva = 7;
-// Estilos de combate para el arranque:
-//   8 = agresiva: carga a fondo y, si un sensor de 45° o lateral lo ve, gira
-//       hacia él a fondo (VelocidadTactica) en vez de a VelocidadGiroTactica
-//   9 = defensiva (受け): quieta encarándolo; cuando el frontal lo ve, lo recibe
-//       parada con la pala TiempoRecibirDefensa ms y después empuja a fondo
-//  10 = finta: amago hacia delante (TiempoFinta), vuelve atrás, arco hacia DIP3
-//       y giro hacia dentro: provoca su embestida y lo pilla de lado
-//  11 = predictiva: si lo ve de lado avanza en arco hacia ese lado (intercepta
-//       donde va a estar); si lo pierde, gira hacia donde lo vio por última vez
-constexpr int TacticaAgresiva = 8, TacticaDefensiva = 9, TacticaFinta = 10, TacticaPredictiva = 11;
-constexpr unsigned long TiempoRecibirDefensa = 150;
-constexpr unsigned long TiempoFinta = 100;
-constexpr int VelocidadInteriorPrediccion = 60;
-// Sin ver al rival las tácticas no van a fondo: a 255 el robot real no llega a
-// frenar al ver la línea y se sale solo. A fondo solo al atacar con el frontal.
-constexpr int VelocidadTacticaSinVer = 150;
-// Las que esperan (contragolpe, defensiva): quietas como mucho este tiempo; si
-// no lo ven, avanzan despacio (VelocidadAvanceEspera) en vez de seguir paradas.
-constexpr unsigned long TiempoQuietoTactica = 800;
-constexpr int VelocidadAvanceEspera = 100;
-// Elegidas con el simulador (colocación estricta del reglamento, todos los
-// rivales y factores; % de victorias / % de caídas):
-//   modo 1 arco         54,8 / 24,9 (rutina de siempre 41,0 / 39,5)
-//   modo 2 contragolpe  54,3 / 27,3 (rutina de siempre 48,8 / 28,8)
-//   modo 3 pivote       46,3 / 28,7 (rutina de siempre 45,5 / 34,3)
-//   modo 4 contragolpe: con la red jerárquica, en RU4 (5 280 combates sin el
-//     rival de 500 g) 59,3 / 23,2 y 0/400 caídas en ideal, frente a henka
-//     58,0 / 24,1 y 12/400 (simulacion/barrido_modo4.py)
-// Estilos (barrido por modo con simulacion/python/barrido_modo4.py --modo N y
-// batería de Rumania de 30 492 combates, sin el rival de 500 g):
-//   modo 1 defensiva   66,0 / 18,7 en RU1 (arco 63,4 / 18,0)
-//   modo 3 predictiva  57,3 / 21,6 en RU3 (pivote 54,2 / 23,9)
-//   modo 4 agresiva    56,8 / 22,5 en RU4 (contragolpe 56,9 / 25,0)
-//   total: gana 60,9 % / cae 20,1 % (antes 59,9 / 21,4); la finta no mejoró
-//   ningún modo
-constexpr int TacticaModo1 = TacticaDefensiva;
-constexpr int TacticaModo2 = TacticaContragolpe;
-constexpr int TacticaModo3 = TacticaPredictiva;
-constexpr int TacticaModo4 = TacticaAgresiva;
-// Alguno de los modos usa esta táctica (las que no se usan no ocupan Flash)
-constexpr bool usaTactica(int t) {
-    return TacticaModo1 == t || TacticaModo2 == t || TacticaModo3 == t || TacticaModo4 == t;
-}
-constexpr int tacticaDeModo(int modo) {
-    return modo == 1 ? TacticaModo1 : modo == 2 ? TacticaModo2 : modo == 3 ? TacticaModo3
-         : modo == 4 ? TacticaModo4 : 0;
-}
-constexpr int VelocidadTactica = 255;
-constexpr int VelocidadGiroTactica = 150;
-// Barrido de las tácticas cuando ningún sensor ve al rival (más lento que el
-// giro hacia un sensor que sí lo ve, para no pasar de largo al rival)
-constexpr int VelocidadBarridoTactica = 100;
-constexpr int VelocidadInteriorArcoLibre = 110;
-constexpr unsigned long TiempoRetrocesoLibre = 180;
-constexpr unsigned long TiempoArcoLibre = 200;
-constexpr unsigned long TiempoMaxTactica = 1500;
-constexpr unsigned long TiempoMaxEsperaTactica = 3000;
-constexpr unsigned long VentanaRivalRapidoTactica = 600;
-constexpr unsigned long TiempoEsquivaTactica = 120;
+// Los modos 1-4 de Rumania (velocidades, tiempos y lógica) están cada uno en
+// su archivo: movimiento/rumania/Modo1Defensivo.h ... Modo4Agresivo.h.
 // Ataque a fondo sin llegar a empujar durante este tiempo: pasa al ataque normal
 constexpr unsigned long TiempoMaxAtaqueLibre = 150;
 constexpr bool MejorarRecuperacionModo3 = false;

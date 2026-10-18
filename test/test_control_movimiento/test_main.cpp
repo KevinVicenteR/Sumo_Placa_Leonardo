@@ -546,7 +546,7 @@ void test_arranque_no_dispara_aunque_tres_frontales_vean_enemigo() {
 }
 
 void test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro(void) {
-    if (tacticaDeModo(1) != 0) TEST_IGNORE_MESSAGE("el modo 1 usa una táctica rápida");
+    if (UsarModosRumania) TEST_IGNORE_MESSAGE("el modo 1 es un modo de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(1, 1);
@@ -583,7 +583,7 @@ void test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro(void) {
 }
 
 void test_rutina_lado_gira_hacia_el_lado_del_rival(void) {
-    if (tacticaDeModo(2) != 0) TEST_IGNORE_MESSAGE("el modo 2 usa una táctica rápida");
+    if (UsarModosRumania) TEST_IGNORE_MESSAGE("el modo 2 es un modo de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(2, -1);
@@ -601,7 +601,7 @@ void test_rutina_lado_gira_hacia_el_lado_del_rival(void) {
 }
 
 void test_rutina_frente_avanza_hasta_ver_al_rival(void) {
-    if (tacticaDeModo(3) != 0) TEST_IGNORE_MESSAGE("el modo 3 usa una táctica rápida");
+    if (UsarModosRumania) TEST_IGNORE_MESSAGE("el modo 3 es un modo de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(3, 1);
@@ -617,7 +617,7 @@ void test_rutina_frente_avanza_hasta_ver_al_rival(void) {
 }
 
 void test_rutina_frente_acelera_poco_a_poco_contra_el_rival(void) {
-    if (tacticaDeModo(3) != 0) TEST_IGNORE_MESSAGE("el modo 3 usa una táctica rápida");
+    if (UsarModosRumania) TEST_IGNORE_MESSAGE("el modo 3 es un modo de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(3, 1);
@@ -695,7 +695,7 @@ void test_sin_interruptores_la_rutina_es_la_del_round_1(void) {
 }
 
 void test_rutina_frente_reacciona_a_los_laterales(void) {
-    if (tacticaDeModo(3) != 0) TEST_IGNORE_MESSAGE("el modo 3 usa una táctica rápida");
+    if (UsarModosRumania) TEST_IGNORE_MESSAGE("el modo 3 es un modo de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(3, 1);
@@ -711,40 +711,16 @@ void test_rutina_libre_gira_hasta_ver_al_rival(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(4, -1);
-    if (TacticaModo4 == 0) {
-        // Sin ver nada: gira en el sitio hacia el lado de DIP3
-        c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-        assertMovimiento(m, -VelocidadGiroRound4, VelocidadGiroRound4);
-        TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
-        // Un lateral lo ve: termina la rutina y gira hacia él
-        c.ejecutar({TipoAccion::DefensaDer}, m, 1100);
-        c.ejecutar({TipoAccion::DefensaDer}, m, 1100 + 2 * ConfirmacionDeteccion);
-        TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-        TEST_ASSERT_TRUE(m.izq > m.der);
-        return;
-    }
-    if (TacticaModo4 != TacticaArco) {
-        return;
-    }
-    // 斜め / 回り込み: arco a fondo hacia DIP3 (izquierda)
+    if (UsarModosRumania) TEST_IGNORE_MESSAGE("el modo 4 es un modo de Rumania");
+    // Sin ver nada: gira en el sitio hacia el lado de DIP3
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, VelocidadInteriorArcoLibre, VelocidadTactica);
+    assertMovimiento(m, -VelocidadGiroRound4, VelocidadGiroRound4);
     TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
-    // Tras el arco, sin verlo: giro rápido en el sitio hacia dentro (derecha)
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoArcoLibre);
-    assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
-    // Un lateral lo ve: gira hacia ese lado sin terminar la rutina
-    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoArcoLibre + 10);
-    assertMovimiento(m, -VelocidadGiroTactica, VelocidadGiroTactica);
-    TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
-    // El frontal lo ve (confirmado): termina la rutina y ataca a fondo
-    const unsigned long t = 1000 + TiempoArcoLibre + 20;
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion);
+    // Un lateral lo ve: termina la rutina y gira hacia él
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1100);
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1100 + 2 * ConfirmacionDeteccion);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion + 1);
-    TEST_ASSERT_EQUAL_INT(m.izq, m.der);
-    TEST_ASSERT_TRUE(m.izq > VelocidadAtaque);
+    TEST_ASSERT_TRUE(m.izq > m.der);
 }
 
 void test_rutina_libre_termina_al_agotar_su_tiempo(void) {
@@ -753,14 +729,12 @@ void test_rutina_libre_termina_al_agotar_su_tiempo(void) {
     c.iniciarRutina(4, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
     c.ejecutar({TipoAccion::Busqueda}, m,
-               1000 + (TacticaModo4 == 0 ? TiempoMaxGiroRound4
-                       : TacticaModo4 == TacticaContragolpe || TacticaModo4 == TacticaEsperaEsquiva
-                           ? TiempoMaxEsperaTactica : TiempoMaxTactica) + 1);
+               1000 + (UsarModosRumania ? Modo4TiempoMax : TiempoMaxGiroRound4) + 1);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
 }
 
 void test_rutina_lado_elige_el_lado_con_el_sensor_lateral(void) {
-    if (tacticaDeModo(2) != 0) TEST_IGNORE_MESSAGE("el modo 2 usa una táctica rápida");
+    if (UsarModosRumania) TEST_IGNORE_MESSAGE("el modo 2 es un modo de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     // El DIP3 dice izquierda, pero el lateral derecho ve al rival: pivota a la derecha
@@ -790,7 +764,7 @@ void test_rutina_lado_recuerda_el_lado_visto_durante_la_esquiva(void) {
 }
 
 void test_rutina_lado_sin_lateral_usa_el_dip3(void) {
-    if (tacticaDeModo(2) != 0) TEST_IGNORE_MESSAGE("el modo 2 usa una táctica rápida");
+    if (UsarModosRumania) TEST_IGNORE_MESSAGE("el modo 2 es un modo de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(2, 1);
@@ -812,7 +786,7 @@ void test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado(void) {
 }
 
 void test_round_1_mantiene_su_velocidad_tras_la_embestida(void) {
-    if (tacticaDeModo(1) != 0) TEST_IGNORE_MESSAGE("el modo 1 usa una táctica rápida");
+    if (UsarModosRumania) TEST_IGNORE_MESSAGE("el modo 1 es un modo de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(1, 1);
@@ -856,7 +830,7 @@ void test_rutina_frente_espera_quieto_tras_avanzar(void) {
 }
 
 void test_reiniciar_vuelve_al_estado_inicial(void) {
-    if (tacticaDeModo(1) != 0) TEST_IGNORE_MESSAGE("el modo 1 usa una táctica rápida");
+    if (UsarModosRumania) TEST_IGNORE_MESSAGE("el modo 1 es un modo de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(1, 1);
@@ -883,167 +857,92 @@ static void comprobarAtaqueAlVerlo(ControlMovimiento& c, MotorMock& m, int modo,
     (void)modo;
 }
 
-void test_tactica_pivote_hacia_dip3_y_ataque(void) {
-    int modo = 0;
-    for (int k = 1; k <= 4; k++) if (tacticaDeModo(k) == TacticaPivote) modo = k;
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
+void test_modo1_defensivo_espera_recibe_y_empuja(void) {
+    if (!UsarModosRumania) TEST_IGNORE_MESSAGE("sin modos de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
-    c.iniciarRutina(modo, 1);   // DIP3 a la derecha: pivota sobre la rueda derecha
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, VelocidadTactica, 0);
-    // Un sensor de 45° izquierdo lo ve: giro rápido hacia la izquierda
-    c.ejecutar({TipoAccion::CorregirIzq}, m, 1010);
-    assertMovimiento(m, -VelocidadGiroTactica, VelocidadGiroTactica);
-    comprobarAtaqueAlVerlo(c, m, modo, 1020);
-}
-
-void test_tactica_giro_rapido_y_ataque(void) {
-    int modo = 0;
-    for (int k = 1; k <= 4; k++) if (tacticaDeModo(k) == TacticaGiro) modo = k;
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(modo, -1);  // DIP3 a la izquierda
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, -VelocidadGiroTactica, VelocidadGiroTactica);
-    comprobarAtaqueAlVerlo(c, m, modo, 1010);
-}
-
-void test_tactica_arco_y_giro_hacia_dentro(void) {
-    int modo = 0;
-    for (int k = 1; k <= 4; k++) if (tacticaDeModo(k) == TacticaArco) modo = k;
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(modo, 1);   // arco hacia la derecha
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, VelocidadTactica, VelocidadInteriorArcoLibre);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoArcoLibre);
-    assertMovimiento(m, -VelocidadGiroTactica, VelocidadGiroTactica);
-    comprobarAtaqueAlVerlo(c, m, modo, 1000 + TiempoArcoLibre + 10);
-}
-
-void test_tactica_termina_al_agotar_su_tiempo(void) {
-    for (int modo = 1; modo <= 4; modo++) {
-        const int t = tacticaDeModo(modo);
-        if (t == 0) continue;
-        ControlMovimiento c(CLASICO);
-        MotorMock m;
-        c.iniciarRutina(modo, 1);
-        c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-        const bool espera = t == TacticaContragolpe || t == TacticaEsperaEsquiva || t == TacticaDefensiva;
-        c.ejecutar({TipoAccion::Busqueda}, m, 1000 + (espera ? TiempoMaxEsperaTactica : TiempoMaxTactica) + 1);
-        TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-    }
-}
-
-void test_tactica_henka_retrocede_y_gira(void) {
-    int modo = 0;
-    for (int k = 1; k <= 4; k++) if (tacticaDeModo(k) == TacticaHenka) modo = k;
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(modo, 1);   // DIP3 a la derecha: la rueda derecha atrás a fondo
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, 0, -VelocidadTactica);
-    // Después, giro rápido hacia DIP3 hasta verlo
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoRetrocesoLibre);
-    assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
-    comprobarAtaqueAlVerlo(c, m, modo, 1000 + TiempoRetrocesoLibre + 10);
-}
-
-void test_tactica_contragolpe_espera_y_ataca(void) {
-    int modo = 0;
-    for (int k = 1; k <= 4; k++) if (tacticaDeModo(k) == TacticaContragolpe) modo = k;
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(modo, 1);
-    // Sin verlo: quieto
+    c.iniciarRutina(1, 1);
+    // Sin verlo: quieto; pasado Modo1TiempoQuieto, avanza despacio
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
     assertMovimiento(m, 0, 0);
-    TEST_ASSERT_EQUAL_INT(modo, c.rutinaActual());
-    // Lo ve un lateral derecho: gira rápido hacia él
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1500);
-    assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
-    comprobarAtaqueAlVerlo(c, m, modo, 1510);
-}
-
-static int modoConTactica(int tactica) {
-    for (int k = 1; k <= 4; k++) if (tacticaDeModo(k) == tactica) return k;
-    return 0;
-}
-
-void test_tactica_agresiva_carga_y_gira_a_fondo(void) {
-    const int modo = modoConTactica(TacticaAgresiva);
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(modo, 1);
-    // Sin verlo: recto a VelocidadTacticaSinVer (a fondo se saldría solo)
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, VelocidadTacticaSinVer, VelocidadTacticaSinVer);
-    // Lo ve el lateral izquierdo: gira a fondo hacia él
-    c.ejecutar({TipoAccion::DefensaIzq}, m, 1010);
-    assertMovimiento(m, -VelocidadTactica, VelocidadTactica);
-    comprobarAtaqueAlVerlo(c, m, modo, 1020);
-}
-
-void test_tactica_que_espera_avanza_lento_si_no_lo_ve(void) {
-    int modo = modoConTactica(TacticaDefensiva);
-    if (modo == 0) modo = modoConTactica(TacticaContragolpe);
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa una táctica que espera");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(modo, 1);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, 0, 0);
-    // Pasado TiempoQuietoTactica sin verlo: avanza despacio
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoQuietoTactica);
-    assertMovimiento(m, VelocidadAvanceEspera, VelocidadAvanceEspera);
-    TEST_ASSERT_EQUAL_INT(modo, c.rutinaActual());
-}
-
-void test_tactica_defensiva_recibe_parada_y_empuja(void) {
-    const int modo = modoConTactica(TacticaDefensiva);
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(modo, 1);
-    // Sin verlo: quieta; con un lateral, se encara
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, 0, 0);
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1500);
-    assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
-    // El frontal lo ve (confirmado): lo recibe parada con la pala
-    const unsigned long t = 1510;
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + Modo1TiempoQuieto);
+    assertMovimiento(m, Modo1VelocidadAvanceEspera, Modo1VelocidadAvanceEspera);
+    // Lo ve el lateral derecho: se encara
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1900);
+    assertMovimiento(m, Modo1VelocidadGiro, -Modo1VelocidadGiro);
+    // El frontal lo ve (confirmado): lo recibe parado con la pala
+    const unsigned long t = 1910;
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion);
     assertMovimiento(m, 0, 0);
-    TEST_ASSERT_EQUAL_INT(modo, c.rutinaActual());
-    // Pasado TiempoRecibirDefensa, empuja a fondo
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion + TiempoRecibirDefensa);
+    TEST_ASSERT_EQUAL_INT(1, c.rutinaActual());
+    // Pasado Modo1TiempoRecibir, empuja a fondo
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion + Modo1TiempoRecibir);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion + TiempoRecibirDefensa + 1);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion + Modo1TiempoRecibir + 1);
     TEST_ASSERT_EQUAL_INT(m.izq, m.der);
     TEST_ASSERT_TRUE(m.izq > VelocidadAtaque);
 }
 
-void test_tactica_predictiva_intercepta_y_recuerda_el_lado(void) {
-    const int modo = modoConTactica(TacticaPredictiva);
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa esta táctica");
+void test_modo2_contragolpe_espera_y_ataca(void) {
+    if (!UsarModosRumania) TEST_IGNORE_MESSAGE("sin modos de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
-    c.iniciarRutina(modo, -1);   // DIP3 a la izquierda
+    c.iniciarRutina(2, 1);
+    // Sin verlo: quieto; pasado Modo2TiempoQuieto, avanza despacio
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, 0, 0);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + Modo2TiempoQuieto);
+    assertMovimiento(m, Modo2VelocidadAvanceEspera, Modo2VelocidadAvanceEspera);
+    // Lo ve el lateral derecho: gira hacia él
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1900);
+    assertMovimiento(m, Modo2VelocidadGiro, -Modo2VelocidadGiro);
+    comprobarAtaqueAlVerlo(c, m, 2, 1910);
+}
+
+void test_modo3_predictivo_intercepta_y_recuerda_el_lado(void) {
+    if (!UsarModosRumania) TEST_IGNORE_MESSAGE("sin modos de Rumania");
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(3, -1);   // DIP3 a la izquierda
+    // Sin verlo: barre hacia DIP3
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, -Modo3VelocidadBarrido, Modo3VelocidadBarrido);
     // Lo ve el lateral derecho: avanza en arco hacia la derecha
     c.ejecutar({TipoAccion::DefensaDer}, m, 1010);
-    assertMovimiento(m, VelocidadTacticaSinVer, VelocidadInteriorPrediccion);
-    // Lo pierde: barre (lento) hacia donde lo vio (derecha), no hacia DIP3
+    assertMovimiento(m, Modo3VelocidadArco, Modo3VelocidadArcoInterior);
+    // Lo pierde: barre hacia donde lo vio (derecha), no hacia DIP3
     c.ejecutar({TipoAccion::Busqueda}, m, 1020);
-    assertMovimiento(m, VelocidadBarridoTactica, -VelocidadBarridoTactica);
-    comprobarAtaqueAlVerlo(c, m, modo, 1030);
+    assertMovimiento(m, Modo3VelocidadBarrido, -Modo3VelocidadBarrido);
+    comprobarAtaqueAlVerlo(c, m, 3, 1030);
+}
+
+void test_modo4_agresivo_avanza_y_gira_a_fondo(void) {
+    if (!UsarModosRumania) TEST_IGNORE_MESSAGE("sin modos de Rumania");
+    ControlMovimiento c(CLASICO);
+    MotorMock m;
+    c.iniciarRutina(4, 1);
+    // Sin verlo: recto a Modo4VelocidadAvance
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, Modo4VelocidadAvance, Modo4VelocidadAvance);
+    // Lo ve el lateral izquierdo: gira a fondo hacia él
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1010);
+    assertMovimiento(m, -Modo4VelocidadGiro, Modo4VelocidadGiro);
+    comprobarAtaqueAlVerlo(c, m, 4, 1020);
+}
+
+void test_modos_terminan_al_agotar_su_tiempo(void) {
+    if (!UsarModosRumania) TEST_IGNORE_MESSAGE("sin modos de Rumania");
+    const unsigned long maximo[] = {0, Modo1TiempoMax, Modo2TiempoMax, Modo3TiempoMax, Modo4TiempoMax};
+    for (int modo = 1; modo <= 4; modo++) {
+        ControlMovimiento c(CLASICO);
+        MotorMock m;
+        c.iniciarRutina(modo, 1);
+        c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+        TEST_ASSERT_EQUAL_INT(modo, c.rutinaActual());
+        c.ejecutar({TipoAccion::Busqueda}, m, 1000 + maximo[modo] + 1);
+        TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
+    }
 }
 
 int main(int, char**) {
@@ -1088,15 +987,10 @@ int main(int, char**) {
     RUN_TEST(test_round_1_mantiene_su_velocidad_tras_la_embestida);
     RUN_TEST(test_rutina_frente_espera_quieto_tras_avanzar);
     RUN_TEST(test_reiniciar_vuelve_al_estado_inicial);
-    RUN_TEST(test_tactica_pivote_hacia_dip3_y_ataque);
-    RUN_TEST(test_tactica_giro_rapido_y_ataque);
-    RUN_TEST(test_tactica_arco_y_giro_hacia_dentro);
-    RUN_TEST(test_tactica_termina_al_agotar_su_tiempo);
-    RUN_TEST(test_tactica_henka_retrocede_y_gira);
-    RUN_TEST(test_tactica_contragolpe_espera_y_ataca);
-    RUN_TEST(test_tactica_agresiva_carga_y_gira_a_fondo);
-    RUN_TEST(test_tactica_que_espera_avanza_lento_si_no_lo_ve);
-    RUN_TEST(test_tactica_defensiva_recibe_parada_y_empuja);
-    RUN_TEST(test_tactica_predictiva_intercepta_y_recuerda_el_lado);
+    RUN_TEST(test_modo1_defensivo_espera_recibe_y_empuja);
+    RUN_TEST(test_modo2_contragolpe_espera_y_ataca);
+    RUN_TEST(test_modo3_predictivo_intercepta_y_recuerda_el_lado);
+    RUN_TEST(test_modo4_agresivo_avanza_y_gira_a_fondo);
+    RUN_TEST(test_modos_terminan_al_agotar_su_tiempo);
     return UNITY_END();
 }

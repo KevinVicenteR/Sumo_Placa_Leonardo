@@ -27,7 +27,7 @@ MODOS = ["ninguno", "estatico", "errante", "agresivo"]
 
 
 def compilar(params: dict, banderas: tuple = ()) -> Path:
-    """Copia include/ aplicando los cambios a Parametros.h y compila."""
+    """Copia include/ aplicando los cambios de parámetros (en cualquier .h) y compila."""
     clave = hashlib.sha1(repr((sorted(params.items()), banderas)).encode()).hexdigest()[:10]
     inc = BUILD / f"include_{clave}"
     binario = BUILD / f"sim_{clave}"
@@ -37,9 +37,7 @@ def compilar(params: dict, banderas: tuple = ()) -> Path:
 
     for nombre, valor in params.items():
         total = 0
-        for fichero in ("Parametros.h", "ParametrosModo4.h"):
-            ruta = inc / fichero
-            if not ruta.exists(): continue
+        for ruta in sorted(inc.rglob("*.h")):
             texto, n = re.subn(rf"(constexpr[^=;\n]*\b{nombre}\s*=\s*)[^;]+;", rf"\g<1>{valor};", ruta.read_text())
             if n: ruta.write_text(texto)
             total += n

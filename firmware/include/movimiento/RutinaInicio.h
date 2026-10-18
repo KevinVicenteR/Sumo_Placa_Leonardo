@@ -16,6 +16,10 @@
 #include "movimiento/BusquedaRival.h"
 #include "movimiento/ControlAtaque.h"
 #include "estrategia/DecisionMovimiento.h"
+#include "movimiento/rumania/Modo1Defensivo.h"
+#include "movimiento/rumania/Modo2Contragolpe.h"
+#include "movimiento/rumania/Modo3Predictivo.h"
+#include "movimiento/rumania/Modo4Agresivo.h"
 
 class RutinaInicio {
 public:
@@ -40,16 +44,13 @@ private:
                          unsigned long ahora, unsigned long t, ControlAtaque& ataque);
     bool explorar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                   unsigned long ahora, unsigned long t, ControlAtaque& ataque);
-    bool tacticaRapida(int tactica, const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-                       unsigned long ahora, unsigned long t, ControlAtaque& ataque);
-    bool esquivando = false;
-    bool esquivado = false;
-    unsigned long inicioEsquiva = 0;
-    // Táctica defensiva: lo está recibiendo con el frontal y desde cuándo
-    bool recibiendo = false;
-    unsigned long inicioRecibir = 0;
-    // Táctica predictiva: último lado en que lo vio un sensor de 45° o lateral
-    int ultimoVisto = 0;
+    // Modos de Rumania (movimiento/rumania/): cada uno en su archivo
+    bool modoRumania(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
+                     unsigned long ahora, unsigned long t, ControlAtaque& ataque);
+    Modo1Defensivo modo1;
+    Modo2Contragolpe modo2;
+    Modo3Predictivo modo3;
+    Modo4Agresivo modo4;
 
     int rutina = 0;
     int lado = 1;

@@ -30,4 +30,16 @@ constexpr unsigned long TiempoEmbestida = 2500;
 // a 45° la rueda interior iría más rápida y el robot giraría al revés.
 static_assert(VelocidadCurva <= VelocidadAtaque, "VelocidadCurva debe ser <= VelocidadAtaque");
 
+// Rondas 1 y 2: al encontrar al rival embiste durante TiempoEmbestidaInicio,
+// subiendo poco a poco de VelocidadEmbestidaInicio a VelocidadEmbestidaMaxima
+// mientras lo tenga delante; después mantiene VelocidadAtaqueRound12.
+constexpr int VelocidadEmbestidaInicio = 160;
+constexpr int VelocidadEmbestidaMaxima = 160;
+constexpr int VelocidadAtaqueRound12 = 160;
+constexpr unsigned long TiempoEmbestidaInicio = 800;
+
+// Ataque a fondo de las rondas 3 y libre sin llegar a empujar durante este
+// tiempo: pasa al ataque normal (respeta el limitador de borde).
+constexpr unsigned long TiempoMaxAtaqueLibre = 150;
+
 #endif

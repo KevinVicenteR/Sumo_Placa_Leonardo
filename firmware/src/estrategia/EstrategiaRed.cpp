@@ -1,7 +1,7 @@
 #include "estrategia/EstrategiaRed.h"
 #include <Arduino.h>
 #include "movimiento/ControlMovimiento.h"
-#include "ParametrosModo4.h"
+#include "Parametros.h"
 
 DecisionMovimiento EstrategiaRed::elegirContraEnemigo(const LecturasSensores& l) {
     const unsigned long ahora = millis();

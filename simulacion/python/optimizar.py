@@ -47,7 +47,7 @@ CANDIDATOS = {
     "TiempoEmbestidaInicio": [400, 800, 1500],
     "ResistirEnBorde": ["true", "false"],
     # Giros y búsqueda
-    "VelocidadGiroInicio": [150, 180, 220],
+    "Ronda1VelocidadGiro": [150, 180, 220],
     "VelocidadPivoteLateral": [140, 180, 220],
     "VelocidadAvance": [80, 130],
 }

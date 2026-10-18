@@ -1,5 +1,5 @@
 #include "movimiento/ControlMovimiento.h"
-#include "ParametrosModo4.h"
+#include "Parametros.h"
 
 void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     mejorasEsteCiclo = mejorasActivas();

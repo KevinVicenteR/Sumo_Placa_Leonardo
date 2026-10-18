@@ -1,13 +1,10 @@
 // RutinaInicio.h — Primer movimiento de cada round (elegido con los DIP)
-//   1 = espalda con espalda: media vuelta en el sitio hacia el lado de DIP3
-//       hasta ver al rival de frente (como en la rama con_control).
-//   2 = lado a lado: (opcional) avanza para esquivar y gira hacia el rival.
-//   3 = enfrentados: avanza hacia el centro y espera al rival.
-//   4 = salida libre (en cualquier parte del dohyo): gira en el sitio hasta que
-//       cualquier sensor vea al rival.
-//   0 = sin rutina.
-// Al encontrar al rival (rondas 1 y 2) frena el giro y empieza la embestida.
-// Ver la línea cancela la rutina (lo hace ControlMovimiento).
+// Cada ronda está en su archivo de movimiento/rondas/ con sus velocidades,
+// sus tiempos y su lógica:
+//   1 = espalda con espalda (Ronda1.h)   2 = lado a lado (Ronda2.h)
+//   3 = enfrentados (Ronda3.h)           4 = salida libre (Libre.h)
+//   0 = sin ronda.
+// Ver la línea cancela la ronda (lo hace ControlMovimiento).
 #ifndef RUTINA_INICIO_H
 #define RUTINA_INICIO_H
 
@@ -16,11 +13,10 @@
 #include "movimiento/BusquedaRival.h"
 #include "movimiento/ControlAtaque.h"
 #include "estrategia/DecisionMovimiento.h"
-#include "movimiento/modos/ModoDefensivo.h"
-#include "movimiento/modos/ModoContragolpe.h"
-#include "movimiento/modos/ModoLado.h"
-#include "movimiento/modos/ModoAgresivo.h"
-#include "movimiento/modos/ModoArco.h"
+#include "movimiento/rondas/Ronda1.h"
+#include "movimiento/rondas/Ronda2.h"
+#include "movimiento/rondas/Ronda3.h"
+#include "movimiento/rondas/Libre.h"
 
 class RutinaInicio {
 public:
@@ -28,44 +24,28 @@ public:
     void iniciar(int rutinaElegida, int lado);
     void cancelar() { rutina = 0; }
 
-    // Rutina en marcha (0 = ninguna)
+    // Ronda en marcha (0 = ninguna)
     int actual() const { return rutina; }
-    // Se eligió una rutina al empezar (desactiva el arranque suave)
+    // Se eligió una ronda al empezar (desactiva el arranque suave)
     bool elegida() const { return conRutina; }
 
-    // Un ciclo de la rutina. Devuelve true mientras siga en marcha.
+    // Un ciclo de la ronda. Devuelve true mientras siga en marcha.
     bool continuar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                    unsigned long ahora, BusquedaRival& busqueda, ControlAtaque& ataque);
 
 private:
-    bool girar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-               unsigned long ahora, unsigned long t, BusquedaRival& busqueda, ControlAtaque& ataque);
-    void decidirLado(const DecisionMovimiento& decision, BusquedaRival& busqueda);
-    bool avanzarAlCentro(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-                         unsigned long ahora, unsigned long t, ControlAtaque& ataque);
-    bool explorar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-                  unsigned long ahora, unsigned long t, ControlAtaque& ataque);
-    // Estilos de arranque (movimiento/modos/): cada uno en su archivo
-    bool estiloArranque(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-                     unsigned long ahora, unsigned long t, ControlAtaque& ataque);
-    ModoDefensivo defensivo;
-    ModoContragolpe contragolpe;
-    ModoLado deLado;
-    ModoAgresivo agresivo;
-    ModoArco arco;
+    Ronda1 ronda1;
+    Ronda2 ronda2;
+    Ronda3 ronda3;
+    Libre libre;
 
     int rutina = 0;
     int lado = 1;
     bool conRutina = false;
     bool enCurso = false;
     unsigned long inicio = 0;
-    // Ronda 2: el lado ya lo decidió un sensor lateral
-    bool ladoDecidido = false;
+    // El frontal ve al rival (confirmado), para las rondas 3 y libre
     Confirmacion rivalVisto;
-    // Frenado del giro al encontrar al rival
-    bool frenandoGiro = false;
-    unsigned long inicioFreno = 0;
-    Freno freno;
 };
 
 #endif

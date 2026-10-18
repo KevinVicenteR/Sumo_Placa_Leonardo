@@ -4,7 +4,7 @@
 #include "estrategia/EstrategiaCompetencia.h"
 #include "estrategia/EstrategiaReglas.h"
 #include "movimiento/RedControl.h"
-#include "ParametrosModo4.h"
+#include "Parametros.h"
 extern unsigned long g_millis;
 static std::vector<int8_t> logica, motores;
 void setUp() {

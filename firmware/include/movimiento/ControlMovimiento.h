@@ -21,7 +21,7 @@
 #include "movimiento/ControlAtaque.h"
 #include "movimiento/LimitadorBorde.h"
 #include "Parametros.h"
-#include "ParametrosModo4.h"
+#include "Parametros.h"
 #include "movimiento/ControlRedModo4.h"
 
 class ControlMovimiento: public IControlMovimiento {

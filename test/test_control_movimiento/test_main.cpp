@@ -1,7 +1,7 @@
 #include <unity.h>
 #include "movimiento/ControlMovimiento.h"
 #include "Parametros.h"
-#include "ParametrosModo4.h"
+#include "Parametros.h"
 #include "Arduino.h"
 
 // Comportamiento clásico: sin rampa y búsqueda con giro en el sitio
@@ -44,8 +44,6 @@ static void assertMovimiento(MotorMock& m, int izq, int der, bool modo4 = false)
     assertMotores(m, izq, der);
 }
 
-static unsigned long tiempoMaxEstilo(int estilo);
-
 static void assertRetrocede(MotorMock& m) {
     assertMovimiento(m, -VelocidadRetroceso, -VelocidadRetroceso);
 }
@@ -74,14 +72,14 @@ static void venirAvanzando(ControlMovimiento& c, MotorMock& m, unsigned long has
 // Giro del round 2 hacia el lado del rival: pivote sobre una rueda o en el sitio
 // Giro del round 1 (lado 1 = derecha): media vuelta en el sitio
 static void assertGiroRound1(MotorMock& m, int lado) {
-    assertMovimiento(m, lado * VelocidadGiroInicio, -lado * VelocidadGiroInicio);
+    assertMovimiento(m, lado * Ronda1VelocidadGiro, -lado * Ronda1VelocidadGiro);
 }
 
 static void assertGiroRound2(MotorMock& m, int lado) {
-    if (PivoteRound2) {
-        assertMovimiento(m, lado > 0 ? VelocidadPivoteInicio : 0, lado > 0 ? 0 : VelocidadPivoteInicio);
+    if (Ronda2Pivote) {
+        assertMovimiento(m, lado > 0 ? Ronda2VelocidadPivote : 0, lado > 0 ? 0 : Ronda2VelocidadPivote);
     } else {
-        assertMovimiento(m, lado * VelocidadGiroRound2, -lado * VelocidadGiroRound2);
+        assertMovimiento(m, lado * Ronda2VelocidadGiro, -lado * Ronda2VelocidadGiro);
     }
 }
 
@@ -549,29 +547,28 @@ void test_arranque_no_dispara_aunque_tres_frontales_vean_enemigo() {
 }
 
 void test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro(void) {
-    if (estiloDeModo(1) != EstiloRutina) TEST_IGNORE_MESSAGE("el modo 1 usa un estilo de arranque");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(1, 1);
 
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    if (TiempoEsquivaRound1 > 0) {
+    if (Ronda1TiempoEsquiva > 0) {
         // Primero se separa del rival (están pegados) avanzando recto
-        assertMovimiento(m, VelocidadEsquiva, VelocidadEsquiva);
+        assertMovimiento(m, Ronda1VelocidadEsquiva, Ronda1VelocidadEsquiva);
     }
     // El giro empieza al terminar la esquiva
-    const unsigned long g = 1000 + TiempoEsquivaRound1;
+    const unsigned long g = 1000 + Ronda1TiempoEsquiva;
     c.ejecutar({TipoAccion::Busqueda}, m, g);
     assertGiroRound1(m, 1);
     // Lo ve con el lateral del lado hacia el que gira: sigue girando igual
     c.ejecutar({TipoAccion::DefensaDer}, m, g + TauRuedas);
     assertGiroRound1(m, 1);
     // Un frontal antes del giro mínimo (un reflejo) no lo detiene
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, g + TiempoMinimoGiroEspalda / 2);
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, g + TiempoMinimoGiroEspalda / 2 + ConfirmacionDeteccion);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, g + Ronda1TiempoMinimoGiro / 2);
+    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, g + Ronda1TiempoMinimoGiro / 2 + ConfirmacionDeteccion);
     assertGiroRound1(m, 1);
     // De frente y confirmado tras el mínimo: contragiro para no pasarse de largo
-    const unsigned long visto = g + TiempoMinimoGiroEspalda + 2 * TauRuedas;
+    const unsigned long visto = g + Ronda1TiempoMinimoGiro + 2 * TauRuedas;
     c.ejecutar({TipoAccion::Busqueda}, m, visto - 1);
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto);
     assertGiroRound1(m, 1);
@@ -586,64 +583,20 @@ void test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro(void) {
 }
 
 void test_rutina_lado_gira_hacia_el_lado_del_rival(void) {
-    if (estiloDeModo(2) != EstiloRutina) TEST_IGNORE_MESSAGE("el modo 2 usa un estilo de arranque");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(2, -1);
     c.ejecutar({TipoAccion::DefensaIzq}, m, 1000);
-    if (TiempoEsquivaRound2 > 0) {
+    if (Ronda2TiempoEsquiva > 0) {
         // Primero esquiva la embestida avanzando recto
-        assertMovimiento(m, VelocidadEsquiva, VelocidadEsquiva);
-        c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoEsquivaRound2);
+        assertMovimiento(m, Ronda2VelocidadEsquiva, Ronda2VelocidadEsquiva);
+        c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + Ronda2TiempoEsquiva);
     }
     // Gira hacia la izquierda (pivote sobre la rueda izquierda o en el sitio)
     assertGiroRound2(m, -1);
     // Sin encontrarlo, termina al agotar su tiempo
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoEsquivaRound2 + TiempoMaxGiroLado);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + Ronda2TiempoEsquiva + Ronda2TiempoMaxGiro);
     TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-}
-
-void test_rutina_frente_avanza_hasta_ver_al_rival(void) {
-    if (estiloDeModo(3) != EstiloRutina) TEST_IGNORE_MESSAGE("el modo 3 usa un estilo de arranque");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(3, 1);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der);
-    // Una detección al principio no corta el avance
-    c.ejecutar({TipoAccion::CorregirIzq}, m, 1010);
-    c.ejecutar({TipoAccion::CorregirIzq}, m, 1010 + ConfirmacionDeteccion);
-    TEST_ASSERT_EQUAL_INT(3, c.rutinaActual());
-    // Confirmada tras el mínimo, sí
-    c.ejecutar({TipoAccion::CorregirIzq}, m, 1000 + TiempoMinimoAvanceInicio + ConfirmacionDeteccion);
-    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-}
-
-void test_rutina_frente_acelera_poco_a_poco_contra_el_rival(void) {
-    if (estiloDeModo(3) != EstiloRutina) TEST_IGNORE_MESSAGE("el modo 3 usa un estilo de arranque");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(3, 1);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    // Lo ve de frente: va contra él empezando a la velocidad lenta del avance
-    const unsigned long visto = 1000 + TiempoMinimoAvanceInicio;
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto);
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion);
-    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-    TEST_ASSERT_TRUE(m.izq > 0 && m.izq <= VelocidadAvanceInicio + 5 && m.izq == m.der);
-    // A mitad de la aceleración va más rápido, pero aún no a fondo
-    int antes = m.izq;
-    for (unsigned long t = visto + 10; t <= visto + TiempoAceleracionRound3 / 2; t += 10) {
-        c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
-    }
-    TEST_ASSERT_TRUE(m.izq > antes && m.izq < VelocidadEmpuje);
-    // Sigue subiendo, sin pasar nunca del ataque normal
-    antes = m.izq;
-    for (unsigned long t = visto + TiempoAceleracionRound3 / 2; t <= visto + TiempoEmbestida + 300; t += 10) {
-        c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
-    }
-    TEST_ASSERT_TRUE(m.izq > antes);
-    TEST_ASSERT_EQUAL_INT(VelocidadEmpuje, m.izq);
 }
 
 void test_la_linea_cancela_la_rutina(void) {
@@ -697,82 +650,41 @@ void test_sin_interruptores_la_rutina_es_la_del_round_1(void) {
     TEST_ASSERT_EQUAL_INT(1, rutinaSegunInterruptores(4));  // DIP3 solo elige el lado
 }
 
-void test_rutina_frente_reacciona_a_los_laterales(void) {
-    if (estiloDeModo(3) != EstiloRutina) TEST_IGNORE_MESSAGE("el modo 3 usa un estilo de arranque");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(3, 1);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    // Rival visto por el lateral izquierdo: termina la rutina y gira hacia él
-    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoMinimoAvanceInicio);
-    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + TiempoMinimoAvanceInicio + 2 * ConfirmacionDeteccion);
-    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-    TEST_ASSERT_TRUE(m.izq < m.der);
-}
-
-void test_rutina_libre_gira_hasta_ver_al_rival(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(4, -1);
-    if (estiloDeModo(4) != EstiloRutina) TEST_IGNORE_MESSAGE("el modo 4 usa un estilo de arranque");
-    // Sin ver nada: gira en el sitio hacia el lado de DIP3
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, -VelocidadGiroRound4, VelocidadGiroRound4);
-    TEST_ASSERT_EQUAL_INT(4, c.rutinaActual());
-    // Un lateral lo ve: termina la rutina y gira hacia él
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1100);
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1100 + 2 * ConfirmacionDeteccion);
-    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-    TEST_ASSERT_TRUE(m.izq > m.der);
-}
-
-void test_rutina_libre_termina_al_agotar_su_tiempo(void) {
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(4, 1);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    c.ejecutar({TipoAccion::Busqueda}, m,
-               1000 + (estiloDeModo(4) == EstiloRutina ? TiempoMaxGiroRound4 : tiempoMaxEstilo(estiloDeModo(4))) + 1);
-    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-}
-
 void test_rutina_lado_elige_el_lado_con_el_sensor_lateral(void) {
-    if (estiloDeModo(2) != EstiloRutina) TEST_IGNORE_MESSAGE("el modo 2 usa un estilo de arranque");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     // El DIP3 dice izquierda, pero el lateral derecho ve al rival: pivota a la derecha
     c.iniciarRutina(2, -1);
     c.ejecutar({TipoAccion::DefensaDer}, m, 1000);
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1000 + TiempoEsquivaRound2);
+    c.ejecutar({TipoAccion::DefensaDer}, m, 1000 + Ronda2TiempoEsquiva);
     assertGiroRound2(m, 1);
     // Una vez decidido, no cambia de lado aunque luego lo vea el otro lateral
-    c.ejecutar({TipoAccion::DefensaIzq}, m, 1010 + TiempoEsquivaRound2);
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1010 + Ronda2TiempoEsquiva);
     assertGiroRound2(m, 1);
 }
 
 // El sensor lateral ve al rival al empezar, pero al avanzar en la esquiva lo
 // deja atrás y ya no lo ve: aun así gira hacia ese lado, no hacia el de DIP3
 void test_rutina_lado_recuerda_el_lado_visto_durante_la_esquiva(void) {
-    if (TiempoEsquivaRound2 == 0) {
+    if (Ronda2TiempoEsquiva == 0) {
         return;
     }
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(2, -1);                               // DIP3: izquierda
     c.ejecutar({TipoAccion::DefensaDer}, m, 1000);        // el lateral derecho lo ve
-    assertMovimiento(m, VelocidadEsquiva, VelocidadEsquiva);
+    assertMovimiento(m, Ronda2VelocidadEsquiva, Ronda2VelocidadEsquiva);
     c.ejecutar({TipoAccion::Busqueda}, m, 1050);          // al avanzar deja de verlo
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoEsquivaRound2);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + Ronda2TiempoEsquiva);
     assertGiroRound2(m, 1);                               // gira a la derecha
 }
 
 void test_rutina_lado_sin_lateral_usa_el_dip3(void) {
-    if (estiloDeModo(2) != EstiloRutina) TEST_IGNORE_MESSAGE("el modo 2 usa un estilo de arranque");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(2, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoEsquivaRound2);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + Ronda2TiempoEsquiva);
     assertGiroRound2(m, 1);
 }
 
@@ -789,12 +701,11 @@ void test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado(void) {
 }
 
 void test_round_1_mantiene_su_velocidad_tras_la_embestida(void) {
-    if (estiloDeModo(1) != EstiloRutina) TEST_IGNORE_MESSAGE("el modo 1 usa un estilo de arranque");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(1, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    const unsigned long visto = 1000 + TiempoEsquivaRound1 + TiempoMinimoGiroEspalda + 2 * TauRuedas;
+    const unsigned long visto = 1000 + Ronda1TiempoEsquiva + Ronda1TiempoMinimoGiro + 2 * TauRuedas;
     // Al girar, el rival pasa primero por el sensor de 45° y luego queda de frente
     c.ejecutar({TipoAccion::CorregirDer}, m, visto - 20);
     c.ejecutar({TipoAccion::Busqueda}, m, visto - 1);
@@ -815,25 +726,7 @@ void test_round_1_mantiene_su_velocidad_tras_la_embestida(void) {
     TEST_ASSERT_EQUAL_INT(VelocidadEmpuje, m.izq);
 }
 
-void test_rutina_frente_espera_quieto_tras_avanzar(void) {
-    if (!EsperarRound3) {
-        return;
-    }
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(3, 1);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + TiempoAvanceInicio + 1);
-    assertMovimiento(m, 0, 0);
-    TEST_ASSERT_EQUAL_INT(3, c.rutinaActual());
-    // Esperando, un lateral confirmado sí termina la rutina
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1000 + TiempoAvanceInicio + 10);
-    c.ejecutar({TipoAccion::DefensaDer}, m, 1000 + TiempoAvanceInicio + 10 + ConfirmacionDeteccion);
-    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-}
-
 void test_reiniciar_vuelve_al_estado_inicial(void) {
-    if (estiloDeModo(1) != EstiloRutina) TEST_IGNORE_MESSAGE("el modo 1 usa un estilo de arranque");
     ControlMovimiento c(CLASICO);
     MotorMock m;
     c.iniciarRutina(1, 1);
@@ -845,7 +738,7 @@ void test_reiniciar_vuelve_al_estado_inicial(void) {
     // Tras reiniciar, una nueva rutina arranca normalmente
     c.iniciarRutina(1, 1);
     c.ejecutar({TipoAccion::Busqueda}, m, 5000);
-    c.ejecutar({TipoAccion::Busqueda}, m, 5000 + TiempoEsquivaRound1);
+    c.ejecutar({TipoAccion::Busqueda}, m, 5000 + Ronda1TiempoEsquiva);
     assertGiroRound1(m, 1);
 }
 
@@ -861,116 +754,50 @@ static void comprobarAtaqueAlVerlo(ControlMovimiento& c, MotorMock& m, int modo,
     TEST_ASSERT_TRUE(modo == 3 && !ColocacionLibre ? m.izq > 0 : m.izq > VelocidadAtaque);
 }
 
-// Modo (1-4) que usa este estilo de arranque (0 = ninguno)
-static int modoConEstilo(int estilo) {
-    for (int k = 1; k <= 4; k++) if (estiloDeModo(k) == estilo) return k;
-    return 0;
-}
 
-static unsigned long tiempoMaxEstilo(int estilo) {
-    return estilo == EstiloDefensivo ? DefensivoTiempoMax : estilo == EstiloContragolpe ? ContragolpeTiempoMax
-         : estilo == EstiloLado ? LadoTiempoMax : estilo == EstiloAgresivo ? AgresivoTiempoMax : ArcoTiempoMax;
-}
 
-void test_estilo_defensivo_espera_recibe_y_empuja(void) {
-    const int modo = modoConEstilo(EstiloDefensivo);
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa este estilo");
+void test_ronda3_contragolpe_espera_y_ataca(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
-    c.iniciarRutina(modo, 1);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, 0, 0, modo == 4);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + DefensivoTiempoQuieto);
-    assertMovimiento(m, DefensivoVelocidadAvanceEspera, DefensivoVelocidadAvanceEspera, modo == 4);
-    const unsigned long d = 1000 + (DefensivoTiempoMinimo > DefensivoTiempoQuieto ? DefensivoTiempoMinimo : DefensivoTiempoQuieto) + 10;
-    c.ejecutar({TipoAccion::DefensaDer}, m, d);
-    assertMovimiento(m, DefensivoVelocidadGiro, -DefensivoVelocidadGiro, modo == 4);
-    const unsigned long t = d + 10;
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t);
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion);
-    assertMovimiento(m, 0, 0, modo == 4);
-    TEST_ASSERT_EQUAL_INT(modo, c.rutinaActual());
-    c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, t + 2 * ConfirmacionDeteccion + DefensivoTiempoRecibir);
-    TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
-}
-
-void test_estilo_contragolpe_espera_y_ataca(void) {
-    const int modo = modoConEstilo(EstiloContragolpe);
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa este estilo");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(modo, 1);
+    c.iniciarRutina(3, 1);
     // Primero, siempre quieto: aunque un lateral lo vea, no gira
-    c.ejecutar(ContragolpeTiempoMinimo > 0 ? DecisionMovimiento{TipoAccion::DefensaDer} : DecisionMovimiento{TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, 0, 0, modo == 4);
-    // Sin verlo: pasado ContragolpeTiempoQuieto, avanza despacio
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + ContragolpeTiempoQuieto);
-    assertMovimiento(m, ContragolpeVelocidadAvanceEspera, ContragolpeVelocidadAvanceEspera, modo == 4);
+    c.ejecutar(Ronda3TiempoMinimo > 0 ? DecisionMovimiento{TipoAccion::DefensaDer} : DecisionMovimiento{TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, 0, 0);
+    // Sin verlo: pasado Ronda3TiempoQuieto, avanza despacio
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + Ronda3TiempoQuieto);
+    assertMovimiento(m, Ronda3VelocidadAvanceEspera, Ronda3VelocidadAvanceEspera);
     // Tras la maniobra inicial, lo ve el lateral derecho: gira hacia él
-    const unsigned long d = 1000 + (ContragolpeTiempoMinimo > ContragolpeTiempoQuieto ? ContragolpeTiempoMinimo : ContragolpeTiempoQuieto) + 10;
+    const unsigned long d = 1000 + (Ronda3TiempoMinimo > Ronda3TiempoQuieto ? Ronda3TiempoMinimo : Ronda3TiempoQuieto) + 10;
     c.ejecutar({TipoAccion::DefensaDer}, m, d);
-    assertMovimiento(m, ContragolpeVelocidadGiro, -ContragolpeVelocidadGiro, modo == 4);
-    comprobarAtaqueAlVerlo(c, m, modo, d + 10);
+    assertMovimiento(m, Ronda3VelocidadGiro, -Ronda3VelocidadGiro);
+    comprobarAtaqueAlVerlo(c, m, 3, d + 10);
 }
 
-void test_estilo_lado_pivota_hacia_el_rival(void) {
-    const int modo = modoConEstilo(EstiloLado);
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa este estilo");
+void test_libre_arco_y_giro_hacia_dentro(void) {
     ControlMovimiento c(CLASICO);
     MotorMock m;
-    c.iniciarRutina(modo, -1);   // DIP3: rival a la izquierda
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, 0, LadoVelocidadGiro, modo == 4);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + LadoTiempoGiro);
-    assertMovimiento(m, 0, LadoVelocidadBarrido, modo == 4);
-    const unsigned long d = 1000 + (LadoTiempoMinimo > LadoTiempoGiro ? LadoTiempoMinimo : LadoTiempoGiro) + 10;
-    c.ejecutar({TipoAccion::DefensaDer}, m, d);
-    assertMovimiento(m, LadoVelocidadGiro, 0, modo == 4);
-    comprobarAtaqueAlVerlo(c, m, modo, d + 10);
-}
-
-void test_estilo_agresivo_avanza_y_gira_a_fondo(void) {
-    const int modo = modoConEstilo(EstiloAgresivo);
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa este estilo");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(modo, 1);
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, AgresivoVelocidadAvance, AgresivoVelocidadAvance, modo == 4);
-    const unsigned long d = 1000 + AgresivoTiempoMinimo + 10;
-    c.ejecutar({TipoAccion::DefensaIzq}, m, d);
-    assertMovimiento(m, -AgresivoVelocidadGiro, AgresivoVelocidadGiro, modo == 4);
-    comprobarAtaqueAlVerlo(c, m, modo, d + 10);
-}
-
-void test_estilo_arco_y_giro_hacia_dentro(void) {
-    const int modo = modoConEstilo(EstiloArco);
-    if (modo == 0) TEST_IGNORE_MESSAGE("ningún modo usa este estilo");
-    ControlMovimiento c(CLASICO);
-    MotorMock m;
-    c.iniciarRutina(modo, -1);   // DIP3 a la izquierda
+    c.iniciarRutina(4, -1);   // DIP3 a la izquierda
     // Arco a fondo hacia la izquierda
     c.ejecutar({TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, ArcoVelocidadInterior, ArcoVelocidad, modo == 4);
+    assertMovimiento(m, LibreVelocidadArcoInterior, LibreVelocidadArco, true);
     // Tras el arco, sin verlo: giro hacia dentro (derecha)
-    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + ArcoTiempo);
-    assertMovimiento(m, ArcoVelocidadGiro, -ArcoVelocidadGiro, modo == 4);
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + LibreTiempoArco);
+    assertMovimiento(m, LibreVelocidadGiro, -LibreVelocidadGiro, true);
     // Un lateral lo ve: gira hacia ese lado
-    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + ArcoTiempo + 10);
-    assertMovimiento(m, -ArcoVelocidadGiro, ArcoVelocidadGiro, modo == 4);
-    comprobarAtaqueAlVerlo(c, m, modo, 1000 + ArcoTiempo + 20);
+    c.ejecutar({TipoAccion::DefensaIzq}, m, 1000 + LibreTiempoArco + 10);
+    assertMovimiento(m, -LibreVelocidadGiro, LibreVelocidadGiro, true);
+    comprobarAtaqueAlVerlo(c, m, 4, 1000 + LibreTiempoArco + 20);
 }
 
-void test_estilos_terminan_al_agotar_su_tiempo(void) {
-    for (int modo = 1; modo <= 4; modo++) {
-        const int estilo = estiloDeModo(modo);
-        if (estilo == EstiloRutina) continue;
+void test_rondas_3_y_libre_terminan_al_agotar_su_tiempo(void) {
+    const unsigned long maximo[] = {0, 0, 0, Ronda3TiempoMax, LibreTiempoMax};
+    for (int modo = 3; modo <= 4; modo++) {
         ControlMovimiento c(CLASICO);
         MotorMock m;
         c.iniciarRutina(modo, 1);
         c.ejecutar({TipoAccion::Busqueda}, m, 1000);
         TEST_ASSERT_EQUAL_INT(modo, c.rutinaActual());
-        c.ejecutar({TipoAccion::Busqueda}, m, 1000 + tiempoMaxEstilo(estilo) + 1);
+        c.ejecutar({TipoAccion::Busqueda}, m, 1000 + maximo[modo] + 1);
         TEST_ASSERT_EQUAL_INT(0, c.rutinaActual());
     }
 }
@@ -1001,27 +828,18 @@ int main(int, char**) {
     RUN_TEST(test_cerca_del_borde_limita_tambien_el_ataque);
     RUN_TEST(test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro);
     RUN_TEST(test_rutina_lado_gira_hacia_el_lado_del_rival);
-    RUN_TEST(test_rutina_frente_avanza_hasta_ver_al_rival);
-    RUN_TEST(test_rutina_frente_acelera_poco_a_poco_contra_el_rival);
     RUN_TEST(test_la_linea_cancela_la_rutina);
     RUN_TEST(test_linea_sin_venir_avanzando);
     RUN_TEST(test_sin_interruptores_la_rutina_es_la_del_round_1);
     RUN_TEST(test_giro_lateral_ignora_un_frontal_antes_del_giro_minimo);
-    RUN_TEST(test_rutina_frente_reacciona_a_los_laterales);
-    RUN_TEST(test_rutina_libre_gira_hasta_ver_al_rival);
-    RUN_TEST(test_rutina_libre_termina_al_agotar_su_tiempo);
     RUN_TEST(test_rutina_lado_elige_el_lado_con_el_sensor_lateral);
     RUN_TEST(test_rutina_lado_sin_lateral_usa_el_dip3);
     RUN_TEST(test_rutina_lado_recuerda_el_lado_visto_durante_la_esquiva);
     RUN_TEST(test_visto_a_45_pivota_sobre_la_rueda_de_ese_lado);
     RUN_TEST(test_round_1_mantiene_su_velocidad_tras_la_embestida);
-    RUN_TEST(test_rutina_frente_espera_quieto_tras_avanzar);
     RUN_TEST(test_reiniciar_vuelve_al_estado_inicial);
-    RUN_TEST(test_estilo_defensivo_espera_recibe_y_empuja);
-    RUN_TEST(test_estilo_contragolpe_espera_y_ataca);
-    RUN_TEST(test_estilo_lado_pivota_hacia_el_rival);
-    RUN_TEST(test_estilo_agresivo_avanza_y_gira_a_fondo);
-    RUN_TEST(test_estilo_arco_y_giro_hacia_dentro);
-    RUN_TEST(test_estilos_terminan_al_agotar_su_tiempo);
+    RUN_TEST(test_ronda3_contragolpe_espera_y_ataca);
+    RUN_TEST(test_libre_arco_y_giro_hacia_dentro);
+    RUN_TEST(test_rondas_3_y_libre_terminan_al_agotar_su_tiempo);
     return UNITY_END();
 }

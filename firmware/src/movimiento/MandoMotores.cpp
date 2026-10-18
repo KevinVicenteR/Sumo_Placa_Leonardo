@@ -90,8 +90,8 @@ bool MandoMotores::calcularFreno(unsigned long duracionMaxima, Freno& freno) con
         return false;
     }
     // Cada rueda frena en sentido contrario a su giro, y más tiempo cuanto más rápido iba
-    freno.izq = -izq * VelocidadFreno / mayor;
-    freno.der = -der * VelocidadFreno / mayor;
+    freno.izq = FrenoActivo ? -izq * VelocidadFreno / mayor : 0;
+    freno.der = FrenoActivo ? -der * VelocidadFreno / mayor : 0;
     freno.duracion = duracionMaxima * mayor / VelocidadMaxima;
     return true;
 }

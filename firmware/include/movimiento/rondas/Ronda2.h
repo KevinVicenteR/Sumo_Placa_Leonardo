@@ -12,7 +12,7 @@
 // --- Velocidades (PWM 0-255) ---
 // true = pivota sobre la rueda del lado del rival (esa rueda parada y la otra
 // empujando), avanzando a la vez contra él; false = gira en el sitio.
-constexpr bool Ronda2Pivote = true;
+constexpr bool Ronda2Pivote = false; // X3: giro en el sitio.
 constexpr int Ronda2VelocidadPivote = 180;        // rueda que empuja en el pivote
 // Giro en el sitio (con Ronda2Pivote = false): el rival está al lado, girar
 // despacio le deja golpear

@@ -11,6 +11,8 @@ constexpr int VelocidadEmpuje = 255;
 // Rival en los tres sensores delanteros a la vez: es un robot cercano (un reflejo
 // no ocupa tres sensores), así que ataca ya a esta velocidad (0 = sin efecto).
 constexpr int VelocidadAtaqueDirecto = 0;
+// Central y algún sensor de 45°: ataque inmediato, sin subida gradual.
+constexpr int VelocidadAtaqueVariosFrontales = 255;
 // Rival de frente y también en un sensor de 45°: la rueda de ese lado va a
 // este porcentaje de la otra para centrarlo sin dejar de empujar.
 constexpr int PorcentajeAjuste = 85;

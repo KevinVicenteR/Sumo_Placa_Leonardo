@@ -1,4 +1,4 @@
-// Parametros.h — Índice de todos los valores ajustables del robot
+// Parametros.h — Valores ajustables del Sumo X3 (motores de 400 rpm)
 // Cada grupo está en el archivo de la parte del robot que controla:
 //   sensores/ParametrosSensores.h               sensores de enemigo y de piso
 //   hardware/ParametrosArranque.h               módulo de START, espera de 5 s y DIP

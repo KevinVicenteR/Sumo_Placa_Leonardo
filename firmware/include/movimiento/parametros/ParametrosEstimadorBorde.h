@@ -19,7 +19,7 @@ constexpr float SeparacionSensoresPiso = 0.04f;   // a cada lado del centro
 constexpr float TrochaRuedas = 0.085f;            // distancia entre ruedas
 // Modelo de las ruedas: VelocidadRuedaMaxima (m/s) a PWM 255, parada por
 // debajo de ZonaMuertaPwm y constante de tiempo TauRuedaEstimador (s).
-constexpr float VelocidadRuedaMaxima = 1.0f;
+constexpr float VelocidadRuedaMaxima = 0.53f; // X3: motores de 400 rpm
 constexpr int ZonaMuertaPwm = 40;
 constexpr float TauRuedaEstimador = 0.06f;
 // Al arrancar puede estar hasta a esta distancia del centro, con rumbo desconocido.

@@ -18,4 +18,9 @@ struct LecturasSensores {
     bool latDer;
 };
 
+// Bits de los sensores que detectan realmente al rival.
+inline unsigned char bitsRival(const LecturasSensores& l) {
+    return l.latIzq | l.c45Izq << 1 | l.frontal << 2 | l.c45Der << 3 | l.latDer << 4;
+}
+
 #endif

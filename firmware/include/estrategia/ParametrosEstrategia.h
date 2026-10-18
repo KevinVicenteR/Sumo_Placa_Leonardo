@@ -16,7 +16,7 @@ constexpr bool UsarRedLogica = true;
 constexpr bool UsarRedControl = true;
 // Selección según pruebas por modo (25 200 combates a 77 cm). Las redes actúan
 // en los modos 1 y 3 solo después de su rutina de inicio; el modo 3 va de frente.
-// pesos_neuronales_rutina3v2: los modos 1-3 se comportan como en la rama
+// Sumo X3 sobre rutina3v2: los modos 1-3 se comportan como en la rama
 // secihti (estrategia clásica todo el combate, giros en el sitio); las redes,
 // el control por red y el pivote solo actúan en el modo 4.
 constexpr bool MejorasEnModos1a3 = false;

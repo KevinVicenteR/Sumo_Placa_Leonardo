@@ -26,7 +26,10 @@ struct DecisionMovimiento {
     bool cercaBorde;      // un sensor de piso empieza a ver claro
     bool ataqueDirecto;   // los tres sensores delanteros ven al rival
     int errorRival;        // ruta mejorada: posición del rival para el PID
+    unsigned char rival; // sensores que ven al rival (bits Rival*)
 };
+
+constexpr unsigned char RivalLatIzq = 1, Rival45Izq = 2, RivalFrontal = 4, Rival45Der = 8, RivalLatDer = 16;
 
 // --- Clasificación de acciones (la usan varias partes del movimiento) ---
 

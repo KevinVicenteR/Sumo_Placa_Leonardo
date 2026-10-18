@@ -5,6 +5,7 @@
 //   embiste durante TiempoEmbestidaInicio, subiendo de VelocidadEmbestidaInicio
 //   a VelocidadEmbestidaMaxima.
 // - Con el rival en los tres sensores delanteros, VelocidadAtaqueDirecto.
+// - Central y algún sensor de 45°: VelocidadAtaqueVariosFrontales, sin rampa.
 #ifndef CONTROL_ATAQUE_H
 #define CONTROL_ATAQUE_H
 

@@ -41,10 +41,10 @@ struct Config {
     double tau = 0.05;            // s, constante de tiempo del motor
     double mu = 0.9;              // adherencia rueda-piso (limita aceleración)
     // Modelo de motor DC (se activa con rpm > 0; si no, se usa vmax/tau)
-    double rpm = 0;               // rpm en vacío del motorreductor
+    double rpm = 400;               // rpm en vacío del motorreductor
     double diametro = 0.03;       // m, diámetro de rueda
     double masa = 0.3;            // kg
-    double parBloqueo = 0.6;      // kg·cm por motor con el rotor bloqueado
+    double parBloqueo = 0.8;      // kg·cm por motor con el rotor bloqueado
     double bateria = 1.0;         // tensión de batería / tensión nominal del motor
     double friccionCaja = 0.15;   // fricción de la reductora (fracción de la fuerza de bloqueo)
     double rodadura = 0.03;       // coeficiente de resistencia a la rodadura
@@ -373,8 +373,15 @@ inline Puente estadoPuente(uint8_t pwm) {
     return pwmPin[pwm] == 0 ? Puente::Libre : Puente::Conduce;
 }
 
+#ifdef CABLEADO_MOTORES_X3
+// X3: el cableado invertido convierte la orden eléctrica en avance físico.
+inline int comandoIzq() { return (InvertirMotorIzq ? -1 : 1) * comandoMotor(MA1A, MA2A, PWMA); }
+inline int comandoDer() { return (InvertirMotorDer ? -1 : 1) * comandoMotor(MA1B, MA2B, PWMB); }
+#else
+// Firmware histórico de comparación: cableado sin inversión.
 inline int comandoIzq() { return comandoMotor(MA1A, MA2A, PWMA); }
 inline int comandoDer() { return comandoMotor(MA1B, MA2B, PWMB); }
+#endif
 
 // Aplica una fricción de Coulomb de magnitud f a un movimiento con velocidad vel
 // y fuerza impulsora fuerza. Si está quieto y la fuerza no supera la fricción, no arranca.

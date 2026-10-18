@@ -4,6 +4,9 @@
 #ifndef PARAMETROS_FRENADO_H
 #define PARAMETROS_FRENADO_H
 
+// X3: parada con PWM 0 para evitar retroceder tras un choque.
+constexpr bool FrenoActivo = false;
+
 // Contramando al frenar: se limita para no dar golpes a PWM 255.
 constexpr int VelocidadFreno = 140;
 

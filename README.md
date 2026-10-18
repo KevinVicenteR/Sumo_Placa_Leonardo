@@ -1,4 +1,4 @@
-# Minisumo Leonardo / JSumo XMotion
+# Sumo X3 — Leonardo / JSumo XMotion, motores de 400 rpm
 
 Firmware de competición (rounds de SECIHTI, espera de 5 s tras el START), simulador con la física compartida y una web React para explorar combates.
 
@@ -7,7 +7,7 @@ Los DIP eligen la ronda (DIP3, el lado: off = derecha, ON = izquierda):
 | DIP1 | DIP2 | Modo | Archivo |
 |---|---|---|---|
 | off | off | 1: espalda con espalda (media vuelta y embestida) | `movimiento/rondas/Ronda1.h` |
-| ON | off | 2: lado a lado (pivote hacia el rival y embestida) | `movimiento/rondas/Ronda2.h` |
+| ON | off | 2: lado a lado (giro en el sitio hacia el rival y embestida) | `movimiento/rondas/Ronda2.h` |
 | off | ON | 3: enfrentados, contragolpe | `movimiento/rondas/Ronda3.h` |
 | ON | ON | 4: salida libre, arco | `movimiento/rondas/Libre.h` |
 

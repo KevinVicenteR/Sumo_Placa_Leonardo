@@ -3,6 +3,11 @@
 // scripts de simulacion/ cambian estos valores por su nombre (--param).
 #ifndef PARAMETROS_MOTORES_H
 #define PARAMETROS_MOTORES_H
+#define CABLEADO_MOTORES_X3
+
+// Sentido ajustado al cableado de los motores de 400 rpm del Sumo X3.
+constexpr bool InvertirMotorIzq = true;
+constexpr bool InvertirMotorDer = true;
 
 // Límite absoluto que se manda a cada motor.
 constexpr int VelocidadMaxima = 255;
@@ -20,7 +25,8 @@ constexpr bool PivoteSoloModo4 = true;
 // motores no empujan igual. Si al avanzar se desvía a la derecha, la rueda
 // izquierda empuja más: baja PorcentajeMotorIzquierdo (y al revés). Solo en el
 // robot real; el simulador modela los dos motores iguales.
-constexpr int PorcentajeMotorIzquierdo = 92;
+// X3: 100/100; el ajuste del 92 % correspondía al otro robot.
+constexpr int PorcentajeMotorIzquierdo = 100;
 constexpr int PorcentajeMotorDerecho = 100;
 
 // Sin rutina de inicio, todo avance se limita durante este tiempo al empezar.

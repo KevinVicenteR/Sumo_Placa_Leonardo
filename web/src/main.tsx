@@ -263,7 +263,7 @@ function App() {
             </span>
           </div>
           <p className="ayuda">
-            340 g · 750 rpm · ruedas de 3 cm · LiPo 2S. La simulación permite
+            340 g · 400 rpm · ruedas de 3 cm · LiPo 2S. La simulación permite
             explorar hipótesis; los factores físicos requieren calibración con
             el robot real.
           </p>

@@ -17,8 +17,8 @@ void DriverMotores::mover(int velIzq, int velDer) {
     if (PorcentajeMotorIzquierdo != 100) velIzq = (long)velIzq * PorcentajeMotorIzquierdo / 100;
     if (PorcentajeMotorDerecho != 100) velDer = (long)velDer * PorcentajeMotorDerecho / 100;
 #endif
-    controlarMotor(MA1A, MA2A, PWMA, velIzq);
-    controlarMotor(MA1B, MA2B, PWMB, velDer);
+    controlarMotor(MA1A, MA2A, PWMA, InvertirMotorIzq ? -velIzq : velIzq);
+    controlarMotor(MA1B, MA2B, PWMB, InvertirMotorDer ? -velDer : velDer);
 }
 
 void DriverMotores::detener() { deshabilitar(); }

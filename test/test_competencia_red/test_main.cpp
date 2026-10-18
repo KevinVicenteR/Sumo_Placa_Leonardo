@@ -167,8 +167,36 @@ void test_selector_elige_la_subred() {
     TEST_ASSERT_EQUAL_INT(1,redlogica::subredElegida());
 }
 
+// Compara el forward C++ con la red plana X3 para las 4096 entradas binarias.
+void test_forward_x3_equivale_a_red_plana() {
+    const int e=redlogica::NumEntradasRed, h=redlogica::NumOcultasRed;
+    for (int bits=0; bits<(1<<e); ++bits) {
+        int8_t x[redlogica::NumEntradasRed];
+        long oculta[redlogica::NumOcultasRed], sumas[redlogica::NumAcciones];
+        for (int j=0; j<e; ++j) x[j]=(bits>>j)&1;
+        for (int j=0; j<h; ++j) {
+            long v=logica[j*(e+1)+e];
+            for (int k=0; k<e; ++k) v+=logica[j*(e+1)+k]*x[k];
+            oculta[j]=v>0?v:0;
+        }
+        int mejor=0;
+        long mayor=0;
+        redlogica::elegir(x,0,sumas);
+        for (int j=0; j<redlogica::NumAcciones; ++j) {
+            const int o=h*(e+1)+j*(h+1);
+            long v=logica[o+h];
+            for (int k=0; k<h; ++k) v+=logica[o+k]*oculta[k];
+            TEST_ASSERT_EQUAL_INT(v,sumas[j]);
+            if (j==0 || v>mayor) { mayor=v; mejor=j; }
+        }
+        TEST_ASSERT_EQUAL_INT(mayor>=0?mejor:7,redlogica::elegir(x,0));
+        TEST_ASSERT_EQUAL_INT(0,redlogica::subredElegida());
+    }
+}
+
 int main(int,char**) {
     UNITY_BEGIN();
+    RUN_TEST(test_forward_x3_equivale_a_red_plana);
     RUN_TEST(test_selector_elige_la_subred);
     RUN_TEST(test_arranques_protegidos_y_mejoras_solo_al_terminar);
     RUN_TEST(test_modo4_mejora_desde_inicio_y_no_se_pierde_al_cancelar_rutina);

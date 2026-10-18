@@ -47,6 +47,14 @@ int ControlAtaque::velocidad(const DecisionMovimiento& decision, unsigned long a
     if (ataqueMaximo) {
         return VelocidadEmpuje;
     }
+    // Central y algún sensor de 45°: ataque inmediato por detección real.
+    const bool variosFrontales = decision.ataqueDirecto ||
+        ((decision.rival & RivalFrontal) && (decision.rival & (Rival45Izq | Rival45Der)));
+    if (variosFrontales && VelocidadAtaqueVariosFrontales > 0) {
+        embestidaInicio = false;
+        ataqueDeRutina = false;
+        return VelocidadAtaqueVariosFrontales;
+    }
     int ataque = VelocidadAtaque;
     if (embestidaInicio) {
         // Subida proporcional al tiempo que lleva embistiendo

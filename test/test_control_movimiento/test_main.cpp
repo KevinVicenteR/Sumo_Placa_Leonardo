@@ -181,7 +181,7 @@ void test_paro_en_seco_al_perder_al_enemigo_en_pleno_ataque(void) {
 
     const unsigned long t = acelerar(c, m, TipoAccion::AtaqueFrontal, 1000);
     c.ejecutar({TipoAccion::Busqueda}, m, t + 1);
-    assertMovimiento(m, -VelocidadFreno, -VelocidadFreno);
+    assertMovimiento(m, FrenoActivo ? -VelocidadFreno : 0, FrenoActivo ? -VelocidadFreno : 0);
 
     c.ejecutar({TipoAccion::Busqueda}, m, t + 1 + TiempoParoPerdida);
     assertGiroBusqueda(m, 1);
@@ -516,13 +516,29 @@ void test_linea_persistente_no_se_queda_parado_ni_avanza() {
     TEST_ASSERT_TRUE(volvioAMoverse);
 }
 
+// La red puede elegir otra acción: mandan los sensores reales, no la etiqueta.
+void test_x3_varios_frontales_cancelan_embestida() {
+    ControlAtaque ataque;
+    DecisionMovimiento d{TipoAccion::AjusteIzq, true, false, false, 0,
+                         RivalFrontal | Rival45Izq};
+    ataque.iniciarEmbestida(1000);
+    TEST_ASSERT_EQUAL_INT(VelocidadAtaqueVariosFrontales, ataque.velocidad(d, 1001));
+    d.rival = RivalFrontal;
+    TEST_ASSERT_EQUAL_INT(VelocidadAtaque, ataque.velocidad(d, 1002));
+    d.rival = Rival45Izq | Rival45Der;
+    TEST_ASSERT_EQUAL_INT(VelocidadAtaque, ataque.velocidad(d, 1003));
+    d.rival = RivalFrontal | Rival45Der;
+    TEST_ASSERT_EQUAL_INT(VelocidadAtaqueVariosFrontales, ataque.velocidad(d, 1004));
+}
+
 void test_tres_frontales_cancelan_giro_y_pausa_pero_no_evasion() {
     ControlMovimiento c(CLASICO);
     MotorMock m;
     const DecisionMovimiento directo{TipoAccion::AtaqueFrontal, true, false, true};
     c.ejecutar({TipoAccion::DefensaIzq}, m, 1000);
     c.ejecutar(directo, m, 1010);
-    assertMovimiento(m, VelocidadAtaque, VelocidadAtaque);
+    // X3: tres frontales atacan sin rampa.
+    assertMovimiento(m, VelocidadAtaqueVariosFrontales, VelocidadAtaqueVariosFrontales);
     c.ejecutar({TipoAccion::Busqueda}, m, 1020);
     c.ejecutar(directo, m, 1030);
     TEST_ASSERT_TRUE(m.izq > 0 && m.izq == m.der);
@@ -575,7 +591,12 @@ void test_rutina_espalda_gira_hasta_ver_al_rival_y_frena_el_giro(void) {
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion);
     // Frena el giro con un contragiro
     // (pivotando, solo giraba la rueda izquierda)
-    TEST_ASSERT_TRUE(m.izq < 0 && (GirarSobreUnaRueda ? m.der >= 0 : m.der > 0));
+    if (FrenoActivo) {
+        TEST_ASSERT_TRUE(m.izq < 0 && (GirarSobreUnaRueda ? m.der >= 0 : m.der > 0));
+    } else {
+        // X3: frena el giro con PWM 0.
+        assertMovimiento(m, 0, 0);
+    }
     // Tras el freno, embiste
     c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, visto + ConfirmacionDeteccion + TiempoFrenadoRuedas + 1);
     assertMovimiento(m, VelocidadEmbestidaInicio, VelocidadEmbestidaInicio);
@@ -807,6 +828,7 @@ int main(int, char**) {
     RUN_TEST(test_busqueda_tras_un_sensor_sigue_hacia_el_lado_del_escape);
     RUN_TEST(test_segundo_sensor_cambia_a_recto_sin_reiniciar_limite);
     RUN_TEST(test_arranque_no_dispara_aunque_tres_frontales_vean_enemigo);
+    RUN_TEST(test_x3_varios_frontales_cancelan_embestida);
     RUN_TEST(test_tres_frontales_cancelan_giro_y_pausa_pero_no_evasion);
     RUN_TEST(test_ver_al_rival_corta_la_evasion);
     RUN_TEST(test_un_sensor_retrocede_recto_y_gira_tras_separarse);

@@ -93,6 +93,11 @@ constexpr int VelocidadCercaBorde = 100;
 
 // Espera inicial del modo diagnóstico (el de combate usa el módulo de arranque).
 constexpr unsigned long TiempoInicioReglamentario = 5000;
+// Reglamento SECIHTI: tras el START el robot espera este tiempo (ms) con los
+// motores apagados antes de su primer movimiento (si sale antes, se repite el
+// round). El piso se calibra al recibir START. 0 = sale al instante.
+// Solo en el robot real: en el simulador los dos robots salen a la vez.
+constexpr unsigned long EsperaInicioCombate = 5000;
 
 // --- Frenado al perder al rival ---
 // Cada rueda frena según su velocidad estimada (la orden filtrada con la

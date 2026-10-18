@@ -98,6 +98,14 @@ void ModoCombate::actualizar() {
         }
     }
 
+#if defined(__AVR__)
+    // Espera reglamentaria tras el START: quieto, con los motores apagados
+    if (millis() - inicioCombate < EsperaInicioCombate) {
+        motores.deshabilitar();
+        return;
+    }
+#endif
+
     // 2. Un ciclo de combate
     robot.actualizar();
     cajaNegra.observar(robot.ultimasLecturas(), controlMovimiento.evasiones(), millis());

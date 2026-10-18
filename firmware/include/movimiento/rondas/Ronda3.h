@@ -17,8 +17,8 @@ constexpr int Ronda3VelocidadAvanceEspera = 100;  // avance lento si no aparece
 // Siempre hace primero su maniobra (quieto) durante este tiempo, aunque los
 // sensores vean algo; solo la línea del borde la interrumpe
 constexpr unsigned long Ronda3TiempoMinimo = 300;
-constexpr unsigned long Ronda3TiempoQuieto = 800;    // quieto antes de avanzar
-constexpr unsigned long Ronda3TiempoMax = 3000;      // duración máxima de la ronda
+constexpr unsigned long Ronda3TiempoQuieto = 3000;    // quieto antes de avanzar
+constexpr unsigned long Ronda3TiempoMax = 6000;      // duración máxima de la ronda
 
 class Ronda3 {
 public:

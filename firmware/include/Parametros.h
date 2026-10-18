@@ -233,7 +233,9 @@ constexpr bool UsarPoliticaAprendida = false;
 // lado cada TiempoArcoBusqueda (rueda interior a PorcentajeArcoBusqueda).
 constexpr int PatronBusqueda = 1;
 constexpr int PorcentajeArcoBusqueda = 50;
-constexpr unsigned long TiempoArcoBusqueda = 900;
+// 1400 ms: barrido más lento que con 900 (la velocidad no se puede bajar: la
+// rueda interior ya va a la zona muerta de los motores)
+constexpr unsigned long TiempoArcoBusqueda = 1400;
 // La búsqueda arranca acelerando poco a poco durante este tiempo.
 constexpr unsigned long TiempoArranqueBusqueda = 400;
 // Sin rutina de inicio, todo avance se limita durante este tiempo al empezar.

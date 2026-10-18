@@ -258,9 +258,10 @@ bool RutinaInicio::tacticaRapida(int tactica, const DecisionMovimiento& decision
         mando.mover(motor, lado > 0 ? 0 : -v, lado > 0 ? -v : 0, true);
         return true;
     }
-    // Giro rápido en el sitio hacia el sensor que lo ve (o hacia DIP3)
+    // Giro rápido hacia el sensor que lo ve; sin verlo, barrido lento hacia DIP3
     if (visto != 0) sentido = visto;
-    mando.mover(motor, sentido * VelocidadGiroTactica, -sentido * VelocidadGiroTactica, true);
+    const int giro = visto != 0 ? VelocidadGiroTactica : VelocidadBarridoTactica;
+    mando.mover(motor, sentido * giro, -sentido * giro, true);
     return true;
 }
 

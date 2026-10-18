@@ -83,6 +83,9 @@ constexpr int tacticaDeModo(int modo) {
 }
 constexpr int VelocidadTactica = 255;
 constexpr int VelocidadGiroTactica = 150;
+// Barrido de las tácticas cuando ningún sensor ve al rival (más lento que el
+// giro hacia un sensor que sí lo ve, para no pasar de largo al rival)
+constexpr int VelocidadBarridoTactica = 100;
 constexpr int VelocidadInteriorArcoLibre = 110;
 constexpr unsigned long TiempoRetrocesoLibre = 180;
 constexpr unsigned long TiempoArcoLibre = 200;

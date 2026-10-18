@@ -1040,9 +1040,9 @@ void test_tactica_predictiva_intercepta_y_recuerda_el_lado(void) {
     // Lo ve el lateral derecho: avanza en arco hacia la derecha
     c.ejecutar({TipoAccion::DefensaDer}, m, 1010);
     assertMovimiento(m, VelocidadTacticaSinVer, VelocidadInteriorPrediccion);
-    // Lo pierde: gira hacia donde lo vio (derecha), no hacia DIP3
+    // Lo pierde: barre (lento) hacia donde lo vio (derecha), no hacia DIP3
     c.ejecutar({TipoAccion::Busqueda}, m, 1020);
-    assertMovimiento(m, VelocidadGiroTactica, -VelocidadGiroTactica);
+    assertMovimiento(m, VelocidadBarridoTactica, -VelocidadBarridoTactica);
     comprobarAtaqueAlVerlo(c, m, modo, 1030);
 }
 

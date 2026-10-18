@@ -295,7 +295,10 @@ constexpr int VelocidadPivoteInicio = 180;
 // (también los laterales) vea al rival (con EsperarRound3, tras
 // TiempoAvanceInicio se queda quieto esperándolo). Despacio porque con el
 // reparto de peso del robot, al ir rápido o acelerar de golpe se tuerce.
-constexpr int VelocidadAvanceInicio = 40;
+// Por encima de ZonaMuertaPwm para que de verdad avance: con 40 (= la zona
+// muerta) casi no se movía. Ronda 3 (11 rivales x 12 factores, sin el de 500 g):
+// 40 gana 51,6 % / cae 37,7 %; 60 56,4 / 33,0; 80 57,8 / 31,2; 100 64,9 / 24,3.
+constexpr int VelocidadAvanceInicio = 100;
 constexpr unsigned long TiempoAvanceInicio = 4000;
 // Ronda 3: al ver al rival por delante, acelera de VelocidadAvanceInicio a
 // VelocidadEmpuje en este tiempo mientras lo ataca (suave para no torcerse).

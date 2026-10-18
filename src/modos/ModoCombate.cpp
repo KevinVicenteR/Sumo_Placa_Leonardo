@@ -13,9 +13,13 @@ ModoCombate::ModoCombate(PlacaXMotion& placaRef, DriverMotores& motoresRef, Perc
 
 void ModoCombate::iniciar() {
 #if defined(__AVR__)
-    // Tras un reinicio por watchdog, apagarlo para que no vuelva a reiniciar
+    // Tras STOP o PROG, recordar el reinicio y desactivar el watchdog
+    reiniciadaPorParada = (MCUSR & _BV(WDRF)) != 0;
     MCUSR = 0;
     wdt_disable();
+    if (AvisoListoLed) {
+        TX_RX_LED_INIT;
+    }
 #endif
     placa.inicializarPines();
     motores.deshabilitar();
@@ -33,6 +37,7 @@ void ModoCombate::empezarCombate() {
     // combate anterior (sensores, maniobras, rutina), y en el modo de los DIP
     placa.inicializarPines();
     motores.deshabilitar();
+    avisoListo(false);
     percepcion = Percepcion();
     // Medir el negro con los motores apagados. Los sensores de enemigo NO se
     // calibran: el rival puede estar delante al empezar.
@@ -48,11 +53,12 @@ void ModoCombate::empezarCombate() {
     combateEmpezado = true;
     inicioCombate = millis();
 #if defined(MONITOREO_COMBATE)
+    // NI/ND: negro izq/der; MI/MD: márgenes izq/der
     Serial.print(F("DIP=")); Serial.print(dip); Serial.print(' ');
-    Serial.print(F("INICIO negroIzq=")); Serial.print(percepcion.negroIzquierdo());
-    Serial.print(F(" margenIzq=")); Serial.print(percepcion.margenIzquierdo());
-    Serial.print(F(" negroDer=")); Serial.print(percepcion.negroDerecho());
-    Serial.print(F(" margenDer=")); Serial.println(percepcion.margenDerecho());
+    Serial.print(F("NI=")); Serial.print(percepcion.negroIzquierdo());
+    Serial.print(F(" MI=")); Serial.print(percepcion.margenIzquierdo());
+    Serial.print(F(" ND=")); Serial.print(percepcion.negroDerecho());
+    Serial.print(F(" MD=")); Serial.println(percepcion.margenDerecho());
 #endif
 }
 
@@ -66,6 +72,13 @@ void ModoCombate::actualizar() {
                 inicioParada = millis();
                 // Con los motores ya parados se puede escribir en la EEPROM
                 cajaNegra.guardar();
+                // Otro corte poco después de reanudar: es PROG, no una
+                // interferencia. Reinicio completo, como si no hubiera combatido
+                if (ReiniciarTrasParada && ultimaReanudacion != 0 &&
+                    inicioParada - ultimaReanudacion < VentanaProgramacionMs) {
+                    reiniciarPlaca();
+                    return;
+                }
             }
             // Parada larga (STOP o PROG del control remoto): reinicia la placa
             // entera, como al encenderla. El siguiente START empieza de cero,
@@ -75,7 +88,9 @@ void ModoCombate::actualizar() {
                 reiniciarPlaca();
                 return;
             }
-            if (combateEmpezado) {
+            if (!combateEmpezado) {
+                actualizarAvisoListo();
+            } else {
                 // Sigue leyendo los sensores: si el robot se desliza hasta la
                 // línea durante una parada corta, al reanudar lo sabrá (la
                 // detección de línea se mantiene aunque el morro quede fuera)
@@ -92,6 +107,7 @@ void ModoCombate::actualizar() {
             if (combateEmpezado && paradaCorta && estabaEnMarcha) {
                 // Parada corta (interferencia): sigue el mismo combate
                 enCombate = true;
+                ultimaReanudacion = millis() | 1;
                 cajaNegra.anotarInterrupcion();
             } else {
                 empezarCombate();
@@ -113,7 +129,9 @@ void ModoCombate::actualizar() {
 }
 
 void ModoCombate::reiniciarPlaca() {
+    // Para todo hasta que la placa vuelva a estar lista
     motores.deshabilitar();
+    avisoListo(false);
 #if defined(__AVR__)
     // El watchdog reinicia el microcontrolador en 15 ms: se borra toda la RAM
     // (estado de sensores, maniobras, estrategia...) como al encenderlo
@@ -126,20 +144,46 @@ void ModoCombate::reiniciarPlaca() {
 #endif
 }
 
+void ModoCombate::avisoListo(bool encendido) {
+#if defined(__AVR__)
+    if (!AvisoListoLed) {
+        return;
+    }
+    if (encendido) {
+        TXLED1;
+        RXLED1;
+    } else {
+        TXLED0;
+        RXLED0;
+    }
+#else
+    (void)encendido;
+#endif
+}
+
+void ModoCombate::actualizarAvisoListo() {
+    // Tras un reinicio por STOP o PROG parpadea ParpadeosListo veces; después,
+    // encendido fijo hasta el START
+    const unsigned long t = millis();
+    const bool parpadeando = reiniciadaPorParada && t < 2UL * ParpadeosListo * PeriodoParpadeoListo;
+    avisoListo(!parpadeando || (t / PeriodoParpadeoListo) % 2 == 0);
+}
+
 void ModoCombate::enviarTelemetria() {
 #if defined(MONITOREO_COMBATE)
+    // P=piso, M=motores, E=enemigo, C=ciclo máximo en µs
     // Una línea cada 100 ms, solo si cabe en el búfer (no bloquear el combate)
     if (Serial && millis() - ultimaTraza >= 100 && Serial.availableForWrite() >= 60) {
         ultimaTraza = millis();
-        Serial.print(F("PISO=")); Serial.print(analogRead(S_PISO_IZQ));
+        Serial.print(F("P=")); Serial.print(analogRead(S_PISO_IZQ));
         Serial.print(','); Serial.print(analogRead(S_PISO_DER));
-        Serial.print(F(" PWM=")); Serial.print(controlMovimiento.ordenIzquierda());
+        Serial.print(F(" M=")); Serial.print(controlMovimiento.ordenIzquierda());
         Serial.print(','); Serial.print(controlMovimiento.ordenDerecha());
-        Serial.print(F(" ENEMIGO_RAW="));
+        Serial.print(F(" E="));
         Serial.print(digitalRead(S_FRONT_IZQ));
         Serial.print(digitalRead(S_FRONT_CEN));
         Serial.print(digitalRead(S_FRONT_DER));
-        Serial.print(F(" CICLO_US=")); Serial.println(cicloMaximo);
+        Serial.print(F(" C=")); Serial.println(cicloMaximo);
         cicloMaximo = 0;
     }
 #endif

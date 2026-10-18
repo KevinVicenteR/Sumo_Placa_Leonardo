@@ -2,6 +2,7 @@
 // Espera la señal RUN del módulo de arranque con los motores apagados y, al
 // recibirla, calibra el piso, elige la rutina de inicio y combate. Con STOP
 // vuelve a apagar los motores y guarda el combate en la caja negra (EEPROM).
+// STOP o PROG reinicia la placa; RX y TX avisan de que espera START.
 // Con la bandera MONITOREO_COMBATE también envía telemetría por USB.
 #ifndef MODO_COMBATE_H
 #define MODO_COMBATE_H
@@ -29,6 +30,9 @@ private:
     // Reinicia el microcontrolador (como apagar y encender) tras una parada larga
     void reiniciarPlaca();
     void enviarTelemetria();
+    // LED RX y TX: listo mientras espera el START
+    void avisoListo(bool encendido);
+    void actualizarAvisoListo();
 
     PlacaXMotion& placa;
     DriverMotores& motores;
@@ -42,6 +46,10 @@ private:
     bool combateEmpezado = false;
     unsigned long inicioCombate = 0;
     unsigned long inicioParada = 0;
+    // Última reanudación tras un corte corto: detecta PROG
+    unsigned long ultimaReanudacion = 0;
+    // Arranque por watchdog tras STOP o PROG: parpadea el aviso
+    bool reiniciadaPorParada = false;
 #if defined(MONITOREO_COMBATE)
     unsigned long cicloMaximo = 0;   // ciclo más lento (µs) desde la última traza
     unsigned long ultimaTraza = 0;

@@ -1,12 +1,12 @@
-// Simulador para la página web: el firmware real (src/) y la física de
-// simulacion/fisica.h compilados a WebAssembly. La página coloca el robot y
-// el enemigo, llama a sim_setup() (espera de 5 s y calibración) y luego
+// Simulador para la página web: el firmware real (firmware/src/) y la física de
+// simulacion/nucleo/fisica.h compilados a WebAssembly. La página coloca el robot y
+// el enemigo, llama a sim_setup() (calibración, sin espera de 5 s) y luego
 // avanza el combate con sim_avanzar().
 //
 // Para empezar un combate nuevo con el firmware recién reiniciado, la página
 // crea otra instancia del módulo (memoria limpia, como tras un reset).
 
-#include "../fisica.h"
+#include "../nucleo/fisica.h"
 
 #define EXPORTAR(nombre) extern "C" __attribute__((export_name(nombre)))
 

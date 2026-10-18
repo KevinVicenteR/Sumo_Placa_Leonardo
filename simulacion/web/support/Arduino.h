@@ -2,7 +2,7 @@
 #define ARDUINO_H
 
 // Arduino simulado para WebAssembly (sin biblioteca estándar de C).
-// Las funciones las implementa simulacion/fisica.h.
+// Las funciones las implementa simulacion/nucleo/fisica.h.
 
 #include <stdint.h>
 

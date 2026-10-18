@@ -1,0 +1,121 @@
+# Limpieza del árbol de trabajo
+
+Solo se eliminaron archivos con seguimiento en c8136d6. Las carpetas candidatos_* sin seguimiento del checkout original no se copiaron ni modificaron.
+
+Comprobación: `rg -n -F NOMBRE firmware simulacion/python test scripts web/src` antes de borrar, sin contar los propios resultados ni este inventario. Los resultados eliminados no son entradas de los programas actuales; las únicas referencias de las baterías antiguas pertenecían a generar_pagina.sh, sustituido por React. Los nombres genéricos entrenamiento.csv/html y candidatos siguen siendo salidas regenerables del entrenador, no entradas.
+
+Se conservan rumania11_antes_30000.json (entrada --base del entrenador), jerarquica_mejor.red y redes_*.txt (puntos de continuación), y refactor_referencia.json (regresión casilla por casilla). No se elimina ninguna tabla de pesos ni estrategia alternativa utilizada por pruebas o entrenamiento.
+
+La arquitectura de clases del firmware se conserva íntegra; todos sus archivos C++ y cabeceras son idénticos byte a byte a la base. No había clases demostrablemente huérfanas que justificaran eliminarlas.
+
+## Archivos eliminados
+
+- `simulacion/resultados/arranques.json`
+- `simulacion/resultados/cand_g010_0_25000.json`
+- `simulacion/resultados/cand_g025_1_25000.json`
+- `simulacion/resultados/cand_g030_1_25000.json`
+- `simulacion/resultados/cand_g050_1_25000.json`
+- `simulacion/resultados/cand_g060_1_25000.json`
+- `simulacion/resultados/candidatos/g005_0_obj89.5-0.0_bat43.2-25.9-0.88.red`
+- `simulacion/resultados/candidatos/g005_1_obj95.0-0.0_bat43.2-27.9-1.05.red`
+- `simulacion/resultados/candidatos/g010_0_obj99.5-0.0_bat44.3-26.2-1.00.red`
+- `simulacion/resultados/candidatos/g010_1_obj88.0-0.0_bat42.5-26.5-1.07.red`
+- `simulacion/resultados/candidatos/g015_0_obj93.0-0.0_bat43.6-26.0-0.83.red`
+- `simulacion/resultados/candidatos/g015_1_obj91.0-0.0_bat42.8-26.0-1.12.red`
+- `simulacion/resultados/candidatos/g020_0_obj92.0-0.0_bat43.5-25.6-1.12.red`
+- `simulacion/resultados/candidatos/g020_1_obj86.0-0.0_bat42.7-26.8-1.29.red`
+- `simulacion/resultados/candidatos/g025_0_obj95.0-0.0_bat44.2-26.4-0.90.red`
+- `simulacion/resultados/candidatos/g025_1_obj99.5-0.0_bat44.0-27.0-0.88.red`
+- `simulacion/resultados/candidatos/g030_0_obj91.0-0.0_bat43.5-25.6-0.83.red`
+- `simulacion/resultados/candidatos/g030_1_obj100.0-0.0_bat45.1-27.1-1.00.red`
+- `simulacion/resultados/candidatos/g035_0_obj89.0-0.0_bat43.1-25.5-0.98.red`
+- `simulacion/resultados/candidatos/g035_1_obj88.0-0.0_bat42.8-25.9-0.90.red`
+- `simulacion/resultados/candidatos/g040_0_obj93.0-0.0_bat43.6-25.6-0.90.red`
+- `simulacion/resultados/candidatos/g040_1_obj91.0-0.0_bat41.5-28.3-1.64.red`
+- `simulacion/resultados/candidatos/g045_0_obj90.0-0.0_bat43.4-26.0-0.95.red`
+- `simulacion/resultados/candidatos/g045_1_obj91.0-0.0_bat44.0-27.3-0.95.red`
+- `simulacion/resultados/candidatos/g050_0_obj91.0-0.0_bat43.5-27.2-0.88.red`
+- `simulacion/resultados/candidatos/g050_1_obj99.5-0.0_bat45.0-27.8-0.90.red`
+- `simulacion/resultados/candidatos/g055_0_obj89.0-1.0_bat43.1-25.6-0.88.red`
+- `simulacion/resultados/candidatos/g055_1_obj97.0-0.0_bat43.3-26.2-0.93.red`
+- `simulacion/resultados/candidatos/g060_0_obj93.0-0.0_bat44.0-25.5-0.86.red`
+- `simulacion/resultados/candidatos/g060_1_obj99.5-0.0_bat45.0-26.3-1.07.red`
+- `simulacion/resultados/candidatos_modo3_anterior/g005_0_obj92.5-0.0_bat43.6-25.8-0.98.red`
+- `simulacion/resultados/candidatos_modo3_anterior/g005_1_obj87.0-0.0_bat42.0-25.8-0.83.red`
+- `simulacion/resultados/candidatos_modo3_anterior/g010_0_obj88.5-0.0_bat43.0-25.5-0.93.red`
+- `simulacion/resultados/candidatos_modo3_anterior/g010_1_obj100.0-0.0_bat45.3-27.0-0.86.red`
+- `simulacion/resultados/candidatos_modo3_anterior/g015_0_obj87.5-0.0_bat42.9-25.5-0.88.red`
+- `simulacion/resultados/candidatos_modo3_anterior/g015_1_obj83.5-0.0_bat41.4-26.4-1.26.red`
+- `simulacion/resultados/candidatos_modo3_anterior/g020_0_obj99.5-0.0_bat44.0-25.6-0.90.red`
+- `simulacion/resultados/candidatos_modo3_anterior/g020_1_obj93.0-0.0_bat44.8-26.6-0.93.red`
+- `simulacion/resultados/candidatos_modo3_anterior/g025_0_obj89.5-0.0_bat41.8-26.2-1.02.red`
+- `simulacion/resultados/candidatos_modo3_anterior/g025_1_obj90.5-0.0_bat42.6-26.6-0.95.red`
+- `simulacion/resultados/candidatos_rumania/g005_0_obj100.0-0.0_bat49.4-30.5-0.45.red`
+- `simulacion/resultados/candidatos_rumania/g005_1_obj100.0-0.0_bat48.8-30.4-0.40.red`
+- `simulacion/resultados/candidatos_rumania/g010_0_obj100.0-0.0_bat48.6-30.7-0.51.red`
+- `simulacion/resultados/candidatos_rumania/g010_1_obj100.0-0.0_bat47.7-30.8-0.55.red`
+- `simulacion/resultados/candidatos_rumania/g015_0_obj100.0-0.0_bat48.6-30.4-0.34.red`
+- `simulacion/resultados/candidatos_rumania/g015_1_obj100.0-0.0_bat48.9-30.4-0.62.red`
+- `simulacion/resultados/candidatos_rumania/g020_0_obj100.0-0.0_bat48.6-30.4-0.38.red`
+- `simulacion/resultados/candidatos_rumania/g020_1_obj100.0-0.0_bat48.2-31.1-0.30.red`
+- `simulacion/resultados/candidatos_rumania/g025_0_obj100.0-0.0_bat48.4-30.3-0.36.red`
+- `simulacion/resultados/candidatos_rumania/g025_1_obj100.0-0.0_bat47.6-30.9-0.45.red`
+- `simulacion/resultados/candidatos_rumania/g030_0_obj100.0-0.0_bat48.9-29.8-0.43.red`
+- `simulacion/resultados/candidatos_rumania/g030_1_obj100.0-0.0_bat48.9-30.4-0.34.red`
+- `simulacion/resultados/candidatos_rumania/g035_0_obj99.6-0.4_bat49.2-30.1-0.40.red`
+- `simulacion/resultados/candidatos_rumania/g035_1_obj100.0-0.0_bat47.7-31.2-0.55.red`
+- `simulacion/resultados/candidatos_rumania/g040_0_obj100.0-0.0_bat48.9-30.1-0.49.red`
+- `simulacion/resultados/candidatos_rumania/g040_1_obj100.0-0.0_bat48.0-30.3-0.32.red`
+- `simulacion/resultados/candidatos_rumania/g045_0_obj99.6-0.4_bat49.7-30.0-0.53.red`
+- `simulacion/resultados/candidatos_rumania/g045_1_obj99.6-0.4_bat48.4-30.6-0.47.red`
+- `simulacion/resultados/candidatos_rumania/g050_0_obj100.0-0.0_bat48.7-30.4-0.45.red`
+- `simulacion/resultados/candidatos_rumania/g050_1_obj100.0-0.0_bat48.0-30.7-0.36.red`
+- `simulacion/resultados/candidatos_rumania/g055_0_obj100.0-0.0_bat49.1-29.8-0.49.red`
+- `simulacion/resultados/candidatos_rumania/g055_1_obj100.0-0.0_bat48.2-31.5-0.49.red`
+- `simulacion/resultados/candidatos_rumania/g060_0_obj100.0-0.0_bat48.8-30.0-0.49.red`
+- `simulacion/resultados/candidatos_rumania/g060_1_obj100.0-0.0_bat48.8-30.0-0.40.red`
+- `simulacion/resultados/codex_entrenada_424242.json`
+- `simulacion/resultados/codex_referencia_424242.json`
+- `simulacion/resultados/diagnostico_caidas.json`
+- `simulacion/resultados/entrenada_25000.json`
+- `simulacion/resultados/entrenada_v1_25000.json`
+- `simulacion/resultados/entrenamiento.csv`
+- `simulacion/resultados/entrenamiento.html`
+- `simulacion/resultados/libre_25000.json`
+- `simulacion/resultados/referencia_25000.json`
+- `simulacion/resultados/rumania11_g0015_1_err93.72.json`
+- `simulacion/resultados/rumania11_g0025_0_err90.40.json`
+- `simulacion/resultados/rumania11_g0025_1_err92.68.json`
+- `simulacion/resultados/rumania11_g0045_1_err93.72.json`
+- `simulacion/resultados/rumania_30000.json`
+- `simulacion/resultados/rumania_cand_g005_0_30000.json`
+- `simulacion/resultados/rumania_cand_g015_0_30000.json`
+- `simulacion/resultados/rumania_cand_g020_1_30000.json`
+- `simulacion/resultados/rumania_cand_g030_0_30000.json`
+- `simulacion/resultados/rumania_cand_g040_1_30000.json`
+- `simulacion/resultados/rumania_cand_g055_0_30000.json`
+- `simulacion/resultados/rumania_g030_30000.json`
+- `simulacion/resultados/rumania_referencia_30000.json`
+- `simulacion/resultados/v1/entrenamiento.csv`
+- `simulacion/resultados/v1/entrenamiento.html`
+- `simulacion/resultados/v2/entrenamiento.csv`
+- `simulacion/resultados/v2/entrenamiento.html`
+- `simulacion/resultados/v2/g0210_1.red`
+- `simulacion/resultados/v2_g0210_1_err67.50.json`
+- `simulacion/resultados/v2_g0325_1_err68.54.json`
+- `simulacion/resultados/v2_g0355_0_err68.54.json`
+- `simulacion/resultados/v2_g0360_0_err67.50.json`
+- `simulacion/resultados/v3_g0045_1_err67.02.json`
+- `simulacion/resultados/v3_g0045_1_modo4contragolpe.json`
+- `simulacion/resultados/v3_g0140_0_err67.32.json`
+- `simulacion/resultados/v3_modo3frente_25000.json`
+- `simulacion/resultados/v3_modo3frente_control_25000.json`
+- `simulacion/web/plantilla.html`
+- `simulacion/web/generar_pagina.sh`
+- `simulacion/web/compilar.sh`
+- `simulacion/ver_traza.py`
+- `include/README`
+- `lib/README`
+- `test/README`
+- `simulacion/resultados/v1/jerarquica_mejor.red`
+- `simulacion/resultados/v2/jerarquica_mejor.red`

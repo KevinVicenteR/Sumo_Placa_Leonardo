@@ -339,6 +339,11 @@ constexpr bool ReiniciarTrasParada = true;
 // pulsar PROG el módulo da pulsos breves de RUN (mientras parpadea su LED): el
 // START que se pulsa después debe empezar un combate nuevo, con su rutina.
 constexpr unsigned long TiempoMinimoParaReanudar = 1000;
+// PROG del control remoto sin STOP antes: el módulo da cortes breves de RUN
+// mientras parpadea, que parecerían interferencias y reanudarían el combate
+// anterior. Un segundo corte antes de este tiempo tras reanudar se toma como
+// PROG: reinicia la placa entera, como si no se hubiera combatido ese round.
+constexpr unsigned long VentanaProgramacionMs = 2000;
 
 // Rutina (1 espalda, 2 lado, 3 frente, 4 salida libre) según DIP1 (bit 0) y DIP2 (bit 1).
 constexpr int rutinaSegunInterruptores(int dip) {

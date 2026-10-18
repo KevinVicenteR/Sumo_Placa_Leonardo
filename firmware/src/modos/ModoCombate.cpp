@@ -65,6 +65,13 @@ void ModoCombate::actualizar() {
                 inicioParada = millis();
                 // Con los motores ya parados se puede escribir en la EEPROM
                 cajaNegra.guardar();
+                // Otro corte poco después de reanudar: es PROG, no una
+                // interferencia. Reinicio completo, como si no hubiera combatido
+                if (ReiniciarTrasParada && ultimaReanudacion != 0 &&
+                    inicioParada - ultimaReanudacion < VentanaProgramacionMs) {
+                    reiniciarPlaca();
+                    return;
+                }
             }
             // Parada larga (STOP o PROG del control remoto): reinicia la placa
             // entera, como al encenderla. El siguiente START empieza de cero,
@@ -91,6 +98,7 @@ void ModoCombate::actualizar() {
             if (combateEmpezado && paradaCorta && estabaEnMarcha) {
                 // Parada corta (interferencia): sigue el mismo combate
                 enCombate = true;
+                ultimaReanudacion = millis() | 1;
                 cajaNegra.anotarInterrupcion();
             } else {
                 empezarCombate();

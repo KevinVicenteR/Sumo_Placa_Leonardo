@@ -42,6 +42,8 @@ private:
     bool combateEmpezado = false;
     unsigned long inicioCombate = 0;
     unsigned long inicioParada = 0;
+    // Última vez que se reanudó tras una parada corta (0 = nunca): detecta PROG
+    unsigned long ultimaReanudacion = 0;
 #if defined(MONITOREO_COMBATE)
     unsigned long ultimaTraza = 0;
 #endif

@@ -27,9 +27,20 @@ static int interior45(int ataque) {
     return Corregir45EnPivote ? 0 : VelocidadCurva * ataque / VelocidadAtaque;
 }
 
-static void assertMovimiento(MotorMock& m, int izq, int der) {
+static void assertMotores(MotorMock& m, int izq, int der) {
     TEST_ASSERT_EQUAL_INT(izq, m.izq);
     TEST_ASSERT_EQUAL_INT(der, m.der);
+}
+
+// Un giro en el sitio se convierte en pivote sobre una llanta (GirarSobreUnaRueda):
+// la rueda interior se para y la exterior va a la mayor de las dos velocidades
+static void assertMovimiento(MotorMock& m, int izq, int der) {
+    if (GirarSobreUnaRueda && (long)izq * der < 0) {
+        const int v = abs(izq) > abs(der) ? abs(izq) : abs(der);
+        izq = izq < 0 ? 0 : v;
+        der = der < 0 ? 0 : v;
+    }
+    assertMotores(m, izq, der);
 }
 
 static void assertRetrocede(MotorMock& m) {
@@ -37,7 +48,7 @@ static void assertRetrocede(MotorMock& m) {
 }
 
 static void assertGiroEvasion(MotorMock& m, int sentido) {
-    assertMovimiento(m, sentido * VelocidadGiroEvasion, -sentido * VelocidadGiroEvasion);
+    assertMotores(m, sentido * VelocidadGiroEvasion, -sentido * VelocidadGiroEvasion);
 }
 
 static void assertGiroBusqueda(MotorMock& m, int sentido) {

@@ -48,11 +48,10 @@ void ModoCombate::empezarCombate() {
     combateEmpezado = true;
     inicioCombate = millis();
 #if defined(MONITOREO_COMBATE)
-    Serial.print(F("DIP=")); Serial.print(dip); Serial.print(' ');
-    Serial.print(F("INICIO negroIzq=")); Serial.print(percepcion.negroIzquierdo());
-    Serial.print(F(" margenIzq=")); Serial.print(percepcion.margenIzquierdo());
-    Serial.print(F(" negroDer=")); Serial.print(percepcion.negroDerecho());
-    Serial.print(F(" margenDer=")); Serial.println(percepcion.margenDerecho());
+    // DIP y negro calibrado de los sensores de piso (izq,der)
+    Serial.print(F("DIP=")); Serial.print(dip);
+    Serial.print(F(" NEGRO=")); Serial.print(percepcion.negroIzquierdo());
+    Serial.print(','); Serial.println(percepcion.negroDerecho());
 #endif
 }
 
@@ -135,11 +134,11 @@ void ModoCombate::enviarTelemetria() {
         Serial.print(','); Serial.print(analogRead(S_PISO_DER));
         Serial.print(F(" PWM=")); Serial.print(controlMovimiento.ordenIzquierda());
         Serial.print(','); Serial.print(controlMovimiento.ordenDerecha());
-        Serial.print(F(" ENEMIGO_RAW="));
+        Serial.print(F(" ENE="));
         Serial.print(digitalRead(S_FRONT_IZQ));
         Serial.print(digitalRead(S_FRONT_CEN));
         Serial.print(digitalRead(S_FRONT_DER));
-        Serial.print(F(" CICLO_US=")); Serial.println(cicloMaximo);
+        Serial.print(F(" US=")); Serial.println(cicloMaximo);
         cicloMaximo = 0;
     }
 #endif

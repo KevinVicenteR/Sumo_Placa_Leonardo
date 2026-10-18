@@ -35,7 +35,8 @@ public:
     void nuevoCiclo(unsigned long ahora, bool conRutina);
 
     // Manda una orden a los motores. urgente = sin rampa (frenar, escapar...)
-    void mover(IMotor& motor, int izq, int der, bool urgente = false);
+    // enSitio = gira en el sitio aunque GirarSobreUnaRueda pida pivotar
+    void mover(IMotor& motor, int izq, int der, bool urgente = false, bool enSitio = false);
 
     // Calcula el contramando para parar las ruedas según su velocidad estimada.
     // Devuelve false si van tan despacio que no hace falta frenar.

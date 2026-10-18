@@ -90,8 +90,7 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
     // --- Fase 3: girar en el sitio para apartarse del borde ---
     if (fase == Fase::Girando) {
         if (!linea && ahora - inicioFase < duracionGiro) {
-            mando.mover(motor, sentidoGiro * VelocidadGiroEvasion,
-                        -sentidoGiro * VelocidadGiroEvasion, true);
+            girar(mando, motor);
             return true;
         }
         fase = Fase::Asentando;
@@ -152,7 +151,7 @@ bool ManiobraEvasion::separarse(bool linea, MandoMotores& mando, IMotor& motor, 
     }
     if (fase == Fase::GirandoSalida) {
         // Gira en el sitio: el centro del robot no se mueve hacia el borde
-        mando.mover(motor, sentidoGiro * VelocidadGiroEvasion, -sentidoGiro * VelocidadGiroEvasion, true);
+        girar(mando, motor);
     } else {
         const int velocidad = unSensor ? VelocidadRetrocesoUnSensor : VelocidadRetroceso;
         mando.mover(motor, -velocidad, -velocidad, true);
@@ -176,4 +175,14 @@ bool ManiobraEvasion::reintentarSiAtascado(bool linea, MandoMotores& mando, IMot
     negroContinuo = false;
     separarse(linea, mando, motor, ahora);
     return true;
+}
+
+void ManiobraEvasion::girar(MandoMotores& mando, IMotor& motor) const {
+    const int v = sentidoGiro * VelocidadGiroEvasion;
+    if (GirarSobreUnaRueda && PivoteEnEvasion) {
+        // Atrás solo la rueda que iba hacia atrás, con el doble de velocidad
+        mando.mover(motor, v < 0 ? 2 * v : 0, v > 0 ? -2 * v : 0, true);
+    } else {
+        mando.mover(motor, v, -v, true, true);
+    }
 }

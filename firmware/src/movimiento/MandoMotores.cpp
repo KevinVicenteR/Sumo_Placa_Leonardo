@@ -36,7 +36,14 @@ int MandoMotores::conRampa(int actual, int objetivo) const {
     return objetivo;
 }
 
-void MandoMotores::mover(IMotor& motor, int izq, int der, bool urgente) {
+void MandoMotores::mover(IMotor& motor, int izq, int der, bool urgente, bool enSitio) {
+    // 0. Giro en el sitio -> pivote sobre una llanta (ver GirarSobreUnaRueda)
+    if (GirarSobreUnaRueda && !enSitio && (long)izq * der < 0) {
+        const int ai = izq < 0 ? -izq : izq, ad = der < 0 ? -der : der;
+        const int v = ai > ad ? ai : ad;
+        izq = izq < 0 ? 0 : v;
+        der = der < 0 ? 0 : v;
+    }
     // 1. Limitar el avance (solo cuando las dos ruedas van hacia delante)
     const int mayor = izq > der ? izq : der;
     if (izq >= 0 && der >= 0 && mayor > 0) {

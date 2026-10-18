@@ -33,6 +33,15 @@ constexpr int VelocidadCurva = 85;
 // retroceder (solo tras TiempoEmbestida empujándolo de frente).
 constexpr bool ResistirEnBorde = false;
 
+// --- Giros ---
+// true = todos los giros en el sitio (una rueda adelante y otra atrás) se hacen
+// pivotando sobre una llanta: la interior se para y la exterior avanza con la
+// suma de las dos velocidades (gira igual de rápido). La evasión del borde pivota
+// hacia atrás para no acercarse a la línea.
+constexpr bool GirarSobreUnaRueda = true;
+// true = la evasión del borde también pivota (hacia atrás); false = gira en el sitio
+constexpr bool PivoteEnEvasion = false;
+
 // --- Rival visto por un sensor lateral ---
 // true = la rueda de ese lado se frena y la otra gira a VelocidadRuedaPivote;
 // false = giro en el sitio a VelocidadPivoteLateral.

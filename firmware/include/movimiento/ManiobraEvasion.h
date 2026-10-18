@@ -71,6 +71,9 @@ private:
     unsigned long duracionRetroceso = 0;
     unsigned long duracionGiro = 0;
     int sentidoGiro = 1;
+    // Giro de la evasión: en el sitio o, con GirarSobreUnaRueda, pivotando hacia
+    // atrás sobre una llanta (no se acerca a la línea)
+    void girar(MandoMotores& mando, IMotor& motor) const;
     // Salida suave tras la maniobra
     bool salidaSuave = false;
     unsigned long inicioSalidaSuave = 0;

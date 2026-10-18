@@ -4,7 +4,7 @@
 //   DIP1 DIP2  modo
 //   off  off   1: de frente, defensivo   (Modo1Defensivo.h)
 //   ON   off   2: de frente, contragolpe (Modo2Contragolpe.h)
-//   off  ON    3: de lado, predictivo    (Modo3Predictivo.h)
+//   off  ON    3: de lado (rival a la derecha o a la izquierda) (Modo3Lado.h)
 //   ON   ON    4: de espaldas, agresivo  (Modo4Agresivo.h)
 //   DIP3: lado del rival / del giro (off = derecha, ON = izquierda)
 // Cada archivo de modo tiene sus velocidades, sus tiempos y su lógica. Los

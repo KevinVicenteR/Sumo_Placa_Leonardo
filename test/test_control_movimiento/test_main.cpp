@@ -905,22 +905,22 @@ void test_modo2_contragolpe_espera_y_ataca(void) {
     comprobarAtaqueAlVerlo(c, m, 2, d + 10);
 }
 
-void test_modo3_predictivo_intercepta_y_recuerda_el_lado(void) {
+void test_modo3_lado_pivota_hacia_el_rival(void) {
     if (!UsarModosRumania) TEST_IGNORE_MESSAGE("sin modos de Rumania");
     ControlMovimiento c(CLASICO);
     MotorMock m;
-    c.iniciarRutina(3, -1);   // DIP3 a la izquierda
-    // Primero, siempre barre hacia DIP3, aunque un lateral lo vea
-    c.ejecutar(Modo3TiempoMinimo > 0 ? DecisionMovimiento{TipoAccion::DefensaDer} : DecisionMovimiento{TipoAccion::Busqueda}, m, 1000);
-    assertMovimiento(m, -Modo3VelocidadBarrido, Modo3VelocidadBarrido);
-    // Tras la maniobra inicial, lo ve el lateral derecho: avanza en arco hacia la derecha
-    const unsigned long d = 1000 + Modo3TiempoMinimo;
+    c.iniciarRutina(3, -1);   // DIP3: rival a la izquierda
+    // Sin verlo: pivota sobre la rueda izquierda hacia la izquierda
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000);
+    assertMovimiento(m, 0, Modo3VelocidadGiro);
+    // Tras el giro rápido, sin encontrarlo: sigue barriendo más despacio
+    c.ejecutar({TipoAccion::Busqueda}, m, 1000 + Modo3TiempoGiro);
+    assertMovimiento(m, 0, Modo3VelocidadBarrido);
+    // Lo ve el lateral derecho: cambia de lado y gira hacia él
+    const unsigned long d = 1000 + (Modo3TiempoMinimo > Modo3TiempoGiro ? Modo3TiempoMinimo : Modo3TiempoGiro) + 10;
     c.ejecutar({TipoAccion::DefensaDer}, m, d);
-    assertMovimiento(m, Modo3VelocidadArco, Modo3VelocidadArcoInterior);
-    // Lo pierde: barre hacia donde lo vio (derecha), no hacia DIP3
-    c.ejecutar({TipoAccion::Busqueda}, m, d + 10);
-    assertMovimiento(m, Modo3VelocidadBarrido, -Modo3VelocidadBarrido);
-    comprobarAtaqueAlVerlo(c, m, 3, d + 20);
+    assertMovimiento(m, Modo3VelocidadGiro, 0);
+    comprobarAtaqueAlVerlo(c, m, 3, d + 10);
 }
 
 void test_modo4_agresivo_avanza_y_gira_a_fondo(void) {
@@ -996,7 +996,7 @@ int main(int, char**) {
     RUN_TEST(test_reiniciar_vuelve_al_estado_inicial);
     RUN_TEST(test_modo1_defensivo_espera_recibe_y_empuja);
     RUN_TEST(test_modo2_contragolpe_espera_y_ataca);
-    RUN_TEST(test_modo3_predictivo_intercepta_y_recuerda_el_lado);
+    RUN_TEST(test_modo3_lado_pivota_hacia_el_rival);
     RUN_TEST(test_modo4_agresivo_avanza_y_gira_a_fondo);
     RUN_TEST(test_modos_terminan_al_agotar_su_tiempo);
     return UNITY_END();

@@ -18,7 +18,7 @@
 #include "estrategia/DecisionMovimiento.h"
 #include "movimiento/rumania/Modo1Defensivo.h"
 #include "movimiento/rumania/Modo2Contragolpe.h"
-#include "movimiento/rumania/Modo3Predictivo.h"
+#include "movimiento/rumania/Modo3Lado.h"
 #include "movimiento/rumania/Modo4Agresivo.h"
 
 class RutinaInicio {
@@ -49,7 +49,7 @@ private:
                      unsigned long ahora, unsigned long t, ControlAtaque& ataque);
     Modo1Defensivo modo1;
     Modo2Contragolpe modo2;
-    Modo3Predictivo modo3;
+    Modo3Lado modo3;
     Modo4Agresivo modo4;
 
     int rutina = 0;

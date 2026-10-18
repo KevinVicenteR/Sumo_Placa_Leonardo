@@ -335,6 +335,7 @@ int main(int argc, char** argv) {
         else if (a == "--rival-lado") cfg.ladoRival = std::string(v) == "izq" ? -1 : 1;
         else if (a == "--angulo-rumania") cfg.anguloRumania = std::atof(v);
         else if (a == "--dist-rumania") cfg.distRumaniaMax = std::atof(v);
+        else if (a == "--rival-min-rumania") cfg.distRivalRumaniaMin = std::atof(v);
         else if (a == "--dip") cfg.dip = std::atoi(v);
         else if (a == "--fantasmas") cfg.fantasmasPorSegundo = std::atof(v);
         else if (a == "--saturacion") cfg.saturacionesPorSegundo = std::atof(v);

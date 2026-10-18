@@ -13,7 +13,8 @@ ModoCombate::ModoCombate(PlacaXMotion& placaRef, DriverMotores& motoresRef, Perc
 
 void ModoCombate::iniciar() {
 #if defined(__AVR__)
-    // Tras STOP o PROG, recordar el reinicio y desactivar el watchdog
+    // Tras un reinicio por watchdog (STOP o PROG), apagarlo para que no vuelva a
+    // reiniciar; el aviso de listo parpadea antes de quedarse encendido
     reiniciadaPorParada = (MCUSR & _BV(WDRF)) != 0;
     MCUSR = 0;
     wdt_disable();
@@ -53,9 +54,9 @@ void ModoCombate::empezarCombate() {
     combateEmpezado = true;
     inicioCombate = millis();
 #if defined(MONITOREO_COMBATE)
-    // DIP y negro calibrado de los sensores de piso (N=izq,der)
+    // DIP y negro calibrado de los sensores de piso (izq,der)
     Serial.print(F("DIP=")); Serial.print(dip);
-    Serial.print(F(" N=")); Serial.print(percepcion.negroIzquierdo());
+    Serial.print(F(" NEGRO=")); Serial.print(percepcion.negroIzquierdo());
     Serial.print(','); Serial.println(percepcion.negroDerecho());
 #endif
 }
@@ -113,13 +114,11 @@ void ModoCombate::actualizar() {
         }
     }
 
-#if defined(__AVR__)
-    // Espera reglamentaria tras el START: quieto, con los motores apagados
+    // Espera configurable sin bloquear la lectura de STOP o PROG.
     if (millis() - inicioCombate < EsperaInicioCombate) {
         motores.deshabilitar();
         return;
     }
-#endif
 
     // 2. Un ciclo de combate
     robot.actualizar();
@@ -130,7 +129,7 @@ void ModoCombate::actualizar() {
 }
 
 void ModoCombate::reiniciarPlaca() {
-    // Para todo hasta que la placa vuelva a estar lista
+    // Para todo: motores apagados y aviso apagado hasta que vuelva a estar lista
     motores.deshabilitar();
     avisoListo(false);
 #if defined(__AVR__)
@@ -176,9 +175,9 @@ void ModoCombate::enviarTelemetria() {
     // PISO=izq,der  PWM=orden de motores izq,der  ENE=sensores 45I,F,45D
     if (Serial && millis() - ultimaTraza >= 100 && Serial.availableForWrite() >= 60) {
         ultimaTraza = millis();
-        Serial.print(F("P=")); Serial.print(analogRead(S_PISO_IZQ));
+        Serial.print(F("PISO=")); Serial.print(analogRead(S_PISO_IZQ));
         Serial.print(','); Serial.print(analogRead(S_PISO_DER));
-        Serial.print(F(" M=")); Serial.print(controlMovimiento.ordenIzquierda());
+        Serial.print(F(" PWM=")); Serial.print(controlMovimiento.ordenIzquierda());
         Serial.print(','); Serial.print(controlMovimiento.ordenDerecha());
         Serial.print(F(" ENE="));
         Serial.print(digitalRead(S_FRONT_IZQ));

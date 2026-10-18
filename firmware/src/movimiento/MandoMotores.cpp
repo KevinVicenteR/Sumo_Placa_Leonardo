@@ -38,7 +38,7 @@ int MandoMotores::conRampa(int actual, int objetivo) const {
 
 void MandoMotores::mover(IMotor& motor, int izq, int der, bool urgente, bool enSitio) {
     // 0. Giro en el sitio -> pivote sobre una llanta (ver GirarSobreUnaRueda)
-    if (GirarSobreUnaRueda && pivote && !enSitio && (long)izq * der < 0) {
+    if (GirarSobreUnaRueda && !enSitio && (long)izq * der < 0) {
         const int ai = izq < 0 ? -izq : izq, ad = der < 0 ? -der : der;
         const int v = ai > ad ? ai : ad;
         izq = izq < 0 ? 0 : v;

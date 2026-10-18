@@ -12,11 +12,6 @@ void DriverMotores::controlarMotor(uint8_t in1, uint8_t in2, uint8_t pwm, int ve
 }
 
 void DriverMotores::mover(int velIzq, int velDer) {
-#if defined(__AVR__)
-    // Ajuste fino de cada motor para que avance recto (ver Parametros.h)
-    if (PorcentajeMotorIzquierdo != 100) velIzq = (long)velIzq * PorcentajeMotorIzquierdo / 100;
-    if (PorcentajeMotorDerecho != 100) velDer = (long)velDer * PorcentajeMotorDerecho / 100;
-#endif
     controlarMotor(MA1A, MA2A, PWMA, InvertirMotorIzq ? -velIzq : velIzq);
     controlarMotor(MA1B, MA2B, PWMB, InvertirMotorDer ? -velDer : velDer);
 }

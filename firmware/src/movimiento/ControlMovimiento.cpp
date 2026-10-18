@@ -1,5 +1,5 @@
 #include "movimiento/ControlMovimiento.h"
-#include "Parametros.h"
+#include "ParametrosModo4.h"
 
 void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     mejorasEsteCiclo = mejorasActivas();
@@ -7,7 +7,6 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
     // --- 1. Preparar el ciclo: actualizar el estado de cada maniobra ---
     evasion.actualizarSalidaSuave(ahora);
     mando.nuevoCiclo(ahora, rutina.elegida());
-    mando.fijarPivote(!PivoteSoloModo4 || competencia == 4);
     busqueda.recordarLadoEnemigo(decision.tipo);
     ataque.actualizarContacto(decision, evasion.activa(), ahora);
     if (UsarEstimadorBorde) {

@@ -1,5 +1,5 @@
 #include "movimiento/ControlPID.h"
-#include "Parametros.h"
+#include "ParametrosModo4.h"
 
 namespace {
 constexpr long U = ControlPID::Unidad;

@@ -18,16 +18,6 @@ constexpr int VelocidadMaxima = 255;
 // de las dos velocidades. Los frenos y la evasión del borde no pivotan (ver
 // PivoteEnEvasion en ParametrosEvasion.h).
 constexpr bool GirarSobreUnaRueda = true;
-// true = solo pivota en el modo 4; los modos 1-3 giran en el sitio (como secihti)
-constexpr bool PivoteSoloModo4 = true;
-
-// Ajuste fino de cada motor (% de la orden), para que avance recto: los dos
-// motores no empujan igual. Si al avanzar se desvía a la derecha, la rueda
-// izquierda empuja más: baja PorcentajeMotorIzquierdo (y al revés). Solo en el
-// robot real; el simulador modela los dos motores iguales.
-// X3: 100/100; el ajuste del 92 % correspondía al otro robot.
-constexpr int PorcentajeMotorIzquierdo = 100;
-constexpr int PorcentajeMotorDerecho = 100;
 
 // Sin rutina de inicio, todo avance se limita durante este tiempo al empezar.
 constexpr unsigned long TiempoArranqueSuave = 1000;

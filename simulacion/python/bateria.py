@@ -208,6 +208,8 @@ def main():
                     help="combates en total como mínimo (se redondea hacia arriba a un número igual por casilla; sustituye a --n)")
     ap.add_argument("--json", help="guarda el resultado de cada casilla en este archivo")
     ap.add_argument("--rumania", action="store_true", help="colocaciones de Rumania (ROUNDS_RUMANIA)")
+    ap.add_argument("--rival-cerca", action="store_true",
+                    help="Rumania: el rival en cualquier punto de su franja (por defecto, al otro lado, junto al borde)")
     ap.add_argument("--red", help="pesos de las dos redes (formato de entrenar_redes.py) en vez de las tablas")
     ap.add_argument("--dur", type=float, default=30, help="s de combate")
     ap.add_argument("--param", action="append", default=[], help="Nombre=valor de Parametros.h")
@@ -222,6 +224,8 @@ def main():
     if a.rumania:
         global ROUNDS
         ROUNDS = ROUNDS_RUMANIA
+        if a.rival_cerca:
+            ROUNDS = [(n, o + ["--rival-min-rumania", "0"]) for n, o in ROUNDS]
     casillas = len(ROUNDS) * len(RIVALES) * len(FACTORES)
     if a.muestras > 0:
         a.n = -(-a.muestras // casillas)

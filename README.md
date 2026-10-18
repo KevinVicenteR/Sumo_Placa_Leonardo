@@ -1,30 +1,17 @@
-# Sumo X3 — Leonardo / JSumo XMotion, motores de 400 rpm
+# Minisumo Leonardo / JSumo XMotion
 
-Firmware de competición (rounds de SECIHTI, espera de 5 s tras el START), simulador con la física compartida y una web React para explorar combates.
-
-Los DIP eligen la ronda (DIP3, el lado: off = derecha, ON = izquierda):
-
-| DIP1 | DIP2 | Modo | Archivo |
-|---|---|---|---|
-| off | off | 1: espalda con espalda (media vuelta y embestida) | `movimiento/rondas/Ronda1.h` |
-| ON | off | 2: lado a lado (giro en el sitio hacia el rival y embestida) | `movimiento/rondas/Ronda2.h` |
-| off | ON | 3: enfrentados, contragolpe | `movimiento/rondas/Ronda3.h` |
-| ON | ON | 4: salida libre, arco | `movimiento/rondas/Libre.h` |
+Firmware de competición, simulador con la física compartida y una web React para explorar combates. La reorganización parte de `pesos_neuronales_rumania` (`c8136d6`) y conserva las fuentes del firmware byte a byte: mismas decisiones, tablas de pesos, parámetros, telemetría y arranque mediante START sin espera de 5 segundos en Rumania.
 
 ```text
 firmware/
-  include/                 Contratos, tablas de pesos y parámetros (Parametros.h es el índice)
-    sensores/ParametrosSensores.h        sensores de enemigo y de piso
-    hardware/ParametrosArranque.h        módulo de START, espera de 5 s y DIP
-    movimiento/parametros/               motores, ataque, giro lateral, evasión,
-                                         búsqueda, frenado, estimador de borde y PID
-    movimiento/rondas/                   cada ronda: sus velocidades, sus tiempos y su lógica
-    estrategia/ParametrosEstrategia.h    política aprendida y redes neuronales
+  include/                 Contratos, parámetros y tablas
   src/
     hardware/              XMotion, motores, módulo START y caja negra
     sensores/              Lectura, calibración y percepción
     movimiento/            Maniobras, control y límites del borde
-      rondas/              Ronda1, Ronda2, Ronda3 y Libre
+      rumania/             Modos 1-4 de Rumania: cada uno con sus velocidades y su lógica
+  include/movimiento/parametros/  Velocidades y tiempos de cada movimiento: motores,
+                           ataque, giro lateral, evasión, búsqueda, frenado y rutinas
     estrategia/            Reglas, política y redes neuronales
     modos/                 Combate, diagnóstico y prueba de motores
     robot/                 Ciclo percibir → decidir → actuar
@@ -79,9 +66,9 @@ python3 scripts/verificar_invariantes.py --antes simulacion/resultados/refactor_
 python3 -m simulacion.python.verificar_arranques --referencia c8136d6
 ```
 
-`scripts/verificar_invariantes.py` comprueba que una refactorización no cambia el robot: `--referencia COMMIT` compara las fuentes del firmware y `--antes/--despues` dos baterías casilla por casilla.
+La batería usa 7 colocaciones × 11 rivales × 12 factores = 924 casillas. Redondea 3.000 muestras a 4 combates por casilla: 3.696 combates. La referencia y el resultado del refactor coinciden íntegramente: **2.101 victorias, 1.010 caídas, 9 caídas propias**. El verificador compara el JSON completo, además de todas las cabeceras y fuentes C++ del firmware contra `c8136d6`; falla ante cualquier diferencia. Los arranques protegidos también mantienen sus 4.636 ciclos comparados. Los números guardados se midieron en macOS ARM64; CI genera antes y después en el mismo runner para evitar diferencias numéricas entre compiladores o plataformas.
 
-`pio test -e native`: 85 casos (rondas, maniobras, sensores, estimador, redes y caja negra). Las pruebas Python están en `test/python` y las de WebAssembly en `web/test`.
+`pio test -e native`: 94 casos, 83 correctos y 11 omitidos por tácticas desactivadas en la configuración actual. Las pruebas Python están en `test/python`; una prueba antigua dependía de pesos entrenados que ya no garantizaban su hipótesis, y ahora utiliza una red controlada sin modificar las tablas. Las pruebas WebAssembly verifican memoria independiente, repetibilidad, todos los modos/rivales, factores y movimiento antes de 5 segundos.
 
 | Entorno | Flash usada / disponible |
 | --- | ---: |

@@ -4,7 +4,7 @@
 #include "estrategia/EstrategiaCompetencia.h"
 #include "estrategia/EstrategiaReglas.h"
 #include "movimiento/RedControl.h"
-#include "Parametros.h"
+#include "ParametrosModo4.h"
 extern unsigned long g_millis;
 static std::vector<int8_t> logica, motores;
 void setUp() {
@@ -38,12 +38,7 @@ void test_arranques_protegidos_y_mejoras_solo_al_terminar() {
         TEST_ASSERT_EQUAL_INT((int)clasica.decidir(frontal()).tipo,(int)estrategia.decidir(frontal()).tipo);
         c.ejecutar({TipoAccion::EvadirBordeAmbos},m,1000);
         TEST_ASSERT_EQUAL_INT(0,c.rutinaActual());
-        // Con MejorasEnModos1a3 = false los modos 1-3 siguen con la estrategia clásica
-        TEST_ASSERT_EQUAL(MejorasEnModos1a3, c.mejorasActivas());
-        if (!MejorasEnModos1a3) {
-            TEST_ASSERT_EQUAL_INT((int)clasica.decidir(frontal()).tipo, (int)estrategia.decidir(frontal()).tipo);
-            continue;
-        }
+        TEST_ASSERT_TRUE(c.mejorasActivas());
         const bool usaPolitica = UsarRedLogica && (modo != 1 || UsarRedLogicaModo1) && (modo != 3 || UsarRedLogicaModo3);
         // En el modo 3 va de frente: sin EsquivarModo3, la esquiva pasa a la decisión clásica
         const bool esquiva = usaPolitica && (modo != 3 || EsquivarModo3);

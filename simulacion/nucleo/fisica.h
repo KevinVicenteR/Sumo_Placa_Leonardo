@@ -76,6 +76,9 @@ struct Config {
     double lineaRumania = 0.10;   // m del centro a cada línea de salida
     double franjaRumania = 0.105; // m de ancho de la franja (línea de 10 cm + 5 %)
     double distRumaniaMax = 0.30; // m del centro al centro de cada robot, como mucho
+    // El rival se coloca al otro lado del dohyo, junto a su borde: su centro a
+    // esta distancia del centro como mínimo (0 = en cualquier punto de su franja)
+    double distRivalRumaniaMin = 0.26;
     int dip = 0;                  // interruptores DIP en ON (bit 0 = DIP1...)
     // Pines de los DIP (XMotion: 5, 6, 7) y si ON lee LOW; deben coincidir con
     // Pines.h y DipActivoBajo del firmware (aquí fijos para poder simular
@@ -719,7 +722,7 @@ inline void colocarRumania() {
         const double px = -uy, py = ux;                      // a lo largo de la línea
         // Centro del cuerpo detrás de la línea; centrado en la franja
         const double sNos = azar.entre(cfg.lineaRumania + 0.05, dMax);
-        const double sEne = azar.entre(cfg.lineaRumania + 0.05, dMax);
+        const double sEne = azar.entre(maximo(cfg.lineaRumania + 0.05, minimo(cfg.distRivalRumaniaMin, dMax)), dMax);
         const double lNos = azar.entre(-0.002, 0.002), lEne = azar.entre(-0.002, 0.002);
         const double bx = -ux * sNos + px * lNos, by = -uy * sNos + py * lNos;   // nuestro cuerpo
         const double ex = ux * sEne + px * lEne, ey = uy * sEne + py * lEne;

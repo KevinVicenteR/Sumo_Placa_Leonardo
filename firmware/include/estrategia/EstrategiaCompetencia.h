@@ -3,7 +3,7 @@
 #include "estrategia/IEstrategiaCombate.h"
 #include "estrategia/EstrategiaRed.h"
 #include "movimiento/ControlMovimiento.h"
-#include "Parametros.h"
+#include "ParametrosModo4.h"
 // Selección persistente por DIP: una rutina cancelada sigue en su modo original.
 class EstrategiaCompetencia: public IEstrategiaCombate {
 public:

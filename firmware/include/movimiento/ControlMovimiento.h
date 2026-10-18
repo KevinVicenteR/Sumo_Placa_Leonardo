@@ -21,7 +21,6 @@
 #include "movimiento/ControlAtaque.h"
 #include "movimiento/LimitadorBorde.h"
 #include "Parametros.h"
-#include "Parametros.h"
 #include "movimiento/ControlRedModo4.h"
 
 class ControlMovimiento: public IControlMovimiento {
@@ -49,7 +48,7 @@ public:
     // Las salidas 1–3 usan la ruta histórica hasta que termina su maniobra.
     bool mejorasActivas() const {
         return redesHabilitadas && (competencia == 4 ||
-               (MejorasEnModos1a3 && competencia >= 1 && competencia <= 3 && rutina.actual() == 0));
+               (competencia >= 1 && competencia <= 3 && rutina.actual() == 0));
     }
     unsigned char generacionCombate() const { return generacion; }
 

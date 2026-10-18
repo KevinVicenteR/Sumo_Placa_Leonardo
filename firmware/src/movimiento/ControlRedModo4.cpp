@@ -1,6 +1,6 @@
 #include "movimiento/ControlRedModo4.h"
 #include "movimiento/RedControl.h"
-#include "Parametros.h"
+#include "ParametrosModo4.h"
 namespace {
 int limitar(int x, int minimo, int maximo) { return x < minimo ? minimo : x > maximo ? maximo : x; }
 }

@@ -164,11 +164,11 @@ def elegir_candidato(evaluaciones, obj0, total0, mejor_obj, mejor_total):
     return max(validas, key=lambda x: prioridad_validacion(x[1], x[2])) if validas else None
 
 
-PARAMETROS_MODO4 = simular.RAIZ / "firmware" / "include" / "estrategia" / "ParametrosEstrategia.h"
+PARAMETROS_MODO4 = simular.RAIZ / "firmware" / "include" / "ParametrosModo4.h"
 
 
 def parametros_con_modos(modos):
-    """estrategia/ParametrosEstrategia.h con la red de lógica y la de control activas en estos
+    """ParametrosModo4.h con la red de lógica y la de control activas en estos
     modos (1 y/o 3; solo actúan después de la rutina de inicio)."""
     import re
     texto = PARAMETROS_MODO4.read_text()
@@ -176,7 +176,7 @@ def parametros_con_modos(modos):
         for nombre in (f"UsarRedLogicaModo{m}", f"UsarRedControlModo{m}"):
             texto, n = re.subn(rf"(constexpr bool {nombre}\s*=\s*)\w+;", r"\g<1>true;", texto)
             if n != 1:
-                sys.exit(f"No se encontró {nombre} en estrategia/ParametrosEstrategia.h")
+                sys.exit(f"No se encontró {nombre} en ParametrosModo4.h")
     return texto
 
 
@@ -232,7 +232,7 @@ def main():
     # la comprobación final cuando se activan modos nuevos
     binario_base = simular.compilar({}, banderas=("-DENTRENAMIENTO_REDES",)) if modos else binario
     print(f"Redes activas también en los modos {modos} tras su rutina de inicio" if modos else
-          "Redes con la selección de modos de estrategia/ParametrosEstrategia.h", flush=True)
+          "Redes con la selección de modos de ParametrosModo4.h", flush=True)
     print(f"Comprobación final: {a.n_final} combates por casilla = {a.n_final * casillas_batería} combates", flush=True)
     nl = R.num_parametros_logica()
     checkpoint = CANDIDATO if CANDIDATO.exists() else GUARDADO
@@ -331,7 +331,7 @@ def main():
             print("Escritas TablaRedLogica.h y TablaRedControl.h")
             if modos:
                 PARAMETROS_MODO4.write_text(parametros_modo4)
-                print(f"Escrito estrategia/ParametrosEstrategia.h con las redes activas en los modos {modos}")
+                print(f"Escrito ParametrosModo4.h con las redes activas en los modos {modos}")
         elif segura:
             print("Mejora segura en esta muestra; tablas conservadas por --no-escribir")
         else:

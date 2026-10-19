@@ -27,7 +27,7 @@ private:
     // Empieza un combate nuevo con el robot ya colocado sobre el negro: lo
     // reinicia todo (como recién encendido) y hace la rutina de los DIP
     void empezarCombate();
-    // Reinicia el microcontrolador (como apagar y encender) tras una parada larga
+    // Reinicia el microcontrolador (como apagar y encender) tras una parada confirmada
     void reiniciarPlaca();
     void enviarTelemetria();
     // LED RX y TX: listo mientras espera el START
@@ -42,12 +42,9 @@ private:
     ModuloArranque moduloArranque;
     CajaNegra cajaNegra;
     bool enCombate = false;
-    // Ya hubo un combate y cuándo se paró (para distinguir interferencias)
+    // También cuenta el START durante la espera reglamentaria.
     bool combateEmpezado = false;
     unsigned long inicioCombate = 0;
-    unsigned long inicioParada = 0;
-    // Última vez que se reanudó tras una parada corta (0 = nunca): detecta PROG
-    unsigned long ultimaReanudacion = 0;
     // Arranque por watchdog tras STOP o PROG: parpadea el aviso
     bool reiniciadaPorParada = false;
 #if defined(MONITOREO_COMBATE)

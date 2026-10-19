@@ -4,19 +4,28 @@
 #include "Parametros.h"
 #if defined(__AVR__)
 #include <avr/wdt.h>
+#include <EEPROM.h>
+
+namespace {
+// CajaNegra ocupa 0..147 en AVR (cabecera de 4 y 8 registros de 18).
+// Byte 1023 reservado al aviso de reinicio; Caterina puede borrar MCUSR.
+constexpr int DireccionAvisoReinicio = 1023;
+constexpr uint8_t MarcaAvisoReinicio = 0xA7;
+}
 #endif
 
 ModoCombate::ModoCombate(PlacaXMotion& placaRef, DriverMotores& motoresRef, Percepcion& percepcionRef,
                          ControlMovimiento& controlRef, ControladorRobot& robotRef)
     : placa(placaRef), motores(motoresRef), percepcion(percepcionRef), controlMovimiento(controlRef),
-      robot(robotRef), moduloArranque(FiltroModuloArranqueMs, FiltroParadaModuloMs) {}
+      robot(robotRef), moduloArranque(FiltroModuloArranqueMs, FiltroParadaModuloMs, StopMinimoAntesDeStart) {}
 
 void ModoCombate::iniciar() {
 #if defined(__AVR__)
-    // Tras STOP o PROG, recordar el reinicio y desactivar el watchdog
-    reiniciadaPorParada = (MCUSR & _BV(WDRF)) != 0;
     MCUSR = 0;
     wdt_disable();
+    // La marca sobrevive al bootloader; consumirla solo una vez.
+    reiniciadaPorParada = EEPROM.read(DireccionAvisoReinicio) == MarcaAvisoReinicio;
+    EEPROM.update(DireccionAvisoReinicio, 0);
     if (AvisoListoLed) {
         TX_RX_LED_INIT;
     }
@@ -66,52 +75,25 @@ void ModoCombate::actualizar() {
     // 1. Módulo de arranque: sin RUN, motores apagados y nada más
     if (PIN_MODULO_ARRANQUE >= 0) {
         const bool alto = digitalRead((uint8_t)PIN_MODULO_ARRANQUE) == HIGH;
-        if (!moduloArranque.enMarcha(alto == ModuloArranqueActivoAlto, millis())) {
+        const bool run = alto == ModuloArranqueActivoAlto;
+        const bool marcha = moduloArranque.enMarcha(run, millis());
+        if (!marcha) {
             motores.deshabilitar();
-            if (enCombate) {
-                inicioParada = millis();
-                // Con los motores ya parados se puede escribir en la EEPROM
-                cajaNegra.guardar();
-                // Otro corte poco después de reanudar: es PROG, no una
-                // interferencia. Reinicio completo, como si no hubiera combatido
-                if (ReiniciarTrasParada && ultimaReanudacion != 0 &&
-                    inicioParada - ultimaReanudacion < VentanaProgramacionMs) {
-                    reiniciarPlaca();
-                    return;
-                }
-            }
-            // Parada larga (STOP o PROG del control remoto): reinicia la placa
-            // entera, como al encenderla. El siguiente START empieza de cero,
-            // vuelve a leer los DIP y hace la rutina de ese modo.
-            if (combateEmpezado && ReiniciarTrasParada &&
-                millis() - inicioParada >= TiempoReanudarCombate) {
+            if (combateEmpezado) {
+                // Toda parada confirmada reinicia, sin consultar sensores.
                 reiniciarPlaca();
                 return;
             }
-            if (!combateEmpezado) {
-                actualizarAvisoListo();
-            } else {
-                // Sigue leyendo los sensores: si el robot se desliza hasta la
-                // línea durante una parada corta, al reanudar lo sabrá (la
-                // detección de línea se mantiene aunque el morro quede fuera)
-                percepcion.leer();
-            }
-            enCombate = false;
+            actualizarAvisoListo();
+            return;
+        }
+        // Durante el filtro STOP tampoco se ejecuta la estrategia.
+        if (!run) {
+            motores.deshabilitar();
             return;
         }
         if (!enCombate) {
-            // Reanudar solo tras una parada corta de un combate que ya estaba en
-            // marcha (interferencia); si no, combate nuevo con su rutina
-            const bool paradaCorta = millis() - inicioParada < TiempoReanudarCombate;
-            const bool estabaEnMarcha = inicioParada - inicioCombate >= TiempoMinimoParaReanudar;
-            if (combateEmpezado && paradaCorta && estabaEnMarcha) {
-                // Parada corta (interferencia): sigue el mismo combate
-                enCombate = true;
-                ultimaReanudacion = millis() | 1;
-                cajaNegra.anotarInterrupcion();
-            } else {
-                empezarCombate();
-            }
+            empezarCombate();
         }
     }
 
@@ -132,15 +114,20 @@ void ModoCombate::reiniciarPlaca() {
     // Para todo hasta que la placa vuelva a estar lista
     motores.deshabilitar();
     avisoListo(false);
+    cajaNegra.guardar();  // no vuelve a escribir si ya estaba guardada
 #if defined(__AVR__)
+    EEPROM.update(DireccionAvisoReinicio, MarcaAvisoReinicio);
     // El watchdog reinicia el microcontrolador en 15 ms: se borra toda la RAM
     // (estado de sensores, maniobras, estrategia...) como al encenderlo
     wdt_enable(WDTO_15MS);
     while (true) {
     }
 #else
-    // En el simulador: el siguiente RUN empieza un combate nuevo
+    // En el simulador: volver a esperar STOP estable y un START nuevo
     combateEmpezado = false;
+    enCombate = false;
+    moduloArranque = ModuloArranque(FiltroModuloArranqueMs, FiltroParadaModuloMs,
+                                    StopMinimoAntesDeStart);
 #endif
 }
 

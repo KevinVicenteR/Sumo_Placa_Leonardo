@@ -1,6 +1,3 @@
-// ControladorRobot.h — El ciclo principal: percibir -> decidir -> actuar
-// No sabe nada del hardware ni de la estrategia concreta: recibe sus piezas
-// por el constructor (inyección de dependencias) y solo las encadena.
 #ifndef CONTROLADOR_ROBOT_H
 #define CONTROLADOR_ROBOT_H
 
@@ -13,9 +10,7 @@ class ControladorRobot {
 public:
     ControladorRobot(IPercepcion& percepcion, IEstrategiaCombate& estrategia,
                      IControlMovimiento& controlMovimiento, IMotor& motor);
-    // Un ciclo completo de combate
     void actualizar();
-    // Lo que vieron los sensores en el último ciclo
     const LecturasSensores& ultimasLecturas() const { return lecturas; }
 
 private:

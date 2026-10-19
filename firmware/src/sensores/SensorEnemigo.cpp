@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "sensores/SensorEnemigo.h"
-#include "Parametros.h"
+#include "configuracion/Parametros.h"
 
 SensorEnemigo::SensorEnemigo(uint8_t pin, bool activoAlto)
     : pin(pin), activoAlto(activoAlto), filtro(TiempoRetencionEnemigo, ConfirmacionSensorEnemigo) {}

@@ -1,20 +1,16 @@
-// Percepcion.h — Todos los sensores del robot detrás de una sola clase
-// Patrón Fachada (Facade): agrupa los 2 sensores de piso y los 5 de enemigo y
-// devuelve en una sola llamada (leer) todo lo que el robot necesita saber.
 #ifndef PERCEPCION_H
 #define PERCEPCION_H
 
 #include "sensores/IPercepcion.h"
 #include "sensores/SensorPiso.h"
 #include "sensores/SensorEnemigo.h"
-#include "Pines.h"
-#include "Parametros.h"
+#include "configuracion/Pines.h"
+#include "configuracion/Parametros.h"
 
 class Percepcion: public IPercepcion {
 public:
     LecturasSensores leer() override;
 
-    // Mide el negro del piso. Llamar con el robot ya colocado sobre el dohyo
     void calibrarPiso();
 
     int negroIzquierdo() const { return pisoIzq.negroCalibrado(); }
@@ -23,7 +19,6 @@ public:
     int margenDerecho() const { return pisoDer.margenLinea(); }
 
 private:
-    // Polaridad guardada del sensor número "indice" (bit de MascaraEnemigosActivosHigh)
     static constexpr bool activoAlto(int indice) { return (MascaraEnemigosActivosHigh >> indice) & 1; }
 
     SensorPiso pisoIzq{S_PISO_IZQ, NegroPisoIzquierdo};

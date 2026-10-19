@@ -1,7 +1,3 @@
-// SensorEnemigo.h — Un sensor digital que detecta al robot rival
-// Cada lectura toma 3 muestras y se queda con la mayoría (filtra parpadeos) y
-// después pasa por un filtro de retención (RetencionDeteccion).
-// La polaridad indica si el sensor da HIGH o LOW cuando ve algo.
 #ifndef SENSOR_ENEMIGO_H
 #define SENSOR_ENEMIGO_H
 
@@ -12,14 +8,11 @@ class SensorEnemigo {
 public:
     SensorEnemigo(uint8_t pin, bool activoAlto);
 
-    // Lectura filtrada: true = ve al rival
     bool detecta(unsigned long ahora);
 
-    // Olvida las detecciones anteriores
     void reiniciarFiltro();
 
 private:
-    // El pin está en HIGH en al menos 2 de 3 lecturas
     bool mayoriaAlta() const;
 
     uint8_t pin;

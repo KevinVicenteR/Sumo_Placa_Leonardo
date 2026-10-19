@@ -7,7 +7,7 @@ ControladorRobot::ControladorRobot(IPercepcion& percepcionRef, IEstrategiaCombat
       controlMovimiento(controlRef), motor(motorRef) {}
 
 void ControladorRobot::actualizar() {
-    lecturas = percepcion.leer();                                 // 1. percibir
-    DecisionMovimiento decision = estrategia.decidir(lecturas);   // 2. decidir
-    controlMovimiento.ejecutar(decision, motor, millis());        // 3. actuar
+    lecturas = percepcion.leer();
+    DecisionMovimiento decision = estrategia.decidir(lecturas);
+    controlMovimiento.ejecutar(decision, motor, millis());
 }

@@ -26,12 +26,30 @@ pio run -t upload
 - **STOP o PROG**: para los motores y reinicia la placa entera. Los LED RX y TX
   parpadean 3 veces y quedan encendidos = listo para el siguiente START.
 
+## Carpetas
+
+Cada carpeta tiene su `.h` en `firmware/include/` y su `.cpp` en `firmware/src/`.
+
+| Carpeta | Qué hay |
+|---------|---------|
+| `configuracion/` | Todos los parámetros ajustables y los pines |
+| `combate/` | Módulo de arranque: START, STOP/PROG, reinicio y LED |
+| `modos_rumania/` | Los 4 modos (DIP) y quién los elige (`RutinaInicio`) |
+| `maniobras/` | Ataque, búsqueda, giro lateral, evasión del borde, paro |
+| `borde/` | Estimador de posición y limitador de velocidad junto al borde |
+| `movimiento/` | Control del movimiento, mando de motores y PID |
+| `estrategia/` | Qué hacer según lo que ven los sensores (reglas) |
+| `redes/` | Redes neuronales (lógica y control) y sus pesos |
+| `sensores/` | Sensores de piso y de rival |
+| `hardware/` | Motores, placa, DIP y caja negra (EEPROM) |
+| `robot/` | Ciclo percibir → decidir → mover |
+
 ## Dónde se ajusta
 
-- `firmware/include/Parametros.h`: sensores, borde, DIP y módulo de arranque.
-- `firmware/include/ParametrosModo4.h`: redes neuronales y tácticas.
-- `firmware/include/movimiento/parametros/`: motores, ataque, búsqueda, evasión,
-  frenado y giro lateral.
-- `firmware/include/movimiento/rumania/Modo1Defensivo.h` … `Modo4Agresivo.h`:
-  velocidades y tiempos de cada modo.
-- `firmware/include/Pines.h`: conexiones.
+- `configuracion/Pines.h`: conexiones.
+- `configuracion/Parametros.h`: sensores, borde, DIP y módulo de arranque.
+- `configuracion/ParametrosRedes.h`: redes neuronales y tácticas.
+- `configuracion/ParametrosMotores.h`, `ParametrosAtaque.h`, `ParametrosBusqueda.h`,
+  `ParametrosEvasion.h`, `ParametrosFrenado.h`, `ParametrosGiroLateral.h`.
+- `modos_rumania/Modo1Defensivo.h` … `Modo4Agresivo.h`: velocidades y tiempos
+  de cada modo.

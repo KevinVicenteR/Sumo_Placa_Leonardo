@@ -1,10 +1,9 @@
 #ifndef ESTRATEGIA_COMPETENCIA_H
 #define ESTRATEGIA_COMPETENCIA_H
 #include "estrategia/IEstrategiaCombate.h"
-#include "estrategia/EstrategiaRed.h"
+#include "redes/EstrategiaRed.h"
 #include "movimiento/ControlMovimiento.h"
-#include "ParametrosModo4.h"
-// Selección persistente por DIP: una rutina cancelada sigue en su modo original.
+#include "configuracion/ParametrosRedes.h"
 class EstrategiaCompetencia: public IEstrategiaCombate {
 public:
     EstrategiaCompetencia(IEstrategiaCombate& anterior, ControlMovimiento& c)
@@ -23,7 +22,6 @@ public:
             generacion = control.generacionCombate();
         }
         DecisionMovimiento d = red.decidir(l);
-        // Modo 3: de frente contra el rival; si la red quiere esquivar, decisión clásica
         if (control.modoCompetencia() == 3 && !EsquivarModo3 && esEsquiva(d.tipo)) {
             d = clasica.decidir(l);
             const int vistos = l.c45Izq + l.frontal + l.c45Der;

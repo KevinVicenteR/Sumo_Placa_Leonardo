@@ -5,14 +5,11 @@ long magnitud(long v) { return v < 0 ? -v : v; }
 }
 
 void MandoMotores::nuevoCiclo(unsigned long ahora, bool conRutina) {
-    // Arranque suave: sin rutina de inicio, el avance sube desde 0 hasta
-    // VelocidadAtaque durante TiempoArranqueSuave
     if (primerCiclo) inicioMovimiento = ahora;
     const unsigned long desdeInicio = ahora - inicioMovimiento;
     limiteArranque = !conRutina && rampa > 0 && TiempoArranqueSuave > 0 && desdeInicio < TiempoArranqueSuave
         ? (long)VelocidadAtaque * desdeInicio / TiempoArranqueSuave : 255;
 
-    // Rampa: el paso permitido depende de los ms transcurridos desde el último ciclo
     const unsigned long dtRampa = primerCiclo ? 0 : ahora - ultimaRampa;
     primerCiclo = false;
     ultimaRampa = ahora;
@@ -22,8 +19,6 @@ void MandoMotores::nuevoCiclo(unsigned long ahora, bool conRutina) {
     estimarVelocidad(ahora);
 }
 
-// Acerca la orden actual al objetivo sin superar pasoRampa. Bajar la velocidad
-// o cambiar de sentido para frenar no se limita (sería peligroso).
 int MandoMotores::conRampa(int actual, int objetivo) const {
     const long producto = (long)actual * objetivo;
     if (objetivo == 0 || (producto > 0 && magnitud(objetivo) <= magnitud(actual))) {
@@ -37,14 +32,12 @@ int MandoMotores::conRampa(int actual, int objetivo) const {
 }
 
 void MandoMotores::mover(IMotor& motor, int izq, int der, bool urgente, bool enSitio) {
-    // 0. Giro en el sitio -> pivote sobre una llanta (ver GirarSobreUnaRueda)
     if (GirarSobreUnaRueda && !enSitio && (long)izq * der < 0) {
         const int ai = izq < 0 ? -izq : izq, ad = der < 0 ? -der : der;
         const int v = ai > ad ? ai : ad;
         izq = izq < 0 ? 0 : v;
         der = der < 0 ? 0 : v;
     }
-    // 1. Limitar el avance (solo cuando las dos ruedas van hacia delante)
     const int mayor = izq > der ? izq : der;
     if (izq >= 0 && der >= 0 && mayor > 0) {
         int limite = limiteArranque;
@@ -54,24 +47,20 @@ void MandoMotores::mover(IMotor& motor, int izq, int der, bool urgente, bool enS
             limites.estimador < limite) {
             limite = limites.estimador;
         }
-        // Se reducen las dos ruedas en la misma proporción para no cambiar la curva
         if (mayor > limite) {
             izq = (long)izq * limite / mayor;
             der = (long)der * limite / mayor;
         }
     }
-    // 2. Rampa (salvo en maniobras urgentes)
     if (rampa > 0 && !urgente) {
         izq = conRampa(ordenIzq, izq);
         der = conRampa(ordenDer, der);
     }
-    // 3. Recordar y enviar
     ordenIzq = izq;
     ordenDer = der;
     motor.mover(izq, der);
 }
 
-// La rueda no alcanza la orden al instante: se filtra con la inercia TauRuedas
 void MandoMotores::estimarVelocidad(unsigned long ahora) {
     const unsigned long dt = ahora - ultimaEstimacion;
     if (dt == 0) {
@@ -89,7 +78,6 @@ bool MandoMotores::calcularFreno(unsigned long duracionMaxima, Freno& freno) con
     if (mayor < VelocidadMinimaFreno) {
         return false;
     }
-    // Cada rueda frena en sentido contrario a su giro, y más tiempo cuanto más rápido iba
     freno.izq = -izq * VelocidadFreno / mayor;
     freno.der = -der * VelocidadFreno / mayor;
     freno.duracion = duracionMaxima * mayor / VelocidadMaxima;

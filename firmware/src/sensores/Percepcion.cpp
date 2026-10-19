@@ -10,14 +10,12 @@ LecturasSensores Percepcion::leer() {
     const unsigned long ahora = millis();
     LecturasSensores lecturas;
 
-    // Piso: se leen los dos sensores y después se interpretan
     const int izq = pisoIzq.leer();
     const int der = pisoDer.leer();
     lecturas.lineaIzq = pisoIzq.hayLinea(izq);
     lecturas.lineaDer = pisoDer.hayLinea(der);
     lecturas.cercaBorde = pisoIzq.cercaDeLinea(izq) || pisoDer.cercaDeLinea(der);
 
-    // Enemigo: cada sensor ya devuelve la lectura filtrada
     lecturas.latIzq = latIzq.detecta(ahora);
     lecturas.c45Izq = c45Izq.detecta(ahora);
     lecturas.frontal = frontal.detecta(ahora);

@@ -4,7 +4,6 @@
 #ifdef __AVR__
 #include <EEPROM.h>
 #else
-// Fuera del Arduino (simulador) no hay EEPROM: se emula en RAM
 namespace {
 uint8_t eepromSimulada[1024];
 }
@@ -14,7 +13,7 @@ void CajaNegra::escribir(int direccion, const void* datos, int tamano) {
     const uint8_t* bytes = static_cast<const uint8_t*>(datos);
     for (int i = 0; i < tamano; i++) {
 #ifdef __AVR__
-        EEPROM.update(direccion + i, bytes[i]);  // solo escribe los bytes que cambian
+        EEPROM.update(direccion + i, bytes[i]);
 #else
         eepromSimulada[direccion + i] = bytes[i];
 #endif
@@ -36,7 +35,7 @@ CajaNegra::Cabecera CajaNegra::leerCabecera() const {
     Cabecera cabecera;
     leerBytes(0, &cabecera, sizeof cabecera);
     if (cabecera.firma != Firma) {
-        cabecera = {Firma, 0};  // EEPROM sin caja negra: empieza desde cero
+        cabecera = {Firma, 0};
     }
     return cabecera;
 }
@@ -60,7 +59,6 @@ void CajaNegra::observar(const LecturasSensores& l, unsigned int evasiones, unsi
     actual.evasiones = evasiones;
     guardado = false;
 
-    // Detección continua más larga de cada sensor de enemigo
     const bool ve[5] = {l.latIzq, l.c45Izq, l.frontal, l.c45Der, l.latDer};
     for (uint8_t i = 0; i < 5; i++) {
         if (!ve[i]) {
@@ -86,7 +84,6 @@ void CajaNegra::anotarInterrupcion() {
 
 void CajaNegra::guardar() {
     if (!enCurso || guardado) return;
-    // El combate número n va en la posición n % NumRegistros (anillo)
     const int direccion = sizeof(Cabecera) + (actual.numero % NumRegistros) * sizeof(RegistroCombate);
     escribir(direccion, &actual, sizeof actual);
     const Cabecera cabecera = {Firma, (uint16_t)(actual.numero + 1)};

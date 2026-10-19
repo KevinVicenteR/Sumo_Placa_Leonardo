@@ -1,7 +1,6 @@
 #include "estrategia/EstrategiaReglas.h"
 
 DecisionMovimiento EstrategiaReglas::elegirContraEnemigo(const LecturasSensores& lecturas) {
-    // Rival de frente: atacar, corrigiendo hacia el lado de un sensor de 45°
     if (lecturas.frontal) {
         if (lecturas.c45Izq && !lecturas.c45Der) {
             return {TipoAccion::AjusteIzq, true};
@@ -12,7 +11,6 @@ DecisionMovimiento EstrategiaReglas::elegirContraEnemigo(const LecturasSensores&
         return {TipoAccion::AtaqueFrontal, true};
     }
 
-    // Rival solo a 45°: girar hacia él mientras avanza
     if (lecturas.c45Izq) {
         return {TipoAccion::CorregirIzq};
     }
@@ -20,7 +18,6 @@ DecisionMovimiento EstrategiaReglas::elegirContraEnemigo(const LecturasSensores&
         return {TipoAccion::CorregirDer};
     }
 
-    // Rival de lado: girar para ponerlo de frente
     if (lecturas.latIzq) {
         return {TipoAccion::DefensaIzq};
     }
@@ -28,6 +25,5 @@ DecisionMovimiento EstrategiaReglas::elegirContraEnemigo(const LecturasSensores&
         return {TipoAccion::DefensaDer};
     }
 
-    // No se ve: buscar
     return {TipoAccion::Busqueda};
 }

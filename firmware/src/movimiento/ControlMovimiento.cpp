@@ -1,10 +1,9 @@
 #include "movimiento/ControlMovimiento.h"
-#include "ParametrosModo4.h"
+#include "configuracion/ParametrosRedes.h"
 
 void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& motor, unsigned long ahora) {
     mejorasEsteCiclo = mejorasActivas();
     evasion.configurarModo4(mejorasEsteCiclo && (competencia != 3 || MejorarRecuperacionModo3));
-    // --- 1. Preparar el ciclo: actualizar el estado de cada maniobra ---
     evasion.actualizarSalidaSuave(ahora);
     mando.nuevoCiclo(ahora, rutina.elegida());
     busqueda.recordarLadoEnemigo(decision.tipo);
@@ -18,7 +17,6 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         return;
     }
 
-    // --- 2. Borde: tiene prioridad sobre todo ---
     empezarEvasionSiHayBorde(decision, ahora);
     if (rutina.actual() != 0 && (esBorde(decision.tipo) || evasion.activa())) {
         rutina.cancelar();
@@ -30,13 +28,11 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         return;
     }
 
-    // --- 3. Rutina de inicio del round ---
     if (rutina.continuar(decision, mando, motor, ahora, busqueda, ataque)) {
         busqueda.detener();
         return;
     }
 
-    // Rival centrado en los tres sensores: cualquier otra maniobra se cancela
     if (decision.ataqueDirecto && decision.tipo == TipoAccion::AtaqueFrontal) {
         paro.cancelar();
         giroLateral.cancelar();
@@ -46,18 +42,15 @@ void ControlMovimiento::ejecutar(const DecisionMovimiento& decision, IMotor& mot
         busqueda.detener();
     }
 
-    // --- 4. Frenado al perder al rival ---
     if (paro.continuar(decision, mando, motor, ahora)) {
         return;
     }
 
-    // --- 5. Giro hacia un rival visto de lado ---
     if (giroLateral.continuar(decision, mando, motor, ahora)) {
         busqueda.detener();
         return;
     }
 
-    // --- 6. Acción normal ---
     ejecutarAccion(decision, motor, ahora);
 }
 
@@ -69,29 +62,24 @@ void ControlMovimiento::actualizarLimites(const DecisionMovimiento& decision) {
 }
 
 void ControlMovimiento::empezarEvasionSiHayBorde(const DecisionMovimiento& decision, unsigned long ahora) {
-    // Retroceder solo si venía avanzando hacia la línea (ver AvanceMinimoParaRetroceder)
     const int velocidad = mando.velocidadAvanceEstimada();
     const bool avanzaba = !SalirGirandoSiNoAvanza || velocidad >= AvanceMinimoParaRetroceder;
-    // Cuanto más rápido llega, más retrocede (ver RetrocesoExtraAVelocidadMaxima)
     const unsigned long extra = velocidad > 0 ? RetrocesoExtraAVelocidadMaxima * velocidad / 255 : 0;
     bool empezo = false;
     switch (decision.tipo) {
     case TipoAccion::EvadirBordeIzq:
-        // Línea a la izquierda: retroceso corto y giro a la derecha
         empezo = evasion.iniciar(1, TiempoRetrocesoUnSensor + extra, TiempoGiroEvasion, ahora, true, avanzaba);
         break;
     case TipoAccion::EvadirBordeDer:
         empezo = evasion.iniciar(-1, TiempoRetrocesoUnSensor + extra, TiempoGiroEvasion, ahora, true, avanzaba);
         break;
     case TipoAccion::EvadirBordeAmbos:
-        // Línea de frente: gira hacia el último lado donde se vio al rival
         empezo = evasion.iniciar(busqueda.sentido(), TiempoRetrocesoAmbos + extra, TiempoGiroEvasionAmbos, ahora,
                                  false, avanzaba);
         break;
     default:
         break;
     }
-    // Una evasión nueva interrumpe todo lo demás
     if (empezo) {
         numEvasiones++;
         paro.olvidar();
@@ -118,7 +106,6 @@ void ControlMovimiento::ejecutarAccion(const DecisionMovimiento& decision, IMoto
         controlRed.ejecutar(decision, mando, motor, ahora, velocidad, ataque.empujando(), limitadorBorde.limite(), competencia);
         return;
     }
-    // Rueda interior al corregir hacia un rival visto a 45°
     const int interior45 = Corregir45EnPivote ? 0 : VelocidadCurva * velocidad / VelocidadAtaque;
 
     switch (decision.tipo) {

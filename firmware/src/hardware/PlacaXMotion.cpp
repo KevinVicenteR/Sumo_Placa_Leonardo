@@ -1,16 +1,14 @@
 #include <Arduino.h>
 #include "hardware/PlacaXMotion.h"
-#include "Pines.h"
-#include "Parametros.h"
+#include "configuracion/Pines.h"
+#include "configuracion/Parametros.h"
 
 void PlacaXMotion::inicializarPines() const {
-    // 1. Potencia de los motores a 0 antes que nada, para que no se muevan
     digitalWrite(PWMA, LOW);
     digitalWrite(PWMB, LOW);
     pinMode(PWMA, OUTPUT);
     pinMode(PWMB, OUTPUT);
 
-    // 2. Sensores de enemigo y módulo de arranque: entradas digitales
     pinMode(S_FRONT_IZQ, INPUT);
     pinMode(S_FRONT_CEN, INPUT);
     pinMode(S_FRONT_DER, INPUT);
@@ -20,12 +18,10 @@ void PlacaXMotion::inicializarPines() const {
         pinMode((uint8_t)PIN_MODULO_ARRANQUE, INPUT);
     }
 
-    // 3. Interruptores DIP: entradas con resistencia de pull-up interna
     pinMode(DIP_1, INPUT_PULLUP);
     pinMode(DIP_2, INPUT_PULLUP);
     pinMode(DIP_3, INPUT_PULLUP);
 
-    // 4. Pines de sentido de los motores: salidas en LOW
     digitalWrite(MA1A, LOW);
     digitalWrite(MA2A, LOW);
     digitalWrite(MA1B, LOW);
@@ -41,7 +37,6 @@ int PlacaXMotion::leerInterruptores() const {
     int bits = 0;
     for (int i = 0; i < 3; i++) {
         const bool alto = digitalRead(pines[i]) == HIGH;
-        // Con DipActivoBajo, un interruptor en ON lee LOW
         if (alto != DipActivoBajo) bits |= 1 << i;
     }
     return bits;

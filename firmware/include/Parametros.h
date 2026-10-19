@@ -140,26 +140,15 @@ constexpr unsigned long FiltroModuloArranqueMs = 30;
 // infrarrojo del rival no detenga (y reinicie) el combate.
 constexpr unsigned long FiltroParadaModuloMs = 150;
 
-// Una parada más corta que esto no es del árbitro (para reiniciar hay que volver a
-// colocar los robots) sino una interferencia: al volver RUN, el robot sigue el
-// mismo combate sin recalibrar el piso (recalibrar sobre la línea blanca le
-// haría ver borde en todas partes).
-// Debe ser corto: con el control remoto (STOP, RESTART y START) un START antes
-// de este tiempo se tomaría como la misma pelea y se saltaría la rutina del round.
-constexpr unsigned long TiempoReanudarCombate = 500;
-// true = una parada más larga que TiempoReanudarCombate (STOP o PROG del control)
-// reinicia la placa entera, como apagarla y encenderla: no queda nada del combate
-// anterior y el siguiente START lee los DIP y hace la rutina del modo elegido.
-// La caja negra (EEPROM) se guarda antes y no se pierde.
+// STOP continuo previo al flanco RUN: rechaza parpadeos de programación.
+// 300 ms no añaden espera al START normal: el módulo ya llevaba en STOP.
+constexpr unsigned long StopMinimoAntesDeStart = 300;
+// 0 = no reanudar nunca: toda parada confirmada reinicia inmediatamente.
+constexpr unsigned long TiempoReanudarCombate = 0;
+// Se conserva el parámetro por compatibilidad; toda parada reinicia la placa.
 constexpr bool ReiniciarTrasParada = true;
-// Solo se reanuda un combate que llevaba al menos este tiempo en marcha. Al
-// pulsar PROG el módulo da pulsos breves de RUN (mientras parpadea su LED): el
-// START que se pulsa después debe empezar un combate nuevo, con su rutina.
+// Parámetros antiguos sin uso con la reanudación desactivada.
 constexpr unsigned long TiempoMinimoParaReanudar = 1000;
-// PROG del control remoto sin STOP antes: el módulo da cortes breves de RUN
-// mientras parpadea, que parecerían interferencias y reanudarían el combate
-// anterior. Un segundo corte antes de este tiempo tras reanudar se toma como
-// PROG: reinicia la placa entera, como si no se hubiera combatido ese round.
 constexpr unsigned long VentanaProgramacionMs = 2000;
 // Aviso de "listo" con los LED RX y TX de la placa (no ocupan pines): encendidos
 // mientras espera el START con todo reiniciado. Tras un reinicio por STOP o PROG,

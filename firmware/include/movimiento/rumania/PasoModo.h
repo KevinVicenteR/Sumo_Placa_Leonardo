@@ -18,10 +18,6 @@
 #include "movimiento/MandoMotores.h"
 #include "estrategia/DecisionMovimiento.h"
 
-// true = los modos 1-4 son los de Rumania; false = las rutinas de inicio de
-// siempre (rondas espalda, lado, enfrentados y salida libre).
-constexpr bool UsarModosRumania = true;
-
 // Lo que un modo necesita saber en cada ciclo
 struct PasoModo {
     const DecisionMovimiento& decision;

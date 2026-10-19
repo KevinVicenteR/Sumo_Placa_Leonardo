@@ -4,7 +4,7 @@
 // vuelve a apagar los motores y guarda el combate en la caja negra (EEPROM).
 // STOP o PROG del control remoto: para los motores y reinicia la placa entera
 // (como apagarla y encenderla); los LED RX y TX avisan de que está lista para
-// el siguiente START. Con la bandera MONITOREO_COMBATE también envía telemetría por USB.
+// el siguiente START.
 #ifndef MODO_COMBATE_H
 #define MODO_COMBATE_H
 
@@ -30,7 +30,6 @@ private:
     void empezarCombate();
     // Reinicia el microcontrolador (como apagar y encender) tras una parada confirmada
     void reiniciarPlaca();
-    void enviarTelemetria();
     // LED RX y TX: "listo" mientras espera el START (ver AvisoListoLed)
     void avisoListo(bool encendido);
     void actualizarAvisoListo();
@@ -48,9 +47,6 @@ private:
     unsigned long inicioCombate = 0;
     // La placa arrancó tras un reinicio por STOP o PROG (parpadeo del aviso)
     bool reiniciadaPorParada = false;
-#if defined(MONITOREO_COMBATE)
-    unsigned long ultimaTraza = 0;
-#endif
 };
 
 #endif

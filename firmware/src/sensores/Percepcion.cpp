@@ -6,20 +6,6 @@ void Percepcion::calibrarPiso() {
     pisoDer.calibrar();
 }
 
-void Percepcion::calibrarSensoresEnemigo() {
-    SensorEnemigo* sensores[] = {&latIzq, &c45Izq, &frontal, &c45Der, &latDer};
-    for (SensorEnemigo* sensor : sensores) {
-        if (PolaridadSensoresEnemigo != 0) {
-            sensor->fijarPolaridad(PolaridadSensoresEnemigo > 0);
-        } else {
-            sensor->aprenderPolaridad();
-        }
-    }
-    for (SensorEnemigo* sensor : sensores) {
-        sensor->reiniciarFiltro();
-    }
-}
-
 LecturasSensores Percepcion::leer() {
     const unsigned long ahora = millis();
     LecturasSensores lecturas;

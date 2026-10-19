@@ -15,10 +15,6 @@ public:
     // Lectura filtrada: true = ve al rival
     bool detecta(unsigned long ahora);
 
-    // Fija la polaridad: true = detecta en HIGH
-    void fijarPolaridad(bool activoAltoNuevo) { activoAlto = activoAltoNuevo; }
-    // Aprende la polaridad midiendo SIN nada delante: detectar es cambiar de nivel
-    void aprenderPolaridad();
     // Olvida las detecciones anteriores
     void reiniciarFiltro();
 

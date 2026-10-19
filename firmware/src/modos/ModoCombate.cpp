@@ -32,9 +32,6 @@ void ModoCombate::iniciar() {
 #endif
     placa.inicializarPines();
     motores.deshabilitar();
-#if defined(MONITOREO_COMBATE)
-    Serial.begin(115200);
-#endif
     // Sin módulo de arranque, el combate empieza nada más encender
     if (PIN_MODULO_ARRANQUE < 0) {
         empezarCombate();
@@ -61,12 +58,6 @@ void ModoCombate::empezarCombate() {
     enCombate = true;
     combateEmpezado = true;
     inicioCombate = millis();
-#if defined(MONITOREO_COMBATE)
-    // DIP y negro calibrado de los sensores de piso (izq,der)
-    Serial.print(F("DIP=")); Serial.print(dip);
-    Serial.print(F(" NEGRO=")); Serial.print(percepcion.negroIzquierdo());
-    Serial.print(','); Serial.println(percepcion.negroDerecho());
-#endif
 }
 
 void ModoCombate::actualizar() {
@@ -98,9 +89,6 @@ void ModoCombate::actualizar() {
     // 2. Un ciclo de combate
     robot.actualizar();
     cajaNegra.observar(robot.ultimasLecturas(), controlMovimiento.evasiones(), millis());
-#if defined(MONITOREO_COMBATE)
-    enviarTelemetria();
-#endif
 }
 
 void ModoCombate::reiniciarPlaca() {
@@ -147,22 +135,4 @@ void ModoCombate::actualizarAvisoListo() {
     const unsigned long t = millis();
     const bool parpadeando = reiniciadaPorParada && t < 2UL * ParpadeosListo * PeriodoParpadeoListo;
     avisoListo(!parpadeando || (t / PeriodoParpadeoListo) % 2 == 0);
-}
-
-void ModoCombate::enviarTelemetria() {
-#if defined(MONITOREO_COMBATE)
-    // Una línea cada 100 ms, solo si cabe en el búfer (no bloquear el combate):
-    // PISO=izq,der  PWM=orden de motores izq,der  ENE=sensores 45I,F,45D
-    if (Serial && millis() - ultimaTraza >= 100 && Serial.availableForWrite() >= 60) {
-        ultimaTraza = millis();
-        Serial.print(F("PISO=")); Serial.print(analogRead(S_PISO_IZQ));
-        Serial.print(','); Serial.print(analogRead(S_PISO_DER));
-        Serial.print(F(" PWM=")); Serial.print(controlMovimiento.ordenIzquierda());
-        Serial.print(','); Serial.print(controlMovimiento.ordenDerecha());
-        Serial.print(F(" ENE="));
-        Serial.print(digitalRead(S_FRONT_IZQ));
-        Serial.print(digitalRead(S_FRONT_CEN));
-        Serial.println(digitalRead(S_FRONT_DER));
-    }
-#endif
 }

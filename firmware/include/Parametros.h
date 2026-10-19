@@ -1,22 +1,17 @@
 // Parametros.h — Todos los valores ajustables del robot
-// Valores elegidos con simulacion/optimizar.py (batería de combates con todos los
-// rounds, rivales y factores externos). Hay que comprobarlos en el robot real.
-// Velocidades en PWM (0-255), tiempos en milisegundos y distancias en metros,
-// salvo que se indique otra cosa. Los scripts de simulacion/ cambian estos
-// valores por su nombre: si se renombra uno, hay que actualizar los scripts.
+// Valores elegidos en el simulador (rama refactor_arquitectura); hay que
+// comprobarlos en el robot real. Velocidades en PWM (0-255), tiempos en
+// milisegundos y distancias en metros, salvo que se indique otra cosa.
 #ifndef PARAMETROS_H
 #define PARAMETROS_H
 
 // 1. Movimientos: cada uno tiene su archivo en movimiento/parametros/ (motores,
-// ataque, giro lateral, evasión del borde, búsqueda, frenado y rutinas de
-// inicio), incluidos al final de este archivo. Los modos de Rumania están en
+// ataque, giro lateral, evasión del borde, búsqueda y frenado), incluidos al
+// final de este archivo. Los modos de Rumania están en
 // movimiento/rumania/.
 
 // 2. Sensores de enemigo
 
-// Polaridad: 0 = se aprende en modo diagnóstico midiendo sin objetos delante;
-// 1 = detectan en HIGH; -1 = detectan en LOW.
-constexpr int PolaridadSensoresEnemigo = 0;
 // Polaridad usada en combate (nunca se recalibra con el rival delante).
 // Un bit por sensor, en orden: lateral izq, 45° izq, central, 45° der, lateral
 // der. 31 = los cinco detectan en HIGH.
@@ -42,12 +37,7 @@ constexpr int NegroPisoDerecho = 972;
 constexpr int PorcentajeCercaBorde = 70;
 constexpr int VelocidadCercaBorde = 100;
 
-// 4. Tiempos generales
-
-// Espera inicial del modo diagnóstico (el de combate usa el módulo de arranque).
-constexpr unsigned long TiempoInicioReglamentario = 5000;
-
-// 5. Estimador de borde
+// 4. Estimador de borde
 // Calcula dónde está el robot dentro del dohyo y limita la velocidad hacia
 // delante a la que aún le deja frenar antes del borde, aunque los sensores de
 // piso tarden en ver la línea.
@@ -100,13 +90,7 @@ constexpr int VelocidadMinimaEstimador = 100;
 constexpr float IncertPosicionConfiable = 0.08f;
 constexpr float IncertRumboConfiable = 0.8f;
 
-// 6. Estrategia
-
-// true = usa la política aprendida en el simulador (TablaPolitica.h) en vez de
-// las reglas escritas a mano.
-constexpr bool UsarPoliticaAprendida = false;
-
-// 7. Interruptores DIP (eligen la rutina o el modo de Rumania)
+// 5. Interruptores DIP (eligen la rutina o el modo de Rumania)
 //   DIP1 DIP2  rutina
 //   off  off   1: espalda con espalda -> media vuelta en el sitio
 //   ON   off   2: lado a lado -> pivota hacia el lado donde un sensor lateral
@@ -128,7 +112,7 @@ constexpr bool ColocacionLibre = true;
 // nunca antes del tiempo mínimo de esa acción.
 constexpr unsigned long ConfirmacionDeteccion = 5;
 
-// 8. Módulo de arranque
+// 6. Módulo de arranque
 constexpr bool ModuloArranqueActivoAlto = true;
 // RUN debe mantenerse estos ms seguidos para arrancar (descarta pulsos breves
 // del módulo, por ejemplo al pulsar PROG en el control remoto).
@@ -173,6 +157,5 @@ constexpr int LadoForzado = 0;
 #include "movimiento/parametros/ParametrosEvasion.h"
 #include "movimiento/parametros/ParametrosBusqueda.h"
 #include "movimiento/parametros/ParametrosFrenado.h"
-#include "movimiento/parametros/ParametrosRutinasInicio.h"
 
 #endif

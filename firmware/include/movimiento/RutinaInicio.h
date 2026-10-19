@@ -1,13 +1,11 @@
-// RutinaInicio.h — Primer movimiento de cada round (elegido con los DIP)
-//   1 = espalda con espalda: media vuelta en el sitio hacia el lado de DIP3
-//       hasta ver al rival de frente (como en la rama con_control).
-//   2 = lado a lado: (opcional) avanza para esquivar y gira hacia el rival.
-//   3 = enfrentados: avanza hacia el centro y espera al rival.
-//   4 = salida libre (en cualquier parte del dohyo): gira en el sitio hasta que
-//       cualquier sensor vea al rival.
-//   0 = sin rutina.
-// Al encontrar al rival (rondas 1 y 2) frena el giro y empieza la embestida.
-// Ver la línea cancela la rutina (lo hace ControlMovimiento).
+// RutinaInicio.h — Primer movimiento de cada round: el modo de Rumania elegido
+// con los DIP (movimiento/rumania/: Modo1Defensivo ... Modo4Agresivo).
+//   DIP1 DIP2  modo
+//   off  off   1: de frente, defensivo
+//   ON   off   2: de frente, contragolpe
+//   off  ON    3: de lado (DIP3: rival a la derecha off / izquierda ON)
+//   ON   ON    4: de espaldas, agresivo
+// Ver la línea cancela el modo (lo hace ControlMovimiento).
 #ifndef RUTINA_INICIO_H
 #define RUTINA_INICIO_H
 
@@ -37,13 +35,6 @@ public:
                    unsigned long ahora, BusquedaRival& busqueda, ControlAtaque& ataque);
 
 private:
-    bool girar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-               unsigned long ahora, unsigned long t, BusquedaRival& busqueda, ControlAtaque& ataque);
-    void decidirLado(const DecisionMovimiento& decision, BusquedaRival& busqueda);
-    bool avanzarAlCentro(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-                         unsigned long ahora, unsigned long t, ControlAtaque& ataque);
-    bool explorar(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
-                  unsigned long ahora, unsigned long t, ControlAtaque& ataque);
     // Modos de Rumania (movimiento/rumania/): cada uno en su archivo
     bool modoRumania(const DecisionMovimiento& decision, MandoMotores& mando, IMotor& motor,
                      unsigned long ahora, unsigned long t, ControlAtaque& ataque);
@@ -57,13 +48,7 @@ private:
     bool conRutina = false;
     bool enCurso = false;
     unsigned long inicio = 0;
-    // Ronda 2: el lado ya lo decidió un sensor lateral
-    bool ladoDecidido = false;
     Confirmacion rivalVisto;
-    // Frenado del giro al encontrar al rival
-    bool frenandoGiro = false;
-    unsigned long inicioFreno = 0;
-    Freno freno;
 };
 
 #endif

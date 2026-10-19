@@ -17,13 +17,6 @@ bool SensorEnemigo::detecta(unsigned long ahora) {
     return filtro.actualizar(mayoriaAlta() == activoAlto, ahora);
 }
 
-void SensorEnemigo::aprenderPolaridad() {
-    // Sin nada delante, el nivel habitual es "no detecta"; detectar es el contrario
-    uint8_t altos = 0;
-    for (uint8_t i = 0; i < 32; ++i) altos += mayoriaAlta() ? 1 : 0;
-    activoAlto = altos < 16;
-}
-
 void SensorEnemigo::reiniciarFiltro() {
     filtro = RetencionDeteccion(TiempoRetencionEnemigo, ConfirmacionSensorEnemigo);
 }

@@ -16,9 +16,6 @@ public:
 
     // Mide el negro del piso. Llamar con el robot ya colocado sobre el dohyo
     void calibrarPiso();
-    // Fija o aprende la polaridad de los sensores de enemigo (ver
-    // PolaridadSensoresEnemigo). Solo en diagnóstico: el rival puede estar delante
-    void calibrarSensoresEnemigo();
 
     int negroIzquierdo() const { return pisoIzq.negroCalibrado(); }
     int negroDerecho() const { return pisoDer.negroCalibrado(); }

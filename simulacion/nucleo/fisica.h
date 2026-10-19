@@ -853,9 +853,9 @@ int analogRead(uint8_t pin) {
 
 int digitalRead(uint8_t pin) {
     sim::costoLoopUs += 4;
-    // Módulo de arranque: el start ya está dado desde el principio del combate
+    // Módulo de arranque: STOP estable inicial y después START con sus cortes
     if ((int)pin == PIN_MODULO_ARRANQUE) {
-        const bool enMarcha = !sim::corteArranque();
+        const bool enMarcha = sim::tiempoUs >= (StopMinimoAntesDeStart + 1) * 1000.0 && !sim::corteArranque();
         return enMarcha == ModuloArranqueActivoAlto ? HIGH : LOW;
     }
     for (int i = 0; i < 3; i++) {

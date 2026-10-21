@@ -1,15 +1,13 @@
 // ModoCombate.h — Funcionamiento normal en competencia
-// Espera la señal RUN del módulo de arranque con los motores apagados y, al
-// recibirla, calibra el piso, elige la rutina de inicio y combate. Con STOP
-// vuelve a apagar los motores y guarda el combate en la caja negra (EEPROM).
-// STOP o PROG reinicia la placa; RX y TX avisan de que espera START.
-// Con la bandera MONITOREO_COMBATE también envía telemetría por USB.
+// Aprende y decodifica tres comandos IR; START inicia, STOP apaga y RESET
+// reinicia la placa. Mientras espera START, los motores permanecen apagados.
 #ifndef MODO_COMBATE_H
 #define MODO_COMBATE_H
 
 #include "hardware/DriverMotores.h"
 #include "hardware/PlacaXMotion.h"
 #include "hardware/ModuloArranque.h"
+#include "hardware/ComandosControlIR.h"
 #include "hardware/CajaNegra.h"
 #include "sensores/Percepcion.h"
 #include "movimiento/ControlMovimiento.h"
@@ -27,8 +25,14 @@ private:
     // Empieza un combate nuevo con el robot ya colocado sobre el negro: lo
     // reinicia todo (como recién encendido) y hace la rutina de los DIP
     void empezarCombate();
-    // Reinicia el microcontrolador (como apagar y encender) tras una parada confirmada
+    // Reinicia el microcontrolador tras recibir el comando RESET.
     void reiniciarPlaca();
+    void detenerCombate();
+    void iniciarAprendizajeIR();
+    void procesarControlIR();
+    void imprimirCodigoIR(const CodigoControlIR& codigo);
+    bool leerCodigoIR(CodigoControlIR& codigo);
+    void guardarCodigosIR();
     void enviarTelemetria();
     // LED RX y TX: listo mientras espera el START
     void avisoListo(bool encendido);
@@ -41,11 +45,20 @@ private:
     ControladorRobot& robot;
     ModuloArranque moduloArranque;
     CajaNegra cajaNegra;
+    CodigoControlIR codigoIniciar;
+    CodigoControlIR codigoDetener;
+    CodigoControlIR codigoReiniciar;
     bool enCombate = false;
     // También cuenta el START durante la espera reglamentaria.
     bool combateEmpezado = false;
+    bool aprendizajeIR = false;
+    bool controlIRBloqueado = false;
+    bool mensajeInicialIR = false;
+    uint8_t codigosAprendidos = 0;
+    unsigned long ultimoPaqueteIR = 0;
+    unsigned long ultimoAvisoAprendizaje = 0;
     unsigned long inicioCombate = 0;
-    // Arranque por watchdog tras STOP o PROG: parpadea el aviso
+    // Reinicio por RESET: parpadea el aviso de listo.
     bool reiniciadaPorParada = false;
 #if defined(MONITOREO_COMBATE)
     unsigned long ultimaTraza = 0;

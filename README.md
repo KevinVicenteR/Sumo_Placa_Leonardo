@@ -11,6 +11,22 @@ Los DIP eligen la ronda (DIP3, el lado: off = derecha, ON = izquierda):
 | off | ON | 3: enfrentados, contragolpe | `movimiento/rondas/Ronda3.h` |
 | ON | ON | 4: salida libre, arco | `movimiento/rondas/Libre.h` |
 
+### Control infrarrojo de arranque
+
+Conecta el receptor IR 1838 a la placa con **OUT a A0**, **GND a GND** y
+**VCC a 5 V**, después de confirmar las etiquetas/pinout de tu receptor. No
+apliques tensión externa a OUT ni señales superiores a 5 V. El firmware
+aprende la huella temporal de los botones con IRremote, lo que permite usar
+muchos controles de 38 kHz; no garantiza compatibilidad con todos los controles
+ni evita posibles colisiones entre señales.
+
+En la primera carga, los motores quedan deshabilitados y el firmware aprende,
+en orden, un botón para **START**, uno para **STOP** y uno para **RESET**.
+Después guarda los códigos en EEPROM. Para volver a aprenderlos, abre el
+monitor serie a 115200 baudios y envía `l`. STOP apaga los motores y deja la
+placa esperando START; RESET reinicia el microcontrolador. START conserva la
+espera reglamentaria configurada para el combate.
+
 ```text
 firmware/
   include/                 Contratos, tablas de pesos y parámetros (Parametros.h es el índice)

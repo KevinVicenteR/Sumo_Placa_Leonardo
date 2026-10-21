@@ -31,8 +31,9 @@ constexpr uint8_t PWMB = 11;
 constexpr uint8_t MA1B = 8;
 constexpr uint8_t MA2B = 12;
 
-// --- Módulo de arranque (control remoto del árbitro) ---
-// -1 = robot sin módulo: el combate empieza nada más encender.
+// --- Receptor infrarrojo 1838: salida de señal del receptor ---
+// Conectar OUT a A0; confirmar VCC y GND en el pinout del módulo.
+// -1 = robot sin receptor: el combate empieza nada más encender.
 constexpr int PIN_MODULO_ARRANQUE = A0;
 
 // --- Interruptores DIP de la placa: eligen la rutina de inicio del round ---

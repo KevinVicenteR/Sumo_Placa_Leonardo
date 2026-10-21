@@ -16,7 +16,7 @@ constexpr int Modo1VelocidadAvanceEspera = 50;  // avance lento si no aparece
 // simulador, 1000 ms subía las caídas del modo 1 del 25 % al 43 % (el rival
 // embiste y lo saca mientras está ciego)
 constexpr unsigned long Modo1TiempoMinimo = 0;
-constexpr unsigned long Modo1TiempoQuieto = 3000;    // quieto antes de avanzar
+constexpr unsigned long Modo1TiempoQuieto = 4000;    // quieto antes de avanzar
 constexpr unsigned long Modo1TiempoRecibir = 200;   // parado con la pala al verlo de frente
 constexpr unsigned long Modo1TiempoMax = 9000;      // duración máxima del modo
 

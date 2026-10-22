@@ -6,7 +6,7 @@
 
 // Velocidad al empezar a atacar; sube poco a poco hasta VelocidadEmpuje
 // durante TiempoEmbestida mientras tenga al rival de frente.
-constexpr int VelocidadAtaque = 130;
+constexpr int VelocidadAtaque = 235;
 constexpr int VelocidadEmpuje = 255;
 // Rival en los tres sensores delanteros a la vez: es un robot cercano (un reflejo
 // no ocupa tres sensores), así que ataca ya a esta velocidad (0 = sin efecto).
@@ -33,9 +33,9 @@ static_assert(VelocidadCurva <= VelocidadAtaque, "VelocidadCurva debe ser <= Vel
 // Rondas 1 y 2: al encontrar al rival embiste durante TiempoEmbestidaInicio,
 // subiendo poco a poco de VelocidadEmbestidaInicio a VelocidadEmbestidaMaxima
 // mientras lo tenga delante; después mantiene VelocidadAtaqueRound12.
-constexpr int VelocidadEmbestidaInicio = 160;
-constexpr int VelocidadEmbestidaMaxima = 160;
-constexpr int VelocidadAtaqueRound12 = 160;
+constexpr int VelocidadEmbestidaInicio = 235;
+constexpr int VelocidadEmbestidaMaxima = 255;
+constexpr int VelocidadAtaqueRound12 = 235;
 constexpr unsigned long TiempoEmbestidaInicio = 800;
 
 // Ataque a fondo de las rondas 3 y libre sin llegar a empujar durante este

@@ -6,7 +6,7 @@
 
 // Velocidad al empezar a atacar; sube poco a poco hasta VelocidadEmpuje
 // durante TiempoEmbestida mientras tenga al rival de frente.
-constexpr int VelocidadAtaque = 255;
+constexpr int VelocidadAtaque = 130;
 constexpr int VelocidadEmpuje = 255;
 // Rival en los tres sensores delanteros a la vez: es un robot cercano (un reflejo
 // no ocupa tres sensores), así que ataca ya a esta velocidad (0 = sin efecto).

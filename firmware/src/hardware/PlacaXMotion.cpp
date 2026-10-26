@@ -5,10 +5,10 @@
 
 void PlacaXMotion::inicializarPines() const {
     // 1. Potencia de los motores a 0 antes que nada, para que no se muevan
-    digitalWrite(PWMA, LOW);
-    digitalWrite(PWMB, LOW);
-    pinMode(PWMA, OUTPUT);
-    pinMode(PWMB, OUTPUT);
+    digitalWrite(PWM_IZQ, LOW);
+    digitalWrite(PWM_DER, LOW);
+    pinMode(PWM_IZQ, OUTPUT);
+    pinMode(PWM_DER, OUTPUT);
 
     // 2. Sensores de enemigo y módulo de arranque: entradas digitales
     pinMode(S_FRONT_IZQ, INPUT);
@@ -26,14 +26,10 @@ void PlacaXMotion::inicializarPines() const {
     pinMode(DIP_3, INPUT_PULLUP);
 
     // 4. Pines de sentido de los motores: salidas en LOW
-    digitalWrite(MA1A, LOW);
-    digitalWrite(MA2A, LOW);
-    digitalWrite(MA1B, LOW);
-    digitalWrite(MA2B, LOW);
-    pinMode(MA1A, OUTPUT);
-    pinMode(MA2A, OUTPUT);
-    pinMode(MA1B, OUTPUT);
-    pinMode(MA2B, OUTPUT);
+    digitalWrite(DIR_IZQ, LOW);
+    digitalWrite(DIR_DER, LOW);
+    pinMode(DIR_IZQ, OUTPUT);
+    pinMode(DIR_DER, OUTPUT);
 }
 
 int PlacaXMotion::leerInterruptores() const {

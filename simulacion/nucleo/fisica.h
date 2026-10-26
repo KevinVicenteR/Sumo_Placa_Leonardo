@@ -365,9 +365,9 @@ inline bool sensorEnemigo(uint8_t pin) {
 
 // ---------------------------------------------------------------- física
 
-inline int comandoMotor(uint8_t in1, uint8_t in2, uint8_t pwm) {
-    if (nivelPin[in1] == nivelPin[in2]) return 0;
-    return nivelPin[in1] == HIGH ? pwmPin[pwm] : -pwmPin[pwm];
+// IFX9201SG: DIR elige el sentido y PWM la potencia
+inline int comandoMotor(uint8_t dir, uint8_t pwm) {
+    return nivelPin[dir] == HIGH ? pwmPin[pwm] : -pwmPin[pwm];
 }
 
 enum class Puente { Conduce, Frena, Libre };
@@ -376,8 +376,8 @@ inline Puente estadoPuente(uint8_t pwm) {
     return pwmPin[pwm] == 0 ? Puente::Libre : Puente::Conduce;
 }
 
-inline int comandoIzq() { return comandoMotor(MA1A, MA2A, PWMA); }
-inline int comandoDer() { return comandoMotor(MA1B, MA2B, PWMB); }
+inline int comandoIzq() { return comandoMotor(DIR_IZQ, PWM_IZQ); }
+inline int comandoDer() { return comandoMotor(DIR_DER, PWM_DER); }
 
 // Aplica una fricción de Coulomb de magnitud f a un movimiento con velocidad vel
 // y fuerza impulsora fuerza. Si está quieto y la fuerza no supera la fricción, no arranca.
@@ -411,8 +411,8 @@ inline void avanzarCuerpoDC(int cmdIzq, int cmdDer, double dt) {
     const double b = cfg.trocha / 2;
     double v = (rob.vl + rob.vr) / 2;
     double w = (rob.vr - rob.vl) / cfg.trocha;
-    const double fi = fuerzaRueda(cmdIzq, rob.vl, estadoPuente(PWMA), cfg.desgasteIzq);
-    const double fd = fuerzaRueda(cmdDer, rob.vr, estadoPuente(PWMB), cfg.desgasteDer);
+    const double fi = fuerzaRueda(cmdIzq, rob.vl, estadoPuente(PWM_IZQ), cfg.desgasteIzq);
+    const double fd = fuerzaRueda(cmdDer, rob.vr, estadoPuente(PWM_DER), cfg.desgasteDer);
     const double peso = cfg.masa * 9.81;
     const double inercia = cfg.masa * (cfg.largo * cfg.largo + cfg.ancho * cfg.ancho) / 12;
     const double fuerza = conFriccion(fi + fd + rob.fExt, v, cfg.rodadura * peso);

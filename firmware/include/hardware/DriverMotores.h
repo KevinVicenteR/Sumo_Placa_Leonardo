@@ -1,6 +1,6 @@
-// DriverMotores.h — Control del puente H de las dos ruedas
-// Implementación real de IMotor: traduce una velocidad con signo a los pines de
-// sentido (MAx1/MAx2) y de potencia (PWMx) de cada motor.
+// DriverMotores.h — Control de los dos drivers IFX9201SG de las ruedas
+// Implementación real de IMotor: traduce una velocidad con signo al pin de
+// sentido (DIR) y al de potencia (PWM) de cada motor.
 #ifndef DRIVER_MOTORES_H
 #define DRIVER_MOTORES_H
 
@@ -15,7 +15,7 @@ public:
     void deshabilitar();
 
 private:
-    static void controlarMotor(uint8_t in1, uint8_t in2, uint8_t pwm, int velocidad);
+    static void controlarMotor(uint8_t dir, uint8_t pwm, int velocidad);
 };
 
 #endif

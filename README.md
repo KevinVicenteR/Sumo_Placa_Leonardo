@@ -1,4 +1,4 @@
-# Minisumo Leonardo / JSumo XMotion
+# Mini sumo Boldenona (Arduino Leonardo)
 
 Firmware de competición, simulador con la física compartida y una web React para explorar combates. La reorganización parte de `pesos_neuronales_rumania` (`c8136d6`) y conserva las fuentes del firmware byte a byte: mismas decisiones, tablas de pesos, parámetros, telemetría y arranque mediante START sin espera de 5 segundos en Rumania.
 
@@ -6,7 +6,7 @@ Firmware de competición, simulador con la física compartida y una web React pa
 firmware/
   include/                 Contratos, parámetros y tablas
   src/
-    hardware/              XMotion, motores, módulo START y caja negra
+    hardware/              placa, drivers IFX9201SG, módulo START y caja negra
     sensores/              Lectura, calibración y percepción
     movimiento/            Maniobras, control y límites del borde
       rumania/             Modos 1-4 de Rumania: cada uno con sus velocidades y su lógica

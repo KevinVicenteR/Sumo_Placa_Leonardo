@@ -23,6 +23,8 @@ private:
     EstimadorBorde estimadorBorde;
     unsigned long ultimaPrediccion = 0;
     bool bordeAntes = false;
+    bool lineaObservada = false;  // ProtegerTrasLinea
+    unsigned long ultimaLinea = 0;
     int limiteAvance = 255;
 };
 

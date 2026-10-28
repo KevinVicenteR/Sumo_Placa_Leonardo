@@ -76,6 +76,16 @@ int estadoSostenido = -1, accionSostenida = 0;
 double tSostenida = -1;
 struct Visita { double t; int estado, accion; };
 std::vector<Visita> visitas;
+// DAgger con experto MPC (--mpc s): en cada decisión se prueba cada acción en un
+// proceso hijo durante el horizonte y se anota la mejor (etiqueta del experto).
+// Con probabilidad beta se ejecuta la del experto; si no, la del aprendiz (--q).
+double horizonteMpc = 0, betaMpc = 1;
+bool hijoMpc = false;
+int pipeMpc = -1;
+double finMpc = 0;
+double rEnemigo0 = 0;
+struct Etiqueta { int estado, accion; };
+std::vector<Etiqueta> etiquetas;
 
 double azar() {
     estadoAzar ^= estadoAzar >> 12;
@@ -105,6 +115,34 @@ namespace politica {
 int elegirAccionEntrenamiento(int estado, int) {
     using namespace entrenamiento;
     const double t = sim::tiempoUs / 1e6;
+    if (hijoMpc) return accionSostenida;  // el hijo mantiene la acción que prueba
+    if (horizonteMpc > 0 && (estado != estadoSostenido || t - tSostenida >= 0.05)) {
+        double puntos[NumAcciones];
+        for (int a = 0; a < NumAcciones; a++) {
+            int fd[2];
+            if (pipe(fd) != 0) { puntos[a] = -1e9; continue; }
+            const pid_t pid = fork();
+            if (pid == 0) {
+                close(fd[0]);
+                hijoMpc = true;
+                pipeMpc = fd[1];
+                finMpc = t + horizonteMpc;
+                rEnemigo0 = mat::hypot(sim::ene.x, sim::ene.y);
+                accionSostenida = a;
+                return a;
+            }
+            close(fd[1]);
+            if (std::fread(&puntos[a], sizeof(double), 1, fdopen(fd[0], "r")) != 1) puntos[a] = -1e9;
+            waitpid(pid, nullptr, 0);
+        }
+        int experto = 0;
+        for (int a = 1; a < NumAcciones; a++) if (puntos[a] > puntos[experto]) experto = a;
+        etiquetas.push_back({estado, experto});
+        accionSostenida = azar() < betaMpc ? experto : mejor(estado);  // aprendiz: tabla de --q
+        estadoSostenido = estado;
+        tSostenida = t;
+        return accionSostenida;
+    }
     if (estado != estadoSostenido || t - tSostenida >= 0.05) {
         accionSostenida = azar() < epsilon ? (int)(azar() * NumAcciones) % NumAcciones : mejor(estado);
         estadoSostenido = estado;
@@ -242,6 +280,21 @@ Resultado correr(int semilla, FILE* trayectoria) {
             res.angContacto = a * 180 / PI;
             if (res.angPrimerContacto > 900) res.angPrimerContacto = res.angContacto;
         }
+#ifdef ENTRENAMIENTO_POLITICA
+        if (entrenamiento::hijoMpc) {
+            using namespace entrenamiento;
+            // shortcut: puntuación miope (empujar al rival hacia fuera, no acercarse al borde);
+            // cambiar si el experto elige acciones que pierden a largo plazo.
+            const bool fin = cayo() || enemigoFuera() || tiempoUs / 1e6 >= finMpc;
+            if (fin) {
+                double p = cayo() ? -10 : enemigoFuera() ? 10 :
+                    (ene.presente ? mat::hypot(ene.x, ene.y) - rEnemigo0 : 0)
+                    - 3 * maximo(0.0, mat::hypot(rob.x, rob.y) - (cfg.radio - 0.08));
+                if (write(pipeMpc, &p, sizeof p) != (ssize_t)sizeof p) {}
+                _exit(0);
+            }
+        }
+#endif
         if (cayo()) {
             res.cayo = true;
             res.tCaida = t;
@@ -354,6 +407,8 @@ int main(int argc, char** argv) {
 #ifdef ENTRENAMIENTO_POLITICA
         else if (a == "--q") { if (!entrenamiento::cargar(v)) { std::fprintf(stderr, "no se pudo leer %s\n", v); return 1; } }
         else if (a == "--epsilon") entrenamiento::epsilon = std::atof(v);
+        else if (a == "--mpc") entrenamiento::horizonteMpc = std::atof(v);
+        else if (a == "--beta") entrenamiento::betaMpc = std::atof(v);
 #endif
         else if (a == "--tray-estimador") rutaTrayEstimador = v;
         else { uso(); return 1; }
@@ -387,6 +442,9 @@ int main(int argc, char** argv) {
                     suma[v.estado][v.accion] += recompensa * std::pow(gammaSegundo, fin - v.t);
                     n[v.estado][v.accion]++;
                 }
+                std::printf("D");
+                for (const Etiqueta& d : etiquetas) std::printf(" %d:%d", d.estado, d.accion);
+                std::printf("\n");
                 std::printf("Q");
                 for (int e = 0; e < politica::NumEstados; e++)
                     for (int a = 0; a < politica::NumAcciones; a++)

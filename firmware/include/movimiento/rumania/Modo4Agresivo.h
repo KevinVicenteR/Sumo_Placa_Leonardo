@@ -17,6 +17,9 @@ constexpr int Modo4VelocidadGiro = 255;          // giro hacia el sensor que lo 
 // el simulador, incluso 200 ms subían las caídas del modo 4 del 27 % al 39 %
 constexpr unsigned long Modo4TiempoMinimo = 0;
 constexpr unsigned long Modo4TiempoMax = 1500;   // duración máxima del modo
+// Giro de 180° (docs/movimientos_rumania.md, M4): sin verlo, gira a fondo hacia
+// DIP3 este tiempo en vez de avanzar recto alejándose (0 = sin giro)
+constexpr unsigned long Modo4TiempoGiro180 = 0;
 
 class Modo4Agresivo {
 public:

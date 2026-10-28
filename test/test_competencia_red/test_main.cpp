@@ -103,6 +103,17 @@ void test_segundo_sensor_amplia_solo_recuperacion_mejorada() {
         TEST_ASSERT_EQUAL_INT(mejorada?-VelocidadRetroceso:0,m.izq);
     }
 }
+void test_rombo_alterna_giro_agudo_y_obtuso() {
+    BusquedaRival b(2);MandoMotores mando(0);Motor m;
+    // Sin evasión previa empieza girando: lado A (giro agudo) y luego lado B (obtuso)
+    b.ejecutar(mando,m,0);
+    const unsigned long ladoA=TiempoAvanceBusqueda+2*TiempoPausaBusqueda+TiempoGiroBusqueda;
+    const unsigned long tras=TiempoGiroBusqueda+(TiempoGiroRomboObtuso-TiempoGiroBusqueda)/2;
+    b.ejecutar(mando,m,tras);
+    TEST_ASSERT_EQUAL_INT(0,m.izq);                          // el agudo ya terminó
+    b.ejecutar(mando,m,ladoA+tras);
+    TEST_ASSERT_EQUAL_INT(VelocidadGiroBusqueda,m.izq);      // el obtuso sigue girando
+}
 void test_pid_compacto_equivale_a_la_formula_anterior() {
     ControlPID pid;bool activo=false;int anterior=0,derivada=0;unsigned long ultimo=0,ahora=1000;
     unsigned long rng=991;
@@ -173,6 +184,7 @@ int main(int,char**) {
     RUN_TEST(test_correccion_sigue_limitada_por_borde_y_pwm);
     RUN_TEST(test_segundo_sensor_amplia_solo_recuperacion_mejorada);
     RUN_TEST(test_pid_compacto_equivale_a_la_formula_anterior);
+    RUN_TEST(test_rombo_alterna_giro_agudo_y_obtuso);
     RUN_TEST(test_primera_lectura_frontal_no_inventa_contacto_pasado);
     RUN_TEST(test_control_modo3_sigue_UsarRedControlModo3);
     return UNITY_END();

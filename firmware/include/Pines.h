@@ -8,7 +8,6 @@
 
 // --- Sensores de piso QTR Micro (analógicos): ven la línea blanca del borde ---
 // Van al frente, justo después de la rampa.
-// Ojo: A0 también es la señal del módulo de arranque (ver abajo).
 constexpr uint8_t S_PISO_IZQ  = A0;
 constexpr uint8_t S_PISO_DER  = A1;
 
@@ -31,8 +30,8 @@ constexpr uint8_t PWM_DER = 11;
 constexpr uint8_t DIR_DER = 12;
 
 // --- Módulo de arranque START-STOP (Nanolabs / Robomaniacs) ---
-// -1 = robot sin módulo: el combate empieza nada más encender.
-constexpr int PIN_MODULO_ARRANQUE = A0;
+// Provisional en A2 (A0 es el piso izquierdo). -1 = sin módulo: arranca al encender.
+constexpr int PIN_MODULO_ARRANQUE = A2;
 
 // --- Interruptores DIP: eligen la rutina de inicio del round ---
 constexpr uint8_t DIP_1 = 5;

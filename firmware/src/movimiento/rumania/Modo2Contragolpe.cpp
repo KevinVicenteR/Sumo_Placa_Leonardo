@@ -7,6 +7,11 @@ ResultadoModo Modo2Contragolpe::paso(const PasoModo& p) {
     if (p.t >= Modo2TiempoMax) {
         return ResultadoModo::Termina;
     }
+    if (p.visto == 0 && p.t < Modo2TiempoArco) {
+        const int ext = Modo2VelocidadArcoExterior, in = Modo2VelocidadArcoInterior;
+        p.mando.mover(p.motor, p.lado > 0 ? ext : in, p.lado > 0 ? in : ext, true);
+        return ResultadoModo::Sigue;
+    }
     if (p.visto == 0) {
         // Quieto un rato esperándolo; si no aparece, avanza despacio a buscarlo
         const int vel = p.t < Modo2TiempoQuieto ? 0 : Modo2VelocidadAvanceEspera;

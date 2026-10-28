@@ -32,8 +32,17 @@ void BusquedaRival::ejecutar(MandoMotores& mando, IMotor& motor, unsigned long a
     // Posición dentro del ciclo: avance | pausa | giro | pausa
     const unsigned long finAvance = TiempoAvanceBusqueda;
     const unsigned long inicioGiro = finAvance + TiempoPausaBusqueda;
-    const unsigned long finGiro = inicioGiro + TiempoGiroBusqueda;
-    const unsigned long t = (ahora - inicioBusqueda) % (finGiro + TiempoPausaBusqueda);
+    unsigned long finGiro = inicioGiro + TiempoGiroBusqueda;
+    unsigned long t = (ahora - inicioBusqueda) % (finGiro + TiempoPausaBusqueda);
+    // Rombo: un lado de cada dos gira TiempoGiroRomboObtuso en vez de TiempoGiroBusqueda
+    if (patron == 2) {
+        const unsigned long ladoA = finGiro + TiempoPausaBusqueda;
+        t = (ahora - inicioBusqueda) % (2 * ladoA + TiempoGiroRomboObtuso - TiempoGiroBusqueda);
+        if (t >= ladoA) {
+            t -= ladoA;
+            finGiro = inicioGiro + TiempoGiroRomboObtuso;
+        }
+    }
     if (t < finAvance) {
         avanzarPorPulsos(mando, motor, t);
     } else if (t >= inicioGiro && t < finGiro) {

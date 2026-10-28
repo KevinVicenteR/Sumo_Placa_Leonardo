@@ -18,6 +18,10 @@ ResultadoModo Modo1Defensivo::paso(const PasoModo& p) {
     if (p.t >= Modo1TiempoMax) {
         return ResultadoModo::Termina;
     }
+    if (p.visto == 0 && p.t < Modo1TiempoHenka) {
+        p.mando.mover(p.motor, p.lado * Modo1VelocidadGiro, -p.lado * Modo1VelocidadGiro, true);
+        return ResultadoModo::Sigue;
+    }
     if (p.visto == 0) {
         // Quieto un rato esperándolo; si no aparece, avanza despacio a buscarlo
         const int vel = p.t < Modo1TiempoQuieto ? 0 : Modo1VelocidadAvanceEspera;

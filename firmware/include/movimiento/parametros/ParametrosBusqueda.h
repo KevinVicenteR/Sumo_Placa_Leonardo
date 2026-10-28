@@ -9,7 +9,9 @@ constexpr int VelocidadAvance = 80;
 constexpr int VelocidadGiroBusqueda = 75;
 
 // Búsqueda: 0 = avance y giro en el sitio; 1 = arcos suaves que cambian de
-// lado cada TiempoArcoBusqueda (rueda interior a PorcentajeArcoBusqueda).
+// lado cada TiempoArcoBusqueda (rueda interior a PorcentajeArcoBusqueda);
+// 2 = rombo: como el 0, pero los giros alternan TiempoGiroBusqueda (agudo) y
+// TiempoGiroRomboObtuso, así los tramos rectos dibujan un rombo.
 constexpr int PatronBusqueda = 1;
 constexpr int PorcentajeArcoBusqueda = 50;
 // 1400 ms: barrido más lento que con 900 (la velocidad no se puede bajar: la
@@ -23,6 +25,7 @@ constexpr unsigned long TiempoArranqueBusqueda = 400;
 constexpr unsigned long TiempoAvanceBusqueda = 1500;
 constexpr unsigned long TiempoGiroBusqueda = 150;
 constexpr unsigned long TiempoPausaBusqueda = 100;
+constexpr unsigned long TiempoGiroRomboObtuso = 300;
 // Avance en pulsos: TiempoPulsoAvance empujando y TiempoPausaPulso parado
 // (0 = avance continuo).
 constexpr unsigned long TiempoPulsoAvance = 0;

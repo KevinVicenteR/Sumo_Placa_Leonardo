@@ -7,7 +7,9 @@ ResultadoModo Modo4Agresivo::paso(const PasoModo& p) {
     if (p.t >= Modo4TiempoMax) {
         return ResultadoModo::Termina;
     }
-    if (p.visto == 0) {
+    if (p.visto == 0 && p.t < Modo4TiempoGiro180) {
+        p.mando.mover(p.motor, p.lado * Modo4VelocidadGiro, -p.lado * Modo4VelocidadGiro, true);
+    } else if (p.visto == 0) {
         p.mando.mover(p.motor, Modo4VelocidadAvance, Modo4VelocidadAvance, true);   // recto
     } else {
         // Lo ve un sensor de 45° o lateral: giro a fondo hacia él

@@ -15,6 +15,6 @@ ResultadoModo Modo3Lado::paso(const PasoModo& p) {
     }
     // Pivota sobre la rueda de ese lado: esa rueda parada y la otra adelante
     const int v = p.t < Modo3TiempoGiro || p.visto != 0 ? Modo3VelocidadGiro : Modo3VelocidadBarrido;
-    p.mando.mover(p.motor, sentido > 0 ? v : 0, sentido > 0 ? 0 : v, true);
+    p.mando.mover(p.motor, sentido > 0 ? v : Modo3VelocidadInterior, sentido > 0 ? Modo3VelocidadInterior : v, true);
     return ResultadoModo::Sigue;
 }

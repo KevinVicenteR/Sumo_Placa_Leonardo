@@ -19,6 +19,9 @@ constexpr unsigned long Modo1TiempoMinimo = 0;
 constexpr unsigned long Modo1TiempoQuieto = 4000;    // quieto antes de avanzar
 constexpr unsigned long Modo1TiempoRecibir = 200;   // parado con la pala al verlo de frente
 constexpr unsigned long Modo1TiempoMax = 9000;      // duración máxima del modo
+// Henka (docs/movimientos_rumania.md, M3): al empezar gira hacia DIP3 este
+// tiempo para apartarse de la línea de embestida (0 = sin henka)
+constexpr unsigned long Modo1TiempoHenka = 0;
 
 class Modo1Defensivo {
 public:

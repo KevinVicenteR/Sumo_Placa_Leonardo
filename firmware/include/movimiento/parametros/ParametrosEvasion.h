@@ -56,4 +56,18 @@ constexpr unsigned long RetrocesoExtraAVelocidadMaxima = 300;
 constexpr unsigned long TiempoSalidaSuaveUnSensor = 500;
 constexpr int VelocidadSalidaUnSensor = 90;
 
+// Propuestas de docs/caidas_propias_rumania.md (false = comportamiento anterior):
+// salida suave también tras cortar la evasión o tras verla con los dos sensores
+constexpr bool SalidaSuaveSiempre = false;
+// las reentradas en la línea comparten un solo tope de TiempoReintentoRetroceso
+// de retroceso por evasión, sin renovarlo en cada reentrada
+constexpr bool PresupuestoRetroceso = false;
+// tras ver la línea, si el estimador deja de ser fiable conserva el último
+// límite de avance (como mucho LimiteTrasLinea) en vez de quitarlo. Con 100: 0
+// salidas sin rival pero -7 puntos de victorias (simulador, 50 820 combates)
+constexpr bool ProtegerTrasLinea = false;
+constexpr int LimiteTrasLinea = 100;
+// Cuánto dura la protección tras la última línea vista (0 = siempre)
+constexpr unsigned long ProtegerTrasLineaMs = 0;
+
 #endif

@@ -24,6 +24,8 @@ bool ManiobraEvasion::iniciar(int sentido, unsigned long duracionRet, unsigned l
     sinRetroceso = !veniaAvanzando;
     salidaSuave = false;
     limiteSalida = 255;
+    presupuestoReentrada = TiempoReintentoRetroceso;
+    reentrando = false;
     fase = sinRetroceso ? Fase::GirandoSalida : Fase::Retrocediendo;
     inicioFase = ahora;
     inicioEvasion = ahora;
@@ -49,8 +51,9 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
         huboCorte = true;
         ultimoCorte = ahora;
         fase = Fase::Libre;
-        salidaSuave = false;
-        limiteSalida = 255;
+        salidaSuave = SalidaSuaveSiempre;
+        inicioSalidaSuave = ahora;
+        limiteSalida = SalidaSuaveSiempre ? VelocidadSalidaUnSensor : 255;
         return false;
     }
 
@@ -62,6 +65,7 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
         inicioFase = ahora;
         duracionRetroceso = 0;
         negroContinuo = false;
+        reentrando = true;
     }
 
     // --- Fase 1: separarse de la línea ---
@@ -107,7 +111,7 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
             return true;
         }
         // Con un solo sensor: buscar hacia el lado del giro y salir despacio
-        if (unSensor) {
+        if (unSensor || SalidaSuaveSiempre) {
             busqueda.fijarSentido(sentidoGiro);
             salidaSuave = true;
             inicioSalidaSuave = ahora;
@@ -145,7 +149,16 @@ bool ManiobraEvasion::separarse(bool linea, MandoMotores& mando, IMotor& motor, 
     const unsigned long separacion = unSensor ? TiempoSeparacionUnSensor : TiempoSeparacionBorde;
     const bool separado = negroContinuo && ahora - inicioNegro >= separacion &&
                           ahora - inicioFase >= duracionRetroceso;
-    const bool agotado = ahora - inicioEvasion >= TiempoMaximoRecuperacionBorde;
+    bool agotado = ahora - inicioEvasion >= TiempoMaximoRecuperacionBorde;
+    // Las reentradas gastan un solo tope de retroceso: atrás no hay sensores
+    if (PresupuestoRetroceso && reentrando && fase == Fase::Retrocediendo) {
+        agotado |= ahora - inicioFase >= presupuestoReentrada;
+        if (separado || agotado) {
+            const unsigned long gastado = ahora - inicioFase;
+            presupuestoReentrada -= gastado < presupuestoReentrada ? gastado : presupuestoReentrada;
+            reentrando = false;
+        }
+    }
     if (separado || agotado) {
         return false;
     }
@@ -173,6 +186,7 @@ bool ManiobraEvasion::reintentarSiAtascado(bool linea, MandoMotores& mando, IMot
     inicioEvasion = ahora - (TiempoMaximoRecuperacionBorde - TiempoReintentoRetroceso);
     duracionRetroceso = 0;
     negroContinuo = false;
+    reentrando = true;
     separarse(linea, mando, motor, ahora);
     return true;
 }

@@ -19,6 +19,11 @@ constexpr int Modo2VelocidadAvanceEspera = 100;  // avance lento si no aparece
 constexpr unsigned long Modo2TiempoMinimo = 300;
 constexpr unsigned long Modo2TiempoQuieto = 4000;    // quieto antes de avanzar
 constexpr unsigned long Modo2TiempoMax = 9000;      // duración máxima del modo
+// Flanqueo en arco (docs/movimientos_rumania.md, M2): sale en arco hacia DIP3
+// este tiempo para llegarle de lado (0 = sin arco)
+constexpr unsigned long Modo2TiempoArco = 0;
+constexpr int Modo2VelocidadArcoExterior = 255;
+constexpr int Modo2VelocidadArcoInterior = 120;
 
 class Modo2Contragolpe {
 public:

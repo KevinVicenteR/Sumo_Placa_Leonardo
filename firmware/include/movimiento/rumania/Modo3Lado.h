@@ -16,6 +16,9 @@
 // --- Velocidades (PWM 0-255) ---
 constexpr int Modo3VelocidadGiro = 150;          // rueda exterior del giro hacia el rival
 constexpr int Modo3VelocidadBarrido = 120;       // si no lo encuentra tras el giro
+// Rueda interior del giro (docs/movimientos_rumania.md, M5): 0 = pivote sobre
+// ella; más = arco que avanza mientras gira
+constexpr int Modo3VelocidadInterior = 0;
 // --- Tiempos (ms) ---
 // Maniobra obligatoria al empezar (gira hacia DIP3 sin mirar los sensores)
 constexpr unsigned long Modo3TiempoMinimo = 0;

@@ -59,6 +59,17 @@ static void assertGiroBusqueda(MotorMock& m, int sentido) {
     assertMovimiento(m, sentido * VelocidadGiroBusqueda, -sentido * VelocidadGiroBusqueda);
 }
 
+// Al separarse de la línea: contramando hacia delante (FrenarEvasionConContramando)
+// como mucho a VelocidadFreno, o parado si la frenada o FrenoActivo están apagados
+static void assertFrenaTrasRetroceso(MotorMock& m) {
+    if (!FrenarEvasionConContramando || !FrenoActivo) {
+        assertMovimiento(m, 0, 0);
+        return;
+    }
+    TEST_ASSERT_TRUE(m.izq > 0 && m.der > 0);
+    TEST_ASSERT_TRUE(m.izq <= VelocidadFreno && m.der <= VelocidadFreno);
+}
+
 // El robot no avanza (gira en el sitio, retrocede o está parado)
 static void assertNoAvanza(MotorMock& m) {
     TEST_ASSERT_FALSE(m.izq > 0 && m.der > 0);
@@ -421,7 +432,7 @@ void test_un_sensor_retrocede_recto_y_gira_tras_separarse() {
         c.ejecutar({TipoAccion::Busqueda}, m, 1200 + extra);
         const unsigned long paro = 1200 + extra + TiempoSeparacionUnSensor;
         c.ejecutar({TipoAccion::Busqueda}, m, paro);
-        assertMovimiento(m, 0, 0);
+        assertFrenaTrasRetroceso(m);
         const unsigned long giro = paro + TiempoFrenado;
         c.ejecutar({TipoAccion::Busqueda}, m, giro);
         assertGiroEvasion(m, -lado);
@@ -482,7 +493,7 @@ void test_ambos_retrocede_sin_reinicios_y_blanco_interrumpe_giro() {
     c.ejecutar({TipoAccion::Busqueda}, m, 1000 + retroceso);
     assertRetrocede(m);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000 + retroceso + TiempoSeparacionBorde);
-    assertMovimiento(m, 0, 0);
+    assertFrenaTrasRetroceso(m);
     c.ejecutar({TipoAccion::Busqueda}, m, 1000 + retroceso + TiempoSeparacionBorde + TiempoFrenado);
     assertGiroEvasion(m, 1);
     c.ejecutar({TipoAccion::EvadirBordeDer}, m, 1001 + retroceso + TiempoSeparacionBorde + TiempoFrenado);

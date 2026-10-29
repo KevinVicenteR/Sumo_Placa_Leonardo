@@ -64,6 +64,18 @@ void test_competencia_detecta_enemigo_presente_al_encender_sin_calibrar() {
     const LecturasSensores l = p.leer();
     TEST_ASSERT_TRUE(l.latIzq && l.c45Izq && l.frontal && l.c45Der && l.latDer);
 }
+void test_rechaza_laterales_opuestos_sin_frontal() {
+    const uint8_t pins[] = {S_LAT_IZQ, S_FRONT_IZQ, S_FRONT_CEN, S_FRONT_DER, S_LAT_DER};
+    for (uint8_t pin : pins) g_digitalValues[pin] = LOW;
+    g_digitalValues[S_LAT_IZQ] = g_digitalValues[S_LAT_DER] = HIGH;
+    Percepcion p;
+    LecturasSensores l = p.leer();
+    TEST_ASSERT_FALSE(l.latIzq || l.latDer);      // un rival no ocupa los dos lados
+    g_digitalValues[S_FRONT_CEN] = HIGH;
+    l = p.leer();
+    TEST_ASSERT_TRUE(l.latIzq && l.latDer && l.frontal);  // con el frontal, se respeta
+    for (uint8_t pin : pins) g_digitalValues[pin] = LOW;
+}
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_competencia_detecta_enemigo_presente_al_encender_sin_calibrar);
@@ -71,5 +83,6 @@ int main(int, char**) {
     RUN_TEST(test_calibra_cada_enemigo_y_reinicia_retencion);
     RUN_TEST(test_blanco_persistente_no_se_recalibra_como_negro);
     RUN_TEST(test_polaridad_inversa_e_histeresis);
+    RUN_TEST(test_rechaza_laterales_opuestos_sin_frontal);
     return UNITY_END();
 }

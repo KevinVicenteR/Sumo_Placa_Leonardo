@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "sensores/Percepcion.h"
+#include "sensores/ParametrosDeteccion.h"
 
 void Percepcion::calibrarPiso() {
     pisoIzq.calibrar();
@@ -37,5 +38,10 @@ LecturasSensores Percepcion::leer() {
     lecturas.frontal = frontal.detecta(ahora);
     lecturas.c45Der = c45Der.detecta(ahora);
     lecturas.latDer = latDer.detecta(ahora);
+    // Un único rival no puede ocupar ambos rayos laterales opuestos.
+    if (RechazarLateralesOpuestos && !lecturas.frontal &&
+        lecturas.latIzq && lecturas.latDer) {
+        lecturas.latIzq = lecturas.latDer = false;
+    }
     return lecturas;
 }

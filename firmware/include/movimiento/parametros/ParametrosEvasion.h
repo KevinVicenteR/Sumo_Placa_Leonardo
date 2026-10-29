@@ -55,5 +55,8 @@ constexpr unsigned long RetrocesoExtraAVelocidadMaxima = 300;
 // Tras evadir con un solo sensor, sale despacio durante este tiempo.
 constexpr unsigned long TiempoSalidaSuaveUnSensor = 500;
 constexpr int VelocidadSalidaUnSensor = 90;
+// Al acabar el retroceso frena con contramando (MandoMotores::calcularFreno)
+// en vez de solo dejar las ruedas sin potencia. Nunca hacia delante sobre la línea.
+constexpr bool FrenarEvasionConContramando = true;
 
 #endif

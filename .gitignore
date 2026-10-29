@@ -29,3 +29,4 @@ web/*.tsbuildinfo
 simulacion/resultados/**/candidatos*/
 simulacion/politica_q.txt
 simulacion/politica_n.txt
+simulacion/resultados/logs/

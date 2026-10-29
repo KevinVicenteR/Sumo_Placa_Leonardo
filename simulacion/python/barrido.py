@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from . import simular
 
-ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.34"]
+ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.5"]
 
 # Variaciones plausibles del robot real que no se conocen con exactitud
 # Condiciones súper extremas para el robot con LiPo 2S

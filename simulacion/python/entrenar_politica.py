@@ -29,7 +29,7 @@ NE, NA = 64, 8
 ACCIONES = ["AtaqueFrontal", "AjusteIzq", "AjusteDer", "CorregirIzq", "CorregirDer",
             "DefensaIzq", "DefensaDer", "Busqueda"]
 # El mismo robot y dohyo que la batería de combates (bateria.py)
-ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.34", "--par", "0.6", "--bateria", "1.23",
+ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.5", "--par", "0.6", "--bateria", "1.23",
          "--pala", "0.3", "--pala-rival", "0.3", "--radio", "0.385"]
 ENTORNOS = [
     "",

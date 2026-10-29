@@ -55,11 +55,16 @@ RIVALES_NORMALES = ["quieto", "deambula", "embiste", "flanquea", "tornado", "con
                     "woodpecker", "esquivador"]
 
 
+# Pesos del error (--peso-caida, --peso-propia) y rivales fuera del entrenamiento
+PESO_CAIDA, PESO_PROPIA = 2, 5
+EXCLUIDOS = {"pesado 500 g"}
+
+
 def error_de(v, c, p, n, sin_rival=False):
     """Sin rival no se puede ganar: solo cuentan las caídas."""
     if not n:
         return 0.0
-    return (0 if sin_rival else 100 - 100 * v / n) + 2 * 100 * c / n + 5 * 100 * p / n
+    return (0 if sin_rival else 100 - 100 * v / n) + PESO_CAIDA * 100 * c / n + PESO_PROPIA * 100 * p / n
 
 
 def error_casilla(res, i, j, casilla):
@@ -241,12 +246,19 @@ def main():
     ap.add_argument("--inicio", help="pesos de partida (.red) en vez de las tablas del firmware")
     ap.add_argument("--fijas", action="store_true",
                     help="cada generación incluye también las casillas ideales (sin el rival de 500 g)")
+    ap.add_argument("--peso-caida", type=float, default=2, help="peso de cada %% de caídas en el error")
+    ap.add_argument("--peso-propia", type=float, default=5, help="peso de cada %% de caídas propias")
+    ap.add_argument("--incluir-pesado", action="store_true",
+                    help="entrena también contra el rival de 500 g (robot igual de pesado)")
     ap.add_argument("--sigma-max", type=float, default=5.0, help="tope de σ")
     ap.add_argument("--base", default=str(RESULTADOS / "rumania11_antes_30000.json"),
                     help="batería de referencia (JSON de bateria.py) para elegir las casillas mejorables")
     a = ap.parse_args()
 
     B.ROUNDS = B.ROUNDS_RUMANIA
+    global PESO_CAIDA, PESO_PROPIA, EXCLUIDOS
+    PESO_CAIDA, PESO_PROPIA = a.peso_caida, a.peso_propia
+    EXCLUIDOS = set() if a.incluir_pesado else EXCLUIDOS
     RESULTADOS.mkdir(exist_ok=True)
     CANDIDATOS.mkdir(exist_ok=True)
     binario = simular.compilar({})
@@ -264,16 +276,16 @@ def main():
 
     def mejorable(c):
         b = base[(c[0][0], c[1][0], c[2][0])]
-        if c[1][0] == "pesado 500 g" or b["caidas"] >= b["combates"] - 1:
+        if c[1][0] in EXCLUIDOS or b["caidas"] >= b["combates"] - 1:
             return False
         if c[1][1] == "ninguno":
             return b["caidas"] > 0
         return b["caidas"] > 0 or b["victorias"] < b["combates"] - 1
 
     entreno = [c for c in todas if mejorable(c)]
-    fijas = [c for c in todas if a.fijas and c[2] is B.FACTORES[0] and c[1][0] != "pesado 500 g"]
-    # Validación fija: todas las casillas salvo el rival de 500 g, semillas reservadas
-    val_casillas = [c for c in todas if c[1][0] != "pesado 500 g"]
+    fijas = [c for c in todas if a.fijas and c[2] is B.FACTORES[0] and c[1][0] not in EXCLUIDOS]
+    # Validación fija: todas las casillas salvo los rivales excluidos, semillas reservadas
+    val_casillas = [c for c in todas if c[1][0] not in EXCLUIDOS]
     print(f"{len(entreno)} casillas mejorables de {len(todas)}; validación en {len(val_casillas)}", flush=True)
     filas, validaciones, por_rival, por_modo = [], [], [], []
     etapa, sin_mejora = 2, 0

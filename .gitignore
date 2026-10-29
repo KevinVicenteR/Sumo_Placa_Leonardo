@@ -10,8 +10,6 @@
 # Simulación
 simulacion/build
 __pycache__
-simulacion/resultados/politica_q.txt
-simulacion/resultados/politica_n.txt
 
 .venv/
 web/node_modules/

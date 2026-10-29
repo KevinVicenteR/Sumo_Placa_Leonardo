@@ -56,4 +56,17 @@ constexpr unsigned long RetrocesoExtraAVelocidadMaxima = 300;
 constexpr unsigned long TiempoSalidaSuaveUnSensor = 500;
 constexpr int VelocidadSalidaUnSensor = 90;
 
+// Candidatos para el entrenamiento del robot pesado (false = comportamiento anterior).
+// Tras ver la línea, si el estimador deja de ser fiable conserva el último
+// límite de avance (como mucho LimiteTrasLinea) en vez de quitarlo. Robot de 500 g:
+// 3 salidas sin rival (base 25) pero 69,1 % de victorias (base 81,2), 50 820 combates
+constexpr bool ProtegerTrasLinea = false;
+constexpr int LimiteTrasLinea = 100;
+// al acabar el retroceso frena con contramando (MandoMotores::calcularFreno)
+// en vez de solo dejar las ruedas sin potencia. Robot de 500 g: 10 salidas sin
+// rival (base 25) pero 77,4 % de victorias (base 81,2)
+constexpr bool FrenarEvasionConContramando = false;
+// Cuánto dura la protección tras la última línea vista (0 = siempre)
+constexpr unsigned long ProtegerTrasLineaMs = 0;
+
 #endif

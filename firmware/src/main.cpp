@@ -19,19 +19,10 @@
 #include "sensores/Percepcion.h"
 #if !defined(MODO_PRUEBA_MOTORES) && !defined(MODO_DIAGNOSTICO)
 #include "estrategia/EstrategiaReglas.h"
-#include "estrategia/EstrategiaAprendida.h"
 #include "movimiento/ControlMovimiento.h"
 #include "robot/ControladorRobot.h"
 #include "estrategia/EstrategiaCompetencia.h"
 #include "Parametros.h"
-
-// Elige un tipo u otro en tiempo de compilación (solo se incluye el elegido)
-template <bool Condicion, class SiVerdadero, class SiFalso>
-struct ElegirTipo { using Tipo = SiVerdadero; };
-template <class SiVerdadero, class SiFalso>
-struct ElegirTipo<false, SiVerdadero, SiFalso> { using Tipo = SiFalso; };
-
-using EstrategiaElegida = ElegirTipo<UsarPoliticaAprendida, EstrategiaAprendida, EstrategiaReglas>::Tipo;
 
 #endif
 
@@ -42,7 +33,7 @@ DriverMotores motores;
 Percepcion percepcion;
 #endif
 #if !defined(MODO_PRUEBA_MOTORES) && !defined(MODO_DIAGNOSTICO)
-EstrategiaElegida estrategiaClasica;
+EstrategiaReglas estrategiaClasica;
 ControlMovimiento controlMovimiento;
 EstrategiaCompetencia estrategia(estrategiaClasica, controlMovimiento);
 ControladorRobot robot(percepcion, estrategia, controlMovimiento, motores);

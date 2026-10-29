@@ -103,19 +103,6 @@ void test_segundo_sensor_amplia_solo_recuperacion_mejorada() {
         TEST_ASSERT_EQUAL_INT(mejorada?-VelocidadRetroceso:0,m.izq);
     }
 }
-void test_pid_compacto_equivale_a_la_formula_anterior() {
-    ControlPID pid;bool activo=false;int anterior=0,derivada=0;unsigned long ultimo=0,ahora=1000;
-    unsigned long rng=991;
-    for(int i=0;i<3000;++i) {
-        rng=(rng*1664525UL+1013904223UL)&0xffffffffUL;
-        int error=(int)(rng%2001)-1000;ahora+=i%19==0?70:i%3==0?3:10;
-        long p=(long)error*92/64;
-        if(!activo || ahora-ultimo>PausaReinicioPID) {activo=true;anterior=error;ultimo=ahora;derivada=0;}
-        else if(ahora-ultimo>=PeriodoPID) {long cambio=(long)(error-anterior)*1024/1000;derivada+=(cambio-derivada)*128/256;anterior=error;ultimo=ahora;}
-        long u=p+derivada;u=u < -1024?-1024:u>1024?1024:u;
-        TEST_ASSERT_EQUAL_INT((int)u,pid.correccion(error,ahora));
-    }
-}
 void test_primera_lectura_frontal_no_inventa_contacto_pasado() {
     std::memset(redlogica::Parametros,0,redlogica::numParametros());
     const int e=redlogica::NumEntradasRed, n=redlogica::numParametros();
@@ -172,7 +159,6 @@ int main(int,char**) {
     RUN_TEST(test_esquiva_tiene_tiempo_y_rearme);
     RUN_TEST(test_correccion_sigue_limitada_por_borde_y_pwm);
     RUN_TEST(test_segundo_sensor_amplia_solo_recuperacion_mejorada);
-    RUN_TEST(test_pid_compacto_equivale_a_la_formula_anterior);
     RUN_TEST(test_primera_lectura_frontal_no_inventa_contacto_pasado);
     RUN_TEST(test_control_modo3_sigue_UsarRedControlModo3);
     return UNITY_END();

@@ -2,14 +2,14 @@
 """Compara variantes de la táctica de un modo solo en sus casillas de la batería
 de Rumania (modo N = rounds RUN), con todos los rivales y factores.
 
-  python3 -m simulacion.python.barrido_modo4 --modo 4 --n 20 Modo4VelocidadAvance=150 Modo4VelocidadAvance=120 "Modo4VelocidadAvance=120,Modo4VelocidadGiro=200"
+  python3 -m simulacion.python.optimizacion.barrido_modo4 --modo 4 --n 20 Modo4VelocidadAvance=150 Modo4VelocidadAvance=120 "Modo4VelocidadAvance=120,Modo4VelocidadGiro=200"
 """
 import argparse
 import os
 from concurrent.futures import ThreadPoolExecutor
 
-from . import bateria as B
-from . import simular
+from .. import bateria as B
+from .. import simular
 
 
 def correr(binario, n, casilla):

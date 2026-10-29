@@ -1,7 +1,7 @@
 """Regresiones de selección: una victoria extra no justifica más caídas."""
 import unittest
 from simulacion.python import redes as R
-from simulacion.python.entrenar_redes import mejora_segura, prioridad_validacion, puntuar, elegir_candidato
+from simulacion.python.entrenamiento.entrenar_redes import mejora_segura, prioridad_validacion, puntuar, elegir_candidato
 
 
 class SeleccionSegura(unittest.TestCase):

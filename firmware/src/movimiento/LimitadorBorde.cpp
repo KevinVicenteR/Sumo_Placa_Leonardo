@@ -41,12 +41,21 @@ void LimitadorBorde::actualizar(const DecisionMovimiento& decision, const MandoM
         const int lado = decision.tipo == TipoAccion::EvadirBordeIzq ? -1
                        : decision.tipo == TipoAccion::EvadirBordeDer ? 1 : 0;
         estimadorBorde.lineaVista(lado, mando.avanzando());
+        lineaObservada = true;
+        ultimaLinea = ahora;
         cambio = true;
     }
     bordeAntes = borde;
 
     // 3. Nuevo límite (solo si la predicción es fiable)
     if (cambio) {
-        limiteAvance = estimadorBorde.confiable() ? estimadorBorde.limiteAvance() : 255;
+        if (estimadorBorde.confiable()) {
+            limiteAvance = estimadorBorde.limiteAvance();
+        } else if (ProtegerTrasLinea && lineaObservada &&
+                   (ProtegerTrasLineaMs == 0 || ahora - ultimaLinea < ProtegerTrasLineaMs)) {
+            if (limiteAvance > LimiteTrasLinea) limiteAvance = LimiteTrasLinea;
+        } else {
+            limiteAvance = 255;
+        }
     }
 }

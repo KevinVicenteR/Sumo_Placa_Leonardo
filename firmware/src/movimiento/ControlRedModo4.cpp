@@ -8,15 +8,7 @@ void ControlRedModo4::ejecutar(const DecisionMovimiento& d, MandoMotores& mando,
                               unsigned long ahora, int velocidad, bool empujando, int limiteBorde, int modo) {
     const int error = limitar(d.errorRival, -1000, 1000);
     int izq, der;
-    if (esAtaque(d.tipo) && UsarPIDRed) {
-        int u = pid.correccion(error, ahora);
-        if (empujando) {
-            constexpr int limite = (int)(LimitePIDEmpujando * ControlPID::Unidad + 0.5f);
-            u = limitar(u, -limite, limite);
-        }
-        izq = u < 0 ? (long)velocidad * (ControlPID::Unidad + u) / ControlPID::Unidad : velocidad;
-        der = u > 0 ? (long)velocidad * (ControlPID::Unidad - u) / ControlPID::Unidad : velocidad;
-    } else if (esAtaque(d.tipo)) {
+    if (esAtaque(d.tipo)) {
         const int interior = Corregir45EnPivote ? 0 : VelocidadCurva * velocidad / VelocidadAtaque;
         izq = der = velocidad;
         if (d.tipo == TipoAccion::AjusteIzq) izq = velocidad * PorcentajeAjuste / 100;
@@ -24,7 +16,6 @@ void ControlRedModo4::ejecutar(const DecisionMovimiento& d, MandoMotores& mando,
         if (d.tipo == TipoAccion::CorregirIzq) izq = interior;
         if (d.tipo == TipoAccion::CorregirDer) der = interior;
     } else {
-        pid.reiniciar();
         izq = d.tipo == TipoAccion::EsquivarIzq ? VelocidadEsquivaInterior : VelocidadEsquivaExterior;
         der = d.tipo == TipoAccion::EsquivarIzq ? VelocidadEsquivaExterior : VelocidadEsquivaInterior;
     }

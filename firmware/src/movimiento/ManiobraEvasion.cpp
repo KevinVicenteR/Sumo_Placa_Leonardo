@@ -72,11 +72,17 @@ bool ManiobraEvasion::continuar(const DecisionMovimiento& decision, MandoMotores
         // Girando ya se apartó del borde: sin pausa, sigue con el giro normal
         fase = fase == Fase::GirandoSalida ? Fase::Girando : Fase::Frenando;
         inicioFase = ahora;
+        conFreno = FrenarEvasionConContramando && fase == Fase::Frenando &&
+                   mando.calcularFreno(TiempoFrenadoRuedas, freno);
     }
 
     // --- Fase 2: pausa con los motores parados ---
     if (fase == Fase::Frenando) {
         if (reintentarSiAtascado(linea, mando, motor, ahora)) {
+            return true;
+        }
+        if (FrenarEvasionConContramando && conFreno && ahora - inicioFase < freno.duracion) {
+            mando.mover(motor, freno.izq, freno.der, true);
             return true;
         }
         if (linea || ahora - inicioFase < TiempoFrenado) {

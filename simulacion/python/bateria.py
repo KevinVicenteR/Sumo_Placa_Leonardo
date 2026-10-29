@@ -9,7 +9,6 @@ señal de START... y todas juntas.
 
   python3 -m simulacion.python.bateria                    # 20 combates por casilla
   python3 -m simulacion.python.bateria --n 50
-  python3 -m simulacion.python.bateria --param UsarPoliticaAprendida=true
   python3 -m simulacion.python.bateria --comparar UsarFiltroBayesRival=true
 """
 import argparse
@@ -25,7 +24,7 @@ from . import simular
 # quita al rival un 30 % de agarre (valor supuesto: no se ha medido). Dohyo negro
 # con borde blanco; fuera del dohyo (elevado) el sensor de piso no ve nada y lee
 # oscuro, como el negro: el caso más difícil. El dohyo mide 77 cm de diámetro (línea de 2,5 cm incluida).
-ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.34", "--par", "0.6", "--mu", "0.9",
+ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.5", "--par", "0.6", "--mu", "0.9",
          "--bateria", "1.23", "--pala", "0.3", "--radio", "0.385",
          # Ruedas atrás (como en el video): el robot gira sobre el eje trasero; el
          # cuerpo empieza 3,3 cm por delante, los sensores de piso van a 7,8 cm

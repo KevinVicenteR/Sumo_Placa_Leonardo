@@ -102,9 +102,6 @@ constexpr float IncertRumboConfiable = 0.8f;
 
 // 6. Estrategia
 
-// true = usa la política aprendida en el simulador (TablaPolitica.h) en vez de
-// las reglas escritas a mano.
-constexpr bool UsarPoliticaAprendida = false;
 
 // 7. Interruptores DIP (eligen la rutina o el modo de Rumania)
 //   DIP1 DIP2  rutina

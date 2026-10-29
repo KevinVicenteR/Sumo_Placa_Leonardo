@@ -21,8 +21,8 @@ entera) y guarda candidatos por caídas propias, caídas globales y victorias.
 Filtra primero las restricciones para que un candidato inválido no oculte otro. Al acabar,
 solo si confirma la mejora de seguridad en semillas nuevas, reescribe TablaRedLogica.h y TablaRedControl.h.
 
-  python3 -m simulacion.python.entrenar_redes --generaciones 150
-  python3 -m simulacion.python.entrenar_redes --continuar     # sigue desde redes_mejor.txt
+  python3 -m simulacion.python.entrenamiento.entrenar_redes --generaciones 150
+  python3 -m simulacion.python.entrenamiento.entrenar_redes --continuar     # sigue desde redes_mejor.txt
 """
 import argparse
 import math
@@ -34,16 +34,16 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from . import simular
-from . import bateria as B
-from . import redes as R
+from .. import simular
+from .. import bateria as B
+from .. import redes as R
 
 RIVALES_OBJETIVO = ["quieto", "deambula", "embiste", "flanquea"]
 PESO_RESTO = 1.0
 PENALIZACION_CAIDA = 20
 PENALIZACION_PROPIA = 60
-GUARDADO = Path(__file__).resolve().parents[1] / "resultados" / "redes_mejor.txt"
-CANDIDATO = Path(__file__).resolve().parents[1] / "resultados" / "redes_candidato.txt"
+GUARDADO = Path(__file__).resolve().parents[2] / "resultados" / "redes_mejor.txt"
+CANDIDATO = Path(__file__).resolve().parents[2] / "resultados" / "redes_candidato.txt"
 
 
 def casillas_objetivo():

@@ -18,7 +18,10 @@ firmware/
     main.cpp               Composición estática y entrada Arduino
 simulacion/
   nucleo/                  fisica.h, sim.cpp, matematica.h y Arduino simulado
-  python/                  Paquete: batería, simulación, redes y entrenadores
+  python/                  Paquete: simular, bateria, redes y meta_vencibles (base común)
+    entrenamiento/         Entrenadores de las redes neuronales (ES y sep-CMA-ES)
+    optimizacion/          Barridos y búsqueda de parámetros
+    diagnostico/           Caídas, arranques, evaluación y tablero.html
   web/                     Adaptador C++ para WebAssembly y soporte mínimo
   resultados/              Entradas activas y referencia de regresión
   bateria.py               Entrada compatible de la batería original
@@ -63,7 +66,7 @@ python3 simulacion/bateria.py --rumania --muestras 3000 --json /tmp/ref_despues.
 python3 scripts/verificar_invariantes.py --antes /tmp/ref_antes.json --despues /tmp/ref_despues.json
 # En una copia nueva, usar la referencia guardada:
 python3 scripts/verificar_invariantes.py --antes simulacion/resultados/refactor_referencia.json --despues /tmp/ref_despues.json
-python3 -m simulacion.python.verificar_arranques --referencia c8136d6
+python3 -m simulacion.python.diagnostico.verificar_arranques --referencia c8136d6
 ```
 
 La batería usa 7 colocaciones × 11 rivales × 12 factores = 924 casillas. Redondea 3.000 muestras a 4 combates por casilla: 3.696 combates. La referencia y el resultado del refactor coinciden íntegramente: **2.101 victorias, 1.010 caídas, 9 caídas propias**. El verificador compara el JSON completo, además de todas las cabeceras y fuentes C++ del firmware contra `c8136d6`; falla ante cualquier diferencia. Los arranques protegidos también mantienen sus 4.636 ciclos comparados. Los números guardados se midieron en macOS ARM64; CI genera antes y después en el mismo runner para evitar diferencias numéricas entre compiladores o plataformas.
@@ -84,12 +87,12 @@ Se ejecutan como módulos desde la raíz, sin modificar `sys.path`:
 ```bash
 python3 -m simulacion.python.simular --n 100
 python3 -m simulacion.python.bateria --rumania --muestras 3000
-python3 -m simulacion.python.diagnostico_caidas --muestras 1000
-python3 -m simulacion.python.barrido_modo4 --modo 4 --n 2 Modo4VelocidadAvance=120
-python3 -m simulacion.python.entrenar_jerarquica --help
+python3 -m simulacion.python.diagnostico.diagnostico_caidas --muestras 1000
+python3 -m simulacion.python.optimizacion.barrido_modo4 --modo 4 --n 2 Modo4VelocidadAvance=120
+python3 -m simulacion.python.entrenamiento.entrenar_jerarquica --help
 ```
 
-También se conservan `barrido`, `evaluar`, `caidas_propias`, `optimizar`, `entrenar_redes`, `entrenar_politica`, `redes` y `verificar_arranques`; consulta `--help` en las herramientas de línea de comandos. Los entrenadores pueden escribir tablas si se ejecutan con sus opciones de publicación: no forman parte de `todo`. Los puntos de continuación y resultados nuevos se guardan en `simulacion/resultados/`.
+También se conservan `barrido`, `evaluar`, `caidas_propias`, `optimizar`, `entrenar_redes`, `redes` y `verificar_arranques`; consulta `--help` en las herramientas de línea de comandos. Los entrenadores pueden escribir tablas si se ejecutan con sus opciones de publicación: no forman parte de `todo`. Los puntos de continuación y resultados nuevos se guardan en `simulacion/resultados/`.
 
 El inventario completo de archivos retirados y el criterio de búsqueda están en [docs/limpieza.md](docs/limpieza.md). Se conservan las carpetas `candidatos_*` sin seguimiento. Los históricos eliminados siguen recuperables desde Git.
 

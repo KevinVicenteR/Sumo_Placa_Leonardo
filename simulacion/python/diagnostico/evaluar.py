@@ -2,19 +2,19 @@
 """Evalúa el firmware en todos los entornos (robustos y extremos de barrido.py)
 y los 4 escenarios, con el desglose de caídas por causa.
 
-  python3 -m simulacion.python.evaluar                                  # firmware actual
-  python3 -m simulacion.python.evaluar --n 200                          # más combates
-  python3 -m simulacion.python.evaluar --extra "--retardo-piso 40 --mancha 0.006"   # sensor de piso lento
-  python3 -m simulacion.python.evaluar UsarEstimadorBorde=false         # cambiando parámetros
-  python3 -m simulacion.python.evaluar UsarEstimadorBorde=true --banderas -DODOMETRIA_SIMULADA  # con encoders y giroscopio
+  python3 -m simulacion.python.diagnostico.evaluar                                  # firmware actual
+  python3 -m simulacion.python.diagnostico.evaluar --n 200                          # más combates
+  python3 -m simulacion.python.diagnostico.evaluar --extra "--retardo-piso 40 --mancha 0.006"   # sensor de piso lento
+  python3 -m simulacion.python.diagnostico.evaluar UsarEstimadorBorde=false         # cambiando parámetros
+  python3 -m simulacion.python.diagnostico.evaluar UsarEstimadorBorde=true --banderas -DODOMETRIA_SIMULADA  # con encoders y giroscopio
 """
 import argparse
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-from . import barrido
-from . import simular
+from ..optimizacion import barrido
+from .. import simular
 
 
 def main():

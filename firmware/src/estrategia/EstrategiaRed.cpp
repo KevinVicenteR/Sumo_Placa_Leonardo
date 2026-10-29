@@ -64,6 +64,6 @@ DecisionMovimiento EstrategiaRed::decidir(const LecturasSensores& l) {
     d.cercaBorde = l.cercaBorde;
     d.ataqueDirecto = centrado && d.tipo == TipoAccion::AtaqueFrontal;
     const int vistos = l.c45Izq + l.frontal + l.c45Der;
-    d.errorRival = vistos ? (l.c45Der - l.c45Izq) * PosicionSensor45PID / vistos : 0;
+    d.errorRival = vistos ? (l.c45Der - l.c45Izq) * PosicionSensor45 / vistos : 0;
     return d;
 }

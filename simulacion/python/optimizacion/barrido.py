@@ -5,10 +5,10 @@ Cada combinación se evalúa en todos los escenarios (simular.MODOS) y en todos 
 para elegir parámetros que funcionen aunque el robot real no sea exactamente
 como el simulado.
 
-  python3 -m simulacion.python.barrido TiempoRetroceso=80,120 VelocidadAtaque=130,160
-  python3 -m simulacion.python.barrido VelocidadAtaque=130,160 --entorno="--bateria 1.3" --entorno="--pared 0.5"
-  python3 -m simulacion.python.barrido VelocidadAtaque=130,160 --robusto      # entornos típicos
-  python3 -m simulacion.python.barrido VelocidadAtaque=130,160 --todos        # típicos y extremos
+  python3 -m simulacion.python.optimizacion.barrido TiempoRetroceso=80,120 VelocidadAtaque=130,160
+  python3 -m simulacion.python.optimizacion.barrido VelocidadAtaque=130,160 --entorno="--bateria 1.3" --entorno="--pared 0.5"
+  python3 -m simulacion.python.optimizacion.barrido VelocidadAtaque=130,160 --robusto      # entornos típicos
+  python3 -m simulacion.python.optimizacion.barrido VelocidadAtaque=130,160 --todos        # típicos y extremos
 """
 import argparse
 import itertools
@@ -16,9 +16,9 @@ import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-from . import simular
+from .. import simular
 
-ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.34"]
+ROBOT = ["--rpm", "750", "--diam", "0.03", "--masa", "0.5"]
 
 # Variaciones plausibles del robot real que no se conocen con exactitud
 # Condiciones súper extremas para el robot con LiPo 2S

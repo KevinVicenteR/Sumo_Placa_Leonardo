@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Compara órdenes de los arranques 1–3 con un ref Git (HEAD por defecto).
 
-python3 -m simulacion.python.verificar_arranques --referencia HEAD --salida informe.json
+python3 -m simulacion.python.diagnostico.verificar_arranques --referencia HEAD --salida informe.json
 No usa el robot ni escribe en la referencia. Compara 30 escenarios de sensores,
 ambos lados, cinco patrones por modo y dos binarios independientes.
 """
 import argparse, collections, csv, io, json, subprocess, tempfile
 from pathlib import Path
-RAIZ=Path(__file__).resolve().parents[2]
+RAIZ=Path(__file__).resolve().parents[3]
 
 def compilar(raiz, carpeta, nombre):
     firmware = raiz/'firmware' if (raiz/'firmware').exists() else raiz

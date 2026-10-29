@@ -15,7 +15,7 @@ public:
             (control.modoCompetencia() == 3 && !UsarRedLogicaModo3)) {
             DecisionMovimiento d = clasica.decidir(l);
             const int vistos = l.c45Izq + l.frontal + l.c45Der;
-            d.errorRival = vistos ? (l.c45Der - l.c45Izq) * PosicionSensor45PID / vistos : 0;
+            d.errorRival = vistos ? (l.c45Der - l.c45Izq) * PosicionSensor45 / vistos : 0;
             return d;
         }
         if (generacion != control.generacionCombate()) {
@@ -27,7 +27,7 @@ public:
         if (control.modoCompetencia() == 3 && !EsquivarModo3 && esEsquiva(d.tipo)) {
             d = clasica.decidir(l);
             const int vistos = l.c45Izq + l.frontal + l.c45Der;
-            d.errorRival = vistos ? (l.c45Der - l.c45Izq) * PosicionSensor45PID / vistos : 0;
+            d.errorRival = vistos ? (l.c45Der - l.c45Izq) * PosicionSensor45 / vistos : 0;
         }
         return d;
     }

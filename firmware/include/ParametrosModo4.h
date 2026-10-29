@@ -5,8 +5,6 @@
 #include "Parametros.h"
 constexpr bool UsarRedLogica = true;
 constexpr bool UsarRedControl = true;
-// El PID ensayado perdió rapidez y victorias; no se activa en este perfil.
-constexpr bool UsarPIDRed = false;
 // Selección según pruebas por modo (25 200 combates a 77 cm). Las redes actúan
 // en los modos 1 y 3 solo después de su rutina de inicio; el modo 3 va de frente.
 constexpr bool UsarRedLogicaModo1 = true;
@@ -23,14 +21,8 @@ constexpr bool EsquivarModo3 = false;
 // Ataque a fondo sin llegar a empujar durante este tiempo: pasa al ataque normal
 constexpr unsigned long TiempoMaxAtaqueLibre = 150;
 constexpr bool MejorarRecuperacionModo3 = false;
-constexpr float KpPID = 0.0014f;
-constexpr float KiPID = 0.0f;
-constexpr float KdPID = 1.0f;
-constexpr unsigned long PeriodoPID = 10;
-constexpr float FiltroDerivadaPID = 0.5f;
-constexpr unsigned long PausaReinicioPID = 50;
-constexpr int PosicionSensor45PID = 1000;
-constexpr float LimitePIDEmpujando = 0.3f;
+// Error de puntería (entrada de la red) cuando solo lo ve un sensor de 45°
+constexpr int PosicionSensor45 = 1000;
 constexpr unsigned long RecuerdoRivalMs = 300;
 constexpr unsigned long ContactoFrontalMs = 200;
 constexpr unsigned long TiempoMinimoEsquivaRed = 120;

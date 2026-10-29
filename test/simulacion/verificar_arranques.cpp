@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <type_traits>
 #include "estrategia/EstrategiaReglas.h"
-#include "estrategia/EstrategiaAprendida.h"
 #include "movimiento/ControlMovimiento.h"
 #include "Parametros.h"
 #ifdef PORT_MODO4
@@ -11,7 +10,7 @@
 extern unsigned long g_millis;
 class Motor: public IMotor { public: int izq=0,der=0; void mover(int a,int b) override {izq=a;der=b;} void detener() override {mover(0,0);} };
 int main() {
-    using Clasica=std::conditional<UsarPoliticaAprendida,EstrategiaAprendida,EstrategiaReglas>::type;
+    using Clasica=EstrategiaReglas;
     uint32_t rng=872342;
     for (int rutina=1;rutina<=3;rutina++) for (int lado=-1;lado<=1;lado+=2) {
         ControlMovimiento c; Clasica clasica; Motor m;

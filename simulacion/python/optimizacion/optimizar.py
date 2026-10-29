@@ -11,16 +11,16 @@ externos (también "todo junto", el peor caso).
 Los combates de la búsqueda usan unas semillas y la validación final otras,
 para no elegir parámetros que solo funcionan en esos combates concretos.
 
-  python3 -m simulacion.python.optimizar                       # unos 30-40 min
-  python3 -m simulacion.python.optimizar --n 6 --pasadas 1     # más rápido
+  python3 -m simulacion.python.optimizacion.optimizar                       # unos 30-40 min
+  python3 -m simulacion.python.optimizacion.optimizar --n 6 --pasadas 1     # más rápido
 """
 import argparse
 import os
 import sys
 import time
 
-from . import simular
-from . import bateria as B
+from .. import simular
+from .. import bateria as B
 
 PESO_EMPUJADO = 6
 PESO_PROPIA = 30

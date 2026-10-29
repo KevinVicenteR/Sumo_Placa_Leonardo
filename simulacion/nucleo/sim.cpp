@@ -58,63 +58,6 @@ bool cargarRedes(const char* ruta) {
     return true;
 }
 
-#ifdef ENTRENAMIENTO_POLITICA
-// ---------------------------------------------------------------- entrenamiento
-// El firmware pregunta qué acción tomar en cada estado (PoliticaAprendida); aquí
-// se elige con exploración ε-greedy sobre la tabla Q cargada con --q, se
-// mantiene cada decisión al menos 50 ms (si no, el robot temblaría) y se anotan
-// las visitas para repartir la recompensa al acabar el combate.
-#include <vector>
-#include "estrategia/PoliticaAprendida.h"
-
-namespace entrenamiento {
-double Q[politica::NumEstados][politica::NumAcciones];
-double epsilon = 0.2;
-double gammaSegundo = 0.8;      // descuento de la recompensa por segundo
-unsigned long long estadoAzar = 1;
-int estadoSostenido = -1, accionSostenida = 0;
-double tSostenida = -1;
-struct Visita { double t; int estado, accion; };
-std::vector<Visita> visitas;
-
-double azar() {
-    estadoAzar ^= estadoAzar >> 12;
-    estadoAzar ^= estadoAzar << 25;
-    estadoAzar ^= estadoAzar >> 27;
-    return ((estadoAzar * 0x2545F4914F6CDD1DULL) >> 11) * (1.0 / 9007199254740992.0);
-}
-
-int mejor(int e) {
-    int m = 0;
-    for (int a = 1; a < politica::NumAcciones; a++) if (Q[e][a] > Q[e][m]) m = a;
-    return m;
-}
-
-bool cargar(const char* ruta) {
-    FILE* f = std::fopen(ruta, "r");
-    if (!f) return false;
-    for (int e = 0; e < politica::NumEstados; e++)
-        for (int a = 0; a < politica::NumAcciones; a++)
-            if (std::fscanf(f, "%lf", &Q[e][a]) != 1) { std::fclose(f); return false; }
-    std::fclose(f);
-    return true;
-}
-}  // namespace entrenamiento
-
-namespace politica {
-int elegirAccionEntrenamiento(int estado, int) {
-    using namespace entrenamiento;
-    const double t = sim::tiempoUs / 1e6;
-    if (estado != estadoSostenido || t - tSostenida >= 0.05) {
-        accionSostenida = azar() < epsilon ? (int)(azar() * NumAcciones) % NumAcciones : mejor(estado);
-        estadoSostenido = estado;
-        tSostenida = t;
-        visitas.push_back({t, estado, accionSostenida});
-    }
-    return accionSostenida;
-}
-}  // namespace politica
-#endif
 
 SerialSim Serial;
 
@@ -179,9 +122,6 @@ double inicioCombateUs = 0;
 Resultado correr(int semilla, FILE* trayectoria) {
     reiniciar(semilla);
     colocarAleatorio();
-#ifdef ENTRENAMIENTO_POLITICA
-    entrenamiento::estadoAzar = semilla * 0x9E3779B97F4A7C15ULL + 7;
-#endif
     setup();
     const double inicioUs = tiempoUs;
     inicioCombateUs = inicioUs;
@@ -351,10 +291,6 @@ int main(int argc, char** argv) {
         else if (a == "--borde") cfg.borde = std::atof(v);
         else if (a == "--tray") rutaTray = v;
         else if (a == "--red") { if (!cargarRedes(v)) { std::fprintf(stderr, "pesos invalidos: %s\n", v); return 1; } }
-#ifdef ENTRENAMIENTO_POLITICA
-        else if (a == "--q") { if (!entrenamiento::cargar(v)) { std::fprintf(stderr, "no se pudo leer %s\n", v); return 1; } }
-        else if (a == "--epsilon") entrenamiento::epsilon = std::atof(v);
-#endif
         else if (a == "--tray-estimador") rutaTrayEstimador = v;
         else { uso(); return 1; }
         i++;
@@ -375,25 +311,6 @@ int main(int argc, char** argv) {
                         r.evasiones, r.tPrimerFrontal, r.fracFrontal, r.distancia,
                         r.gano ? 1 : 0, r.tGano, r.causa, r.empujado ? 1 : 0, r.vueltas, r.tirones,
                         r.angPrimerContacto, r.angContacto, r.tContacto, r.velCaida);
-#ifdef ENTRENAMIENTO_POLITICA
-            {
-                // Retorno de Monte Carlo de cada visita: recompensa final descontada
-                using namespace entrenamiento;
-                const double recompensa = r.gano ? 1.0 : r.cayo ? -1.0 : 0.0;
-                const double fin = inicioCombateUs / 1e6 + (r.cayo ? r.tCaida : r.gano ? r.tGano : cfg.duracion);
-                static double suma[politica::NumEstados][politica::NumAcciones];
-                static int n[politica::NumEstados][politica::NumAcciones];
-                for (const Visita& v : visitas) {
-                    suma[v.estado][v.accion] += recompensa * std::pow(gammaSegundo, fin - v.t);
-                    n[v.estado][v.accion]++;
-                }
-                std::printf("Q");
-                for (int e = 0; e < politica::NumEstados; e++)
-                    for (int a = 0; a < politica::NumAcciones; a++)
-                        if (n[e][a]) std::printf(" %d:%d:%.5f:%d", e, a, suma[e][a], n[e][a]);
-                std::printf("\n");
-            }
-#endif
             std::fflush(stdout);
             _exit(0);
         }

@@ -69,6 +69,9 @@ private:
     // Sale girando en el sitio en vez de retroceder
     bool sinRetroceso = false;
     unsigned long duracionRetroceso = 0;
+    // FrenarEvasionConContramando: contramando al acabar el retroceso
+    Freno freno;
+    bool conFreno = false;
     unsigned long duracionGiro = 0;
     int sentidoGiro = 1;
     // Giro de la evasión: en el sitio o, con GirarSobreUnaRueda, pivotando hacia

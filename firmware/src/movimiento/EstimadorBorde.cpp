@@ -43,6 +43,14 @@ void EstimadorBorde::colocar(float radio, float sigmaPos, bool mirandoAlCentro, 
     sigTh = mirandoAlCentro ? sigmaRumbo : Pi;
 }
 
+void EstimadorBorde::colocarRumbo(float radio, float sigmaPos, float rumbo, float sigmaRumbo) {
+    px = radio;
+    py = 0;
+    th = envolver(rumbo);
+    sigPos = sigmaPos;
+    sigTh = sigmaRumbo;
+}
+
 float EstimadorBorde::velocidadRegimen(int pwm) {
     const int magnitud = pwm < 0 ? -pwm : pwm;
     if (magnitud <= ZonaMuertaPwm) return 0;

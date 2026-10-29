@@ -29,3 +29,16 @@ Conclusión: se quedan los valores actuales.
 - Con 100 716 combates la base da 77,9 % / 13,9 % con 1 caída propia y 1 salida
   sin rival (las demás caídas son empujones del rival, sobre todo los rápidos y
   el de 500 g; sin sensores de piso traseros no bajan a 0).
+
+## Estimador con la salida de Rumania (EstimarSalidaRumania, de refactor-pesado)
+
+El modo DIP da el rumbo de salida y el estimador arranca fiable. En el X3, 20 328
+combates por valor, no cambia nada, así que se deja apagado:
+
+| Variante | gana | cae | propias | solo |
+|---|---|---|---|---|
+| apagado (referencia) | 78,9 % | 12,9 % | 0 | 0 |
+| RadioSalidaRumania 0,15 | 78,8 % | 12,9 % | 0 | 0 |
+| RadioSalidaRumania 0,20 | 78,8 % | 12,9 % | 0 | 0 |
+| RadioSalidaRumania 0,25 | 78,7 % | 13,0 % | 0 | 0 |
+| 0,20 + VelocidadCercaBorde 70 | 78,9 % | 12,9 % | 0 | 0 |

@@ -39,7 +39,7 @@ public:
         controlRed.reiniciar();
         evasion.configurarModo4(mejorasActivas());
         rutina.iniciar(rutinaInicio, ladoInicio);
-        limitadorBorde.colocarSalida(rutinaInicio);
+        limitadorBorde.colocarSalida(rutinaInicio, ladoInicio);
     }
 
     void habilitarRedes() { redesHabilitadas = true; }

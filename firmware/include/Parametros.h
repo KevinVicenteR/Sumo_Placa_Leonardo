@@ -122,6 +122,14 @@ constexpr bool DipActivoBajo = true;
 // Rumania: cada uno coloca su robot donde quiere. true = el estimador de borde
 // no supone la posición de salida de los rounds (empieza sin conocerla).
 constexpr bool ColocacionLibre = true;
+// Rumania: el modo DIP dice cómo se colocó (1-2 mirando al rival, 3 de lado
+// hacia DIP3, 4 de espaldas) y el reglamento lo deja detrás de su línea, a unos
+// RadioSalidaRumania del centro. true = el estimador empieza con esa posición y
+// rumbo, así puede frenar antes de llegar a la línea.
+constexpr bool EstimarSalidaRumania = false;
+constexpr float RadioSalidaRumania = 0.20f;
+constexpr float IncertSalidaRumania = 0.06f;
+constexpr float IncertRumboRumania = 0.35f;
 
 // --- Protección contra detecciones falsas ---
 // Una detección solo termina una acción si dura ConfirmacionDeteccion ms y

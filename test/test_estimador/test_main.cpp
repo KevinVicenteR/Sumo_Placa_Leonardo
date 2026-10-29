@@ -9,6 +9,21 @@ void test_al_arrancar_no_se_fia_de_la_prediccion(void) {
     TEST_ASSERT_TRUE(e.distanciaLibre() > 0.05f);
 }
 
+void test_salida_rumania_conocida_es_fiable_y_mira_hacia_fuera_de_espaldas(void) {
+    EstimadorBorde e;
+    // Modo 4 (de espaldas): mirando hacia fuera, cerca del borde hay poco sitio
+    e.colocarRumbo(RadioSalidaRumania, IncertSalidaRumania, 0, IncertRumboRumania);
+    TEST_ASSERT_TRUE(e.confiable());
+    TEST_ASSERT_FLOAT_WITHIN(1e-4f, 0, e.rumbo());
+    const float fuera = e.distanciaLibre();
+    // Modo 1 (mirando al centro): mucho más sitio por delante
+    e.colocarRumbo(RadioSalidaRumania, IncertSalidaRumania, 3.14159265f, IncertRumboRumania);
+    TEST_ASSERT_TRUE(e.distanciaLibre() > fuera + 0.2f);
+    // El rumbo se guarda entre -π y π
+    e.colocarRumbo(RadioSalidaRumania, IncertSalidaRumania, 3 * 3.14159265f / 2, IncertRumboRumania);
+    TEST_ASSERT_FLOAT_WITHIN(1e-3f, -3.14159265f / 2, e.rumbo());
+}
+
 void test_al_ver_la_linea_de_frente_el_borde_esta_encima(void) {
     EstimadorBorde e;
     e.lineaVista(0, true);
@@ -60,6 +75,7 @@ void test_modelo_de_rueda_con_zona_muerta(void) {
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_al_arrancar_no_se_fia_de_la_prediccion);
+    RUN_TEST(test_salida_rumania_conocida_es_fiable_y_mira_hacia_fuera_de_espaldas);
     RUN_TEST(test_al_ver_la_linea_de_frente_el_borde_esta_encima);
     RUN_TEST(test_tras_dar_media_vuelta_tiene_el_dohyo_por_delante);
     RUN_TEST(test_la_incertidumbre_crece_al_moverse_y_con_empujones);

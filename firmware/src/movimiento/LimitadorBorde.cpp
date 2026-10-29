@@ -1,8 +1,14 @@
 #include "movimiento/LimitadorBorde.h"
 #include "Parametros.h"
 
-void LimitadorBorde::colocarSalida(int rutina) {
+void LimitadorBorde::colocarSalida(int rutina, int lado) {
     if (ColocacionLibre) {
+        if (EstimarSalidaRumania && rutina >= 1 && rutina <= 4) {
+            constexpr float Pi = 3.14159265f;
+            // Centro detrás del rival: 1-2 lo miran, 3 lo tiene al lado (DIP3), 4 de espaldas
+            const float rumbo = rutina <= 2 ? Pi : rutina == 3 ? Pi + lado * Pi / 2 : 0;
+            estimadorBorde.colocarRumbo(RadioSalidaRumania, IncertSalidaRumania, rumbo, IncertRumboRumania);
+        }
         return;
     }
     if (rutina == 1 || rutina == 2) {

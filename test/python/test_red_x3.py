@@ -1,4 +1,4 @@
-"""Equivalencia exacta entre los pesos originales del X3 y la red jerárquica."""
+"""Equivalencia exacta entre los pesos planos originales del X3 y su conversión jerárquica."""
 import itertools
 import re
 import subprocess
@@ -13,8 +13,8 @@ class RedX3(unittest.TestCase):
         ], cwd=R.RAIZ, text=True)
         cuerpo = texto.split('= {', 1)[1].split('};', 1)[0]
         plana = [int(v) for v in re.findall(r'-?\d+', re.sub(r'//[^\n]*', '', cuerpo))]
-        jerarquica = R.leer_tabla(R.TABLA_LOGICA)
-        self.assertEqual(R.a_jerarquica(plana), jerarquica)
+        # El firmware ya lleva la red reentrenada: se comprueba la conversión, no la tabla
+        jerarquica = R.a_jerarquica(plana)
         for x in itertools.product((0, 1), repeat=12):
             sumas, subred = R.adelante_logica(jerarquica, x)
             self.assertEqual(R.adelante(plana, R.LOGICA, x), sumas)

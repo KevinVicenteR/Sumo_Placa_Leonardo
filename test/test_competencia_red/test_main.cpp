@@ -162,16 +162,20 @@ void test_selector_elige_la_subred() {
     TEST_ASSERT_EQUAL_INT(1,redlogica::subredElegida());
 }
 
-// Compara el forward C++ con la red plana X3 para las 4096 entradas binarias.
+// Compara el forward C++ con la red plana (subred 0) para las 4096 entradas binarias.
 void test_forward_x3_equivale_a_red_plana() {
     const int e=redlogica::NumEntradasRed, h=redlogica::NumOcultasRed;
+    // Selector y demás subredes a cero: con los pesos grabados, siempre la subred 0
+    const int sel=h*(e+1)+redlogica::NumAcciones*(h+1);
+    std::memset(redlogica::Parametros+sel,0,redlogica::numParametros()-sel);
+    const int8_t* plana=redlogica::Parametros;   // tearDown restaura los pesos
     for (int bits=0; bits<(1<<e); ++bits) {
         int8_t x[redlogica::NumEntradasRed];
         long oculta[redlogica::NumOcultasRed], sumas[redlogica::NumAcciones];
         for (int j=0; j<e; ++j) x[j]=(bits>>j)&1;
         for (int j=0; j<h; ++j) {
-            long v=logica[j*(e+1)+e];
-            for (int k=0; k<e; ++k) v+=logica[j*(e+1)+k]*x[k];
+            long v=plana[j*(e+1)+e];
+            for (int k=0; k<e; ++k) v+=plana[j*(e+1)+k]*x[k];
             oculta[j]=v>0?v:0;
         }
         int mejor=0;
@@ -179,8 +183,8 @@ void test_forward_x3_equivale_a_red_plana() {
         redlogica::elegir(x,0,sumas);
         for (int j=0; j<redlogica::NumAcciones; ++j) {
             const int o=h*(e+1)+j*(h+1);
-            long v=logica[o+h];
-            for (int k=0; k<h; ++k) v+=logica[o+k]*oculta[k];
+            long v=plana[o+h];
+            for (int k=0; k<h; ++k) v+=plana[o+k]*oculta[k];
             TEST_ASSERT_EQUAL_INT(v,sumas[j]);
             if (j==0 || v>mayor) { mayor=v; mejor=j; }
         }

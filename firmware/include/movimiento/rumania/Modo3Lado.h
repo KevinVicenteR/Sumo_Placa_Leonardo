@@ -5,21 +5,20 @@
 // hasta encararlo; si un sensor lo ve por el otro lado, cambia de lado. Si tras
 // Modo3TiempoGiro no lo ha encontrado, sigue barriendo más despacio. Cuando el
 // frontal lo ve, ataca a fondo.
-// Simulador (RU3, rival a la derecha y a la izquierda, sin el de 500 g): gana
-// 56,9 % / cae 22,2 % (el predictivo de antes: 57,4 / 24,9). Giro a 200: 55,6 /
-// 22,2; a 255: 54,1 / 22,7.
+// Simulador (RU3, X3 de 500 g, 8.712 combates, todos los rivales):
+// gana 52,62 % / cae 22,42 %; propias 0; solo 0/792.
 #ifndef MODO3_LADO_H
 #define MODO3_LADO_H
 
 #include "movimiento/rumania/PasoModo.h"
 
 // --- Velocidades (PWM 0-255) ---
-constexpr int Modo3VelocidadGiro = 150;          // rueda exterior del giro hacia el rival
+constexpr int Modo3VelocidadGiro = 200;          // rueda exterior del giro hacia el rival
 constexpr int Modo3VelocidadBarrido = 120;       // si no lo encuentra tras el giro
 // --- Tiempos (ms) ---
 // Maniobra obligatoria al empezar (gira hacia DIP3 sin mirar los sensores)
 constexpr unsigned long Modo3TiempoMinimo = 0;
-constexpr unsigned long Modo3TiempoGiro = 500;   // giro rápido (unos 90°)
+constexpr unsigned long Modo3TiempoGiro = 500;   // fase inicial de giro; después, barrido
 constexpr unsigned long Modo3TiempoMax = 1500;   // duración máxima del modo
 
 class Modo3Lado {

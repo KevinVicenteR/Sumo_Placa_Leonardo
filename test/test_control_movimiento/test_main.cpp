@@ -983,6 +983,11 @@ void test_modo4_agresivo_avanza_y_gira_a_fondo(void) {
     const unsigned long d = 1000 + Modo4TiempoMinimo + 10;
     c.ejecutar({TipoAccion::DefensaIzq}, m, d);
     assertMovimiento(m, -Modo4VelocidadGiro, Modo4VelocidadGiro);
+    // El frontal lo ve pero aún sin confirmar: deja de girar (Modo4EstabilizarFrontal)
+    if (Modo4EstabilizarFrontal) {
+        c.ejecutar({TipoAccion::AtaqueFrontal, true}, m, d + 10);
+        assertMovimiento(m, Modo4VelocidadConfirmacion, Modo4VelocidadConfirmacion);
+    }
     comprobarAtaqueAlVerlo(c, m, 4, d + 10);
 }
 

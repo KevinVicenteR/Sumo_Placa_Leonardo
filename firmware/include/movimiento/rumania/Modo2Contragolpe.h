@@ -2,7 +2,8 @@
 // Quieto hasta verlo: si un sensor de 45° o lateral lo ve, gira hacia él; cuando
 // el frontal lo ve, ataca a fondo al instante. Si no aparece en
 // Modo2TiempoQuieto, avanza despacio a buscarlo.
-// Simulador (RU2, sin el rival de 500 g): gana 65,5 % / cae 18,2 %.
+// Simulador (RU2, X3 de 500 g, 8.712 combates, todos los rivales):
+// gana 63,84 % / cae 14,94 %; propias 0; solo 0/792.
 #ifndef MODO2_CONTRAGOLPE_H
 #define MODO2_CONTRAGOLPE_H
 
@@ -12,12 +13,10 @@
 constexpr int Modo2VelocidadGiro = 150;          // giro hacia el sensor que lo ve
 constexpr int Modo2VelocidadAvanceEspera = 100;  // avance lento si no aparece
 // --- Tiempos (ms) ---
-// Siempre hace primero su maniobra (quieto) durante este tiempo, aunque los
-// sensores vean algo; solo la línea del borde la interrumpe
-// (simulador, RU2: con 300 ms gana 63,2 % / cae 23,5 %; sin ella 61,4 / 23,8;
-// con 800 ms 51,6 / 37,3)
-constexpr unsigned long Modo2TiempoMinimo = 300;
-constexpr unsigned long Modo2TiempoQuieto = 3000;    // quieto antes de avanzar
+// Tramo inicial quieto sin atender al rival; la línea siempre lo interrumpe.
+// Reducido para reaccionar antes en el X3 de 500 g.
+constexpr unsigned long Modo2TiempoMinimo = 50;
+constexpr unsigned long Modo2TiempoQuieto = 1500;    // quieto antes de avanzar
 constexpr unsigned long Modo2TiempoMax = 6000;      // duración máxima del modo
 
 class Modo2Contragolpe {

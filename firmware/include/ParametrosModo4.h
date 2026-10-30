@@ -18,6 +18,9 @@ constexpr bool UsarRedControlModo1 = true;
 // ganaba menos y se caía más (25 200 combates: 41,1/40,2 % frente a 50,1/31,4 %).
 constexpr bool UsarRedControlModo3 = true;
 constexpr bool EsquivarModo3 = false;
+// Frontal viendo al rival y sin línea: siempre ataca, aunque la red elija girar
+// (frontal + cerca del borde -> DefensaIzq) o buscar.
+constexpr bool AtacarSiempreConFrontal = true;
 // Los modos 1-4 de Rumania (velocidades, tiempos y lógica) están cada uno en
 // su archivo: movimiento/rumania/Modo1Defensivo.h ... Modo4Agresivo.h.
 // Ataque a fondo sin llegar a empujar durante este tiempo: pasa al ataque normal

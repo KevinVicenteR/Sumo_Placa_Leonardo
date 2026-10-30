@@ -61,6 +61,10 @@ DecisionMovimiento EstrategiaRed::decidir(const LecturasSensores& l) {
     DecisionMovimiento d = elegirContraEnemigo(l);
     const bool centrado = l.c45Izq && l.frontal && l.c45Der;
     if (centrado && !esEsquiva(d.tipo)) d.tipo = TipoAccion::AtaqueFrontal;
+    // Con el rival delante no gira ni busca (cerca del borde la red giraba y lo soltaba)
+    if (AtacarSiempreConFrontal && l.frontal && (esDefensa(d.tipo) || d.tipo == TipoAccion::Busqueda)) {
+        d.tipo = TipoAccion::AtaqueFrontal;
+    }
     d.cercaBorde = l.cercaBorde;
     d.rival = bitsRival(l);
     d.ataqueDirecto = centrado && d.tipo == TipoAccion::AtaqueFrontal;

@@ -4,9 +4,11 @@
 #ifndef PARAMETROS_BUSQUEDA_H
 #define PARAMETROS_BUSQUEDA_H
 
-// Velocidad de avance y de giro de la búsqueda.
-constexpr int VelocidadAvance = 80;
-constexpr int VelocidadGiroBusqueda = 75;
+// Velocidad de avance y de giro de la búsqueda. X3 (400 rpm, 500 g): a 80/75
+// iba casi parado en el robot real; 140/110 no cambia caídas en el simulador
+// (100 716 combates: 80,6 % / 11,4 %, 1 propia, 1 sin rival, igual que 80/75).
+constexpr int VelocidadAvance = 140;
+constexpr int VelocidadGiroBusqueda = 110;
 
 // Búsqueda: 0 = avance y giro en el sitio; 1 = arcos suaves que cambian de
 // lado cada TiempoArcoBusqueda (rueda interior a PorcentajeArcoBusqueda).

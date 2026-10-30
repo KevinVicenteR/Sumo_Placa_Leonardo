@@ -70,6 +70,14 @@ void test_red_no_puede_ignorar_borde() {
     forzarAccion(9); EstrategiaRed e; auto l=frontal();l.lineaIzq=l.lineaDer=true;
     TEST_ASSERT_EQUAL_INT((int)TipoAccion::EvadirBordeAmbos,(int)e.decidir(l).tipo);
 }
+// Con el rival en el frontal la red no puede girar (DefensaIzq = 5) ni buscar (7)
+void test_frontal_siempre_ataca() {
+    for (int k : {5, 7}) {
+        forzarAccion(k); EstrategiaRed e; LecturasSensores l{}; l.frontal=true; l.cercaBorde=true;
+        TEST_ASSERT_EQUAL_INT(AtacarSiempreConFrontal ? (int)TipoAccion::AtaqueFrontal
+                                                      : (int)redlogica::Acciones[k], (int)e.decidir(l).tipo);
+    }
+}
 void test_esquiva_tiene_tiempo_y_rearme() {
     forzarAccion(8); EstrategiaRed e;
     TEST_ASSERT_TRUE(esEsquiva(e.decidir(frontal()).tipo));
@@ -201,6 +209,7 @@ int main(int,char**) {
     RUN_TEST(test_modo4_mejora_desde_inicio_y_no_se_pierde_al_cancelar_rutina);
     RUN_TEST(test_reinicio_olvida_esquiva_y_vuelve_a_proteger_arranque);
     RUN_TEST(test_red_no_puede_ignorar_borde);
+    RUN_TEST(test_frontal_siempre_ataca);
     RUN_TEST(test_esquiva_tiene_tiempo_y_rearme);
     RUN_TEST(test_correccion_sigue_limitada_por_borde_y_pwm);
     RUN_TEST(test_segundo_sensor_amplia_solo_recuperacion_mejorada);

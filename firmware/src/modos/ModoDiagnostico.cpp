@@ -4,14 +4,41 @@
 #include "modos/ModoDiagnostico.h"
 #include "Pines.h"
 #include "Parametros.h"
+#include "hardware/RegistroHardware.h"
 
 void ModoDiagnostico::iniciar() {
     placa.inicializarPines();
     motores.deshabilitar();
     Serial.begin(115200);
     delay(TiempoInicioReglamentario);
+    imprimirRegistroHardware();
     imprimirCajaNegra();
     calibrar();
+}
+
+// Pin analógico como "A1"; el resto con su número
+static void imprimirPin(uint8_t pin) {
+    if (pin >= A0 && pin <= A5) {
+        Serial.print('A');
+        Serial.print(pin - A0);
+    } else {
+        Serial.print(pin);
+    }
+}
+
+// Lo que anotó el firmware de combate (antes de cargar este) en la EEPROM
+void ModoDiagnostico::imprimirRegistroHardware() {
+    Serial.println(F("=== EEPROM: MOTORES Y SENSORES DE PISO (anotado por el firmware de combate) ==="));
+    if (EEPROM.read(DireccionRegistroHardware) != MarcaRegistroHardware) {
+        Serial.println(F("vacio: carga primero el firmware de combate y enciende el robot una vez"));
+        return;
+    }
+    const uint8_t sentido = EEPROM.read(DireccionRegistroHardware + 1);
+    Serial.print(F("InvertirMotorIzq=")); Serial.print(sentido & 1 ? F("true") : F("false"));
+    Serial.print(F(" InvertirMotorDer=")); Serial.print(sentido & 2 ? F("true") : F("false"));
+    Serial.print(F(" S_PISO_IZQ=")); imprimirPin(EEPROM.read(DireccionRegistroHardware + 2));
+    Serial.print(F(" S_PISO_DER=")); imprimirPin(EEPROM.read(DireccionRegistroHardware + 3));
+    Serial.println();
 }
 
 void ModoDiagnostico::imprimirCajaNegra() {

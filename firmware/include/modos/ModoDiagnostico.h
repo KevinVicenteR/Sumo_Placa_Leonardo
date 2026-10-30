@@ -23,6 +23,7 @@ public:
 private:
     void calibrar();
     void imprimirCajaNegra();
+    void imprimirRegistroHardware();
     void vigilarArrancador();
 
     PlacaXMotion& placa;

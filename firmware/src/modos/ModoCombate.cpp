@@ -5,6 +5,7 @@
 #if defined(__AVR__)
 #include <avr/wdt.h>
 #include <EEPROM.h>
+#include "hardware/RegistroHardware.h"
 
 namespace {
 // CajaNegra ocupa 0..147 en AVR (cabecera de 4 y 8 registros de 18).
@@ -26,6 +27,7 @@ void ModoCombate::iniciar() {
     // La marca sobrevive al bootloader; consumirla solo una vez.
     reiniciadaPorParada = EEPROM.read(DireccionAvisoReinicio) == MarcaAvisoReinicio;
     EEPROM.update(DireccionAvisoReinicio, 0);
+    guardarRegistroHardware();
     if (AvisoListoLed) {
         TX_RX_LED_INIT;
     }
